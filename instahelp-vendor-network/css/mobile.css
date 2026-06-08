@@ -1,156 +1,258 @@
 /**
- * Mobile-only layout fixes (max-width: 768px / 480px).
- * Desktop styles are untouched — all rules live inside media queries.
+ * Mobile-only layout (max-width: 768px). Desktop untouched.
  */
 
 @media (max-width: 768px) {
-  /* ─── Dashboard / Admin mobile header ─── */
+  .container,
+  .container-narrow,
+  .container-wide {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* ─── Stop sideways / layout overflow ─── */
+  html {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+    position: relative;
+  }
+
+  main,
+  .container,
+  .container-narrow,
+  .container-wide,
+  .onboard-body,
+  .onboard-card,
+  .dashboard-layout,
+  .dashboard-main,
+  .admin-login-gate,
+  .table-wrap,
+  header,
+  .nav-inner,
+  .promo-banner {
+    max-width: 100%;
+  }
+
+  img,
+  video,
+  iframe,
+  table {
+    max-width: 100%;
+  }
+
+  /* ─── Buttons — override shared + index inline styles ─── */
+  .btn:not(.btn-icon) {
+    padding: 0.3125rem 0.5625rem !important;
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    gap: 0.25rem !important;
+    line-height: 1.2 !important;
+    min-height: 0 !important;
+    white-space: nowrap;
+  }
+
+  .btn-lg {
+    padding: 0.4375rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .btn-sm {
+    padding: 0.1875rem 0.375rem !important;
+    font-size: 0.5625rem !important;
+  }
+
+  .btn-icon {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    padding: 0 !important;
+  }
+
+  .btn-icon svg,
+  .btn-icon i {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .dashboard-header .btn,
+  .table-wrap .btn,
+  .step-actions .btn {
+    padding: 0.1875rem 0.375rem !important;
+    font-size: 0.5625rem !important;
+  }
+
+  .store-btn,
+  .store-sticky .btn {
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.6875rem !important;
+  }
+
+  /* Index / showcase header nav */
+  header .btn,
+  header .nav-btns .btn,
+  header .nav-btns .btn.nav-vendor,
+  header .nav-btns .btn.btn-dark,
+  header .nav-btns .btn.btn-yellow {
+    padding: 4px 8px !important;
+    font-size: 0.625rem !important;
+    gap: 3px !important;
+  }
+
+  header .nav-btns .btn i,
+  header .nav-btns .btn svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .btn-hero-call,
+  .btn-hero-wa {
+    padding: 9px 14px !important;
+    font-size: 0.8125rem !important;
+    gap: 6px !important;
+  }
+
+  .btn-hero-call svg,
+  .btn-hero-wa svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  /* ─── Dashboard / admin mobile header ─── */
   .mobile-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    height: 48px;
-    min-height: 48px;
-    padding: 0 0.75rem;
+    gap: 0.375rem;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 0.625rem;
   }
 
   .mobile-header > span {
     flex: 1;
     text-align: center;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .mobile-header .btn-icon {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    padding: 0;
-    flex-shrink: 0;
-  }
-
-  .mobile-header .btn-icon svg,
-  .mobile-header .btn-icon i {
-    width: 18px !important;
-    height: 18px !important;
-  }
-
-  /* Status banner — inside dashboard main, below fixed header */
-  .status-banner,
-  #status-banner {
-    margin: -0.25rem 0 0.75rem !important;
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.75rem !important;
-    line-height: 1.35 !important;
-    font-weight: 600;
-    text-align: center;
-    border-radius: var(--radius-sm);
-  }
-
   .dashboard-layout {
-    padding-top: 48px;
+    padding-top: 44px;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
 
   .dashboard-main {
-    padding: 0.875rem 0.875rem 1.5rem;
+    padding: 0.75rem 0.75rem 1.25rem;
+    overflow-x: hidden;
+  }
+
+  .status-banner,
+  #status-banner {
+    margin: 0 0 0.625rem !important;
+    padding: 0.4375rem 0.625rem !important;
+    font-size: 0.6875rem !important;
+    line-height: 1.3 !important;
+    font-weight: 600;
+    text-align: center;
+    border-radius: var(--radius-sm);
+    word-break: break-word;
   }
 
   .dashboard-header {
-    margin-bottom: 1.25rem;
-    gap: 0.625rem;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
   }
 
   .dashboard-header h1 {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
   }
 
   .sidebar {
-    width: min(280px, 88vw);
-    padding: 1rem 0.75rem;
+    width: min(260px, 86vw);
+    padding: 0.875rem 0.625rem;
   }
 
   .sidebar.open .nav-item {
-    padding: 0.5rem 0.625rem;
-    font-size: 0.8125rem;
-    gap: 0.5rem;
+    padding: 0.4375rem 0.5rem;
+    font-size: 0.75rem;
+    gap: 0.4375rem;
   }
 
   .sidebar.open .nav-item svg,
   .sidebar.open .nav-item i {
-    width: 18px !important;
-    height: 18px !important;
+    width: 16px !important;
+    height: 16px !important;
   }
 
-  /* ─── Buttons (phone) ─── */
-  .btn {
-    padding: 0.5rem 0.875rem;
-    font-size: 0.8125rem;
-    gap: 0.375rem;
+  /* Registration steps — scroll inside bar, not whole page */
+  .steps {
+    margin-bottom: 1.25rem;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
   }
 
-  .btn-lg {
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
+  .steps::-webkit-scrollbar {
+    display: none;
   }
 
-  .btn-sm {
-    padding: 0.3125rem 0.625rem;
-    font-size: 0.6875rem;
+  .step {
+    flex: 0 0 auto;
+    min-width: 56px;
   }
 
-  .dashboard-header .btn,
-  .table-wrap .btn {
-    padding: 0.3125rem 0.5rem;
-    font-size: 0.6875rem;
+  .step-label {
+    font-size: 0.5625rem;
   }
 
-  .dashboard-header .form-input {
-    max-width: 100% !important;
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
+  .step-circle {
+    width: 22px;
+    height: 22px;
+    font-size: 0.625rem;
+  }
+
+  .step::after {
+    top: 11px;
   }
 
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.625rem;
+    gap: 0.5rem;
   }
 
   .kpi-card {
-    padding: 0.875rem;
+    padding: 0.75rem;
   }
 
   .kpi-value {
-    font-size: 1.375rem;
+    font-size: 1.25rem;
   }
 
-  .steps {
-    margin-bottom: 1.5rem;
+  .dashboard-header .form-input {
+    max-width: 100% !important;
+    font-size: 0.8125rem;
+    padding: 0.4375rem 0.625rem;
   }
 
-  .step-label {
-    font-size: 0.625rem;
-  }
-
-  .step-circle {
-    width: 26px;
-    height: 26px;
-    font-size: 0.6875rem;
-  }
-
-  .step::after {
-    top: 13px;
-  }
-
-  /* ─── InstaHelp showcase (index) ─── */
+  /* ─── InstaHelp home / showcase ─── */
   .promo-banner {
-    padding: 8px 36px 8px 12px;
-    font-size: 0.72rem;
-    line-height: 1.35;
+    padding: 7px 32px 7px 10px;
+    font-size: 0.6875rem;
+    line-height: 1.3;
     text-align: left;
+    overflow-wrap: anywhere;
   }
 
   .promo-banner span {
@@ -160,134 +262,143 @@
   .promo-banner a {
     display: inline-block;
     margin-left: 0;
-    margin-top: 4px;
+    margin-top: 3px;
     white-space: normal;
-    font-size: 0.72rem;
+    font-size: 0.6875rem;
   }
 
   .promo-close {
-    width: 24px;
-    height: 24px;
-    right: 8px;
-    font-size: 0.875rem;
+    width: 22px;
+    height: 22px;
+    right: 6px;
+    font-size: 0.8125rem;
   }
 
   header {
     position: sticky;
     top: 0;
     z-index: 200;
+    overflow: hidden;
   }
 
   .nav-inner {
-    height: 52px;
-    gap: 8px;
+    height: 46px;
+    gap: 6px;
+    overflow: hidden;
   }
 
   .logo {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .nav-btns {
-    gap: 6px;
+    gap: 4px;
     margin-left: auto;
     flex-shrink: 0;
-  }
-
-  .nav-btns .btn {
-    font-size: 0.7rem;
-    padding: 6px 10px;
-    gap: 4px;
-  }
-
-  .nav-btns .btn-yellow {
-    padding: 6px 11px;
+    max-width: 58%;
   }
 
   .nav-ham {
-    padding: 4px;
-    margin-left: 4px;
+    padding: 3px;
+    margin-left: 2px;
     flex-shrink: 0;
   }
 
   .nav-ham span {
-    width: 20px;
+    width: 18px;
+  }
+
+  nav.main-nav[data-open="true"] {
+    max-width: 100vw;
+    box-sizing: border-box;
   }
 
   /* ─── Vendor registration ─── */
   .onboard-hero {
-    padding: 1.75rem 0 2rem;
+    padding: 1.5rem 0 1.75rem;
   }
 
   .onboard-hero h1 {
-    font-size: 1.5rem;
+    font-size: 1.375rem;
   }
 
   .onboard-hero p {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
 
   .onboard-body {
-    margin-top: -0.75rem;
+    margin-top: -0.5rem;
+    padding-bottom: 2rem;
   }
 
   .onboard-card {
-    padding: 1.125rem;
-  }
-
-  .step-actions .btn {
-    min-width: 0;
+    padding: 1rem;
   }
 
   .step-actions {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  /* ─── Shop sticky bar ─── */
-  .store-sticky {
-    padding: 0.5rem 0.75rem;
+    flex-wrap: nowrap;
     gap: 0.375rem;
   }
 
-  .store-sticky .store-btn,
-  .store-sticky .btn {
-    padding: 0.5rem 0.625rem;
-    font-size: 0.75rem;
+  .step-actions .btn {
+    flex: 1;
+    min-width: 0;
+    padding: 0.4375rem 0.5rem !important;
+    font-size: 0.6875rem !important;
+  }
+
+  .success-screen {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .success-screen .btn {
+    width: 100%;
+    padding: 0.4375rem 0.625rem !important;
+    font-size: 0.6875rem !important;
+  }
+
+  /* ─── Shop ─── */
+  .store-sticky {
+    padding: 0.4375rem 0.625rem;
+    gap: 0.25rem;
   }
 
   .toast-container {
     top: auto;
-    bottom: 1rem;
-    left: 0.75rem;
-    right: 0.75rem;
+    bottom: 0.75rem;
+    left: 0.625rem;
+    right: 0.625rem;
   }
 
   .toast {
-    font-size: 0.8125rem;
-    padding: 0.625rem 0.875rem;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .table-wrap td,
+  .table-wrap th {
+    padding: 0.4375rem 0.5rem;
+    font-size: 0.6875rem;
   }
 }
 
 @media (max-width: 480px) {
-  .nav-btns .btn-yellow {
-    display: none;
+  header .nav-btns .btn-yellow {
+    display: none !important;
   }
 
-  .nav-btns .nav-vendor {
-    font-size: 0.65rem;
-    padding: 5px 8px;
+  header .nav-btns .nav-vendor {
+    padding: 3px 6px !important;
+    font-size: 0.5625rem !important;
   }
 
   .hero-actions {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .btn-hero-call,
-  .btn-hero-wa {
-    justify-content: center;
-    padding: 11px 18px;
-    font-size: 0.875rem;
   }
 
   .dashboard-header {
@@ -298,19 +409,12 @@
   .dashboard-header > div[style*="display:flex"] {
     width: 100%;
     flex-wrap: wrap;
+    gap: 0.375rem;
   }
+}
 
-  .table-wrap td,
-  .table-wrap th {
-    padding: 0.5rem 0.625rem;
-    font-size: 0.75rem;
-  }
-
-  .success-screen {
-    padding: 1.5rem 1rem;
-  }
-
-  .success-screen .btn {
-    width: 100%;
+@media (max-width: 360px) {
+  header .nav-btns .nav-vendor {
+    display: none !important;
   }
 }

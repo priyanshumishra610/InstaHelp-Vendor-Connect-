@@ -297,6 +297,8 @@ tr:hover td { background: var(--surface-elevated); }
 .dashboard-main { flex: 1; margin-left: var(--sidebar-width); padding: 2rem; }
 .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
 
+.mobile-header { display: none; }
+
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
