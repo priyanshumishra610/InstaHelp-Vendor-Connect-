@@ -16,6 +16,9 @@ window.INSTAHELP_CONFIG = {
   getShopUrl: function(slug) {
     return window.location.origin + '/shop/' + encodeURIComponent(slug);
   },
+  getDashboardUrl: function(vendorId) {
+    return window.location.origin + '/vendor/dashboard?vendorId=' + encodeURIComponent(vendorId);
+  },
   routes: {
     home: '/',
     register: '/vendors/apply',

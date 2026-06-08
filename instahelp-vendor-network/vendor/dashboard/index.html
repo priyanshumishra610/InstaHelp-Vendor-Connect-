@@ -229,7 +229,19 @@
 
     function init() {
       if (!vendorId) vendorId = InstaHelp.getQueryParam('vendorId');
-      if (!vendorId) { document.querySelector('.dashboard-main').innerHTML = '<div class="empty-state"><h2>Vendor ID required</h2><p>Open the link from your approval email, or use ?vendorId=YOUR_ID</p></div>'; return; }
+      if (!vendorId) {
+        try { vendorId = localStorage.getItem('ih_vendor_id') || ''; } catch (e) {}
+      }
+      if (vendorId) {
+        try { localStorage.setItem('ih_vendor_id', vendorId); } catch (e) {}
+      }
+      if (!vendorId) {
+        document.querySelector('.dashboard-main').innerHTML =
+          '<div class="empty-state"><h2>Vendor ID required</h2>' +
+          '<p>Add <code>?vendorId=VND_...</code> to the URL, or complete registration at <a href="/vendors/apply">/vendors/apply</a>.</p>' +
+          '<p class="text-sm text-muted">Your Vendor ID is in the Google Sheet (Vendors tab) or on the registration success screen.</p></div>';
+        return;
+      }
       google.script.run.withSuccessHandler(function(r) { plans = r.plans || {}; }).getPlans();
       loadVendor();
     }

@@ -288,7 +288,10 @@
         var pendingActions = status === 'pending'
           ? '<button class="btn btn-success btn-sm" onclick="approve(\''+vid+'\')">Approve</button> <button class="btn btn-danger btn-sm" onclick="reject(\''+vid+'\')">Reject</button> '
           : '';
-        return '<tr><td><strong>'+(v.BusinessName||'—')+'</strong></td><td class="text-sm">'+(v.ShopSlug||'')+'</td><td>'+(v.Plan||'free')+'</td><td>'+(v.Template||'classic')+'</td><td><span class="badge '+(status==='active'?'badge-success':status==='pending'?'badge-warning':'badge-neutral')+'">'+status+'</span></td><td style="white-space:nowrap">' +
+        var dashUrl = INSTAHELP_CONFIG.getDashboardUrl(v.VendorID);
+        return '<tr><td><strong>'+(v.BusinessName||'—')+'</strong><div class="text-xs text-muted">'+vid+'</div></td><td class="text-sm">'+(v.ShopSlug||'')+'</td><td>'+(v.Plan||'free')+'</td><td>'+(v.Template||'classic')+'</td><td><span class="badge '+(status==='active'?'badge-success':status==='pending'?'badge-warning':'badge-neutral')+'">'+status+'</span></td><td style="white-space:nowrap">' +
+          '<a class="btn btn-ghost btn-sm" href="'+dashUrl+'" target="_blank" rel="noopener">Dashboard</a> ' +
+          '<button class="btn btn-ghost btn-sm" type="button" onclick="copyText(\''+dashUrl.replace(/'/g, "\\'")+'\')">Copy link</button> ' +
           pendingActions +
           '<button class="btn btn-ghost btn-sm" onclick="feature(\''+vid+'\',true)">Feature</button> ' +
           '<button class="btn btn-ghost btn-sm" onclick="verify(\''+vid+'\',true)">Verify</button> ' +
@@ -335,14 +338,28 @@
       }).getRevenueAnalytics(adminToken);
     }
 
+    function copyText(text) {
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(function() {
+        InstaHelp.toast('Link copied', 'success');
+      }).catch(function() { prompt('Copy this link:', text); });
+    }
+
     function approve(id) {
       google.script.run.withSuccessHandler(function(r) {
         if (handleAuthError(r)) return;
         loadStats(); loadApps(); loadVendors();
         var msg = 'Approved — store is live';
         if (r.emailSent) msg += ' & email sent to vendor';
-        else if (r.emailError) msg += ' (email failed: ' + r.emailError + ')';
+        else if (r.emailError) msg += ' (email failed — share dashboard link manually)';
         InstaHelp.toast(msg, r.emailSent ? 'success' : 'error');
+        if (r.dashboardUrl) {
+          setTimeout(function() {
+            if (confirm('Email may not have been sent.\n\nCopy vendor dashboard link to clipboard?\n\n' + r.dashboardUrl)) {
+              copyText(r.dashboardUrl);
+            }
+          }, 400);
+        }
       }).approveVendor(id, '', adminToken);
     }
     function reject(id) { var n=prompt('Reason?'); if(n===null)return; google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r)){loadStats();loadApps();loadVendors();}}).rejectVendor(id,n,adminToken); }

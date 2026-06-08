@@ -15,7 +15,7 @@ var RESEND_API_KEY = 're_PLXzK5Ta_LKZmsjUyRMFwgLnkovLWx1Eu';
 var RESEND_FROM_EMAIL = 'onboarding@resend.dev';
 var ADMIN_NOTIFY_EMAIL = 'instahelpblr@gmail.com';
 // Public site URL (Vercel) — used in approval emails
-var FRONTEND_URL = 'https://instahelp.in';
+var FRONTEND_URL = 'https://insta-help-vendor-connect.vercel.app';
 
 var SHEETS = {
   VENDORS: 'Vendors',
@@ -721,6 +721,8 @@ function submitVendorApplication(data) {
     return {
       success: true, vendorId: vendorId, applicationId: appId, shopSlug: slug,
       plan: planId, template: templateId, status: 'pending',
+      dashboardUrl: getFrontendUrl() + '/vendor/dashboard?vendorId=' + encodeURIComponent(vendorId),
+      shopUrl: getFrontendUrl() + '/shop/' + encodeURIComponent(slug),
       emailSent: emailResult.success, emailError: emailResult.error || ''
     };
   } catch (e) {
