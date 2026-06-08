@@ -1,0 +1,8 @@
+{
+  "name": "instahelp-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -p 3000",
+    "dev:app": "cd instahelp-vendor-network && npm run dev"
+  }
+}

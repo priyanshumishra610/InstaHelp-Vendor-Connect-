@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(function(){var F='instahelp-vendor-network',b='/';if(location.protocol==='file:'){var h=location.href.split('#')[0].split('?')[0];b=h.slice(0,h.lastIndexOf('/')+1);}else{var p=location.pathname,i=p.indexOf('/'+F+'/');if(i!==-1)b=p.substring(0,i+F.length+2);}var el=document.createElement('base');el.setAttribute('data-ih-base','');el.href=b;var hd=document.head||document.documentElement;hd.insertBefore(el,hd.firstChild);window.INSTAHELP_BASE=b;})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Dashboard | InstaHelp Store Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <style>
+    .page-section{display:none}.page-section.active{display:block;animation:fadeIn .3s}
+    .chart-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem}
+    .chart-box{height:260px;position:relative}
+    .plan-badge{padding:0.5rem 1rem;border-radius:var(--radius);font-weight:700;font-size:0.8125rem}
+    .plan-free{background:var(--border-light)}.plan-pro{background:var(--brand-light);color:#92700C}.plan-proplus{background:#1a1a2e;color:var(--brand)}
+    .template-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem}
+    .tpl-opt{border:2px solid var(--border-light);border-radius:var(--radius);padding:1rem;text-align:center;cursor:pointer;transition:all .2s}
+    .tpl-opt.active{border-color:var(--brand);background:var(--brand-light)}
+    .tpl-opt.locked{opacity:0.5;cursor:not-allowed}
+    .color-picker{display:flex;gap:0.75rem;align-items:center}
+    .color-picker input[type=color]{width:48px;height:48px;border:none;border-radius:var(--radius-sm);cursor:pointer}
+    .invoice-row{display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border-light);font-size:0.875rem}
+  </style>
+</head>
+<body>
+  <div class="mobile-header">
+    <button class="btn btn-icon" id="sidebar-toggle"><i data-lucide="menu"></i></button>
+    <span style="font-weight:700">Store Builder</span>
+    <button class="btn btn-icon" id="theme-toggle"><i data-lucide="moon"></i></button>
+  </div>
+  <div id="status-banner" style="display:none;margin:0;padding:0.875rem 1.25rem;font-size:0.875rem;font-weight:600;text-align:center"></div>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><div class="sidebar-logo-mark">IH</div><div><div style="font-weight:700">InstaHelp</div><div class="text-xs text-muted">Store Builder</div></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-page="overview"><i data-lucide="layout-dashboard"></i> Home</a>
+        <a class="nav-item" data-page="builder"><i data-lucide="palette"></i> Store Builder</a>
+        <a class="nav-item" data-page="products"><i data-lucide="package"></i> Products</a>
+        <a class="nav-item" data-page="leads"><i data-lucide="users"></i> Leads</a>
+        <a class="nav-item" data-page="analytics"><i data-lucide="bar-chart-3"></i> Analytics</a>
+        <a class="nav-item" data-page="subscription"><i data-lucide="credit-card"></i> Subscription</a>
+        <a class="nav-item" data-page="share"><i data-lucide="share-2"></i> Share</a>
+      </nav>
+      <div style="padding:0.75rem;border-top:1px solid var(--border-light);margin-top:auto">
+        <a class="nav-item" id="view-shop" href="#" target="_blank"><i data-lucide="external-link"></i> View Store</a>
+      </div>
+    </aside>
+    <main class="dashboard-main">
+      <!-- Overview -->
+      <section class="page-section active" id="page-overview">
+        <div class="dashboard-header">
+          <div><p class="text-sm text-muted">Welcome back</p><h1 id="v-name">Dashboard</h1></div>
+          <span class="plan-badge plan-free" id="plan-badge">Free</span>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-value" id="k-views">—</div><div class="kpi-label">Views</div></div>
+          <div class="kpi-card"><div class="kpi-value" id="k-leads">—</div><div class="kpi-label">Leads</div></div>
+          <div class="kpi-card"><div class="kpi-value" id="k-wa">—</div><div class="kpi-label">WhatsApp</div></div>
+          <div class="kpi-card"><div class="kpi-value" id="k-calls">—</div><div class="kpi-label">Calls</div></div>
+          <div class="kpi-card"><div class="kpi-value" id="k-prods">—</div><div class="kpi-label">Products</div></div>
+          <div class="kpi-card"><div class="kpi-value" id="k-revenue">—</div><div class="kpi-label">Revenue</div></div>
+        </div>
+        <div class="chart-card"><h3 style="margin-bottom:1rem">Activity</h3><div class="chart-box"><canvas id="chart-overview"></canvas></div></div>
+      </section>
+
+      <!-- Store Builder -->
+      <section class="page-section" id="page-builder">
+        <div class="dashboard-header"><h1>Store Builder</h1>
+          <div style="display:flex;gap:0.5rem">
+            <button class="btn btn-secondary btn-sm" id="preview-btn">Preview</button>
+            <button class="btn btn-primary btn-sm" id="publish-btn">Update Live Page</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:1.5rem"><h3 style="margin-bottom:1rem">Template</h3><div class="template-picker" id="tpl-picker"></div></div>
+        <div class="form-row" style="margin-bottom:1.5rem">
+          <div class="card"><h3 style="margin-bottom:1rem">Theme Colors</h3>
+            <div class="color-picker"><label>Primary</label><input type="color" id="color-primary" value="#FFD600"><label>Accent</label><input type="color" id="color-accent" value="#0F0F0F"></div>
+          </div>
+          <div class="card"><h3 style="margin-bottom:1rem">Media</h3>
+            <div class="upload-zone" id="b-logo-zone"><p class="text-sm text-muted">Logo</p></div><input type="file" id="b-logo-input" accept="image/*" hidden><div class="upload-preview" id="b-logo-preview"></div>
+            <div class="upload-zone" id="b-cover-zone" style="margin-top:0.75rem"><p class="text-sm text-muted">Banner</p></div><input type="file" id="b-cover-input" accept="image/*" hidden><div class="upload-preview" id="b-cover-preview"></div>
+          </div>
+        </div>
+        <div class="card"><h3 style="margin-bottom:1rem">Store Info</h3>
+          <form id="builder-form">
+            <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="b-desc"></textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Working Hours</label><input class="form-input" id="b-hours"></div>
+              <div class="form-group"><label class="form-label">Service Areas</label><input class="form-input" id="b-areas"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Store</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Products -->
+      <section class="page-section" id="page-products">
+        <div class="dashboard-header"><h1>Products</h1>
+          <div style="display:flex;gap:0.5rem">
+            <button class="btn btn-secondary btn-sm" onclick="InstaHelp.openModal('bulk-modal')">Bulk Upload</button>
+            <button class="btn btn-primary btn-sm" onclick="openProductModal()"><i data-lucide="plus"></i> Add</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th></th><th>Title</th><th>Price</th><th>Category</th><th>Views</th><th></th></tr></thead><tbody id="prod-table"></tbody></table></div>
+      </section>
+
+      <!-- Leads -->
+      <section class="page-section" id="page-leads">
+        <div class="dashboard-header"><h1>Leads</h1><button class="btn btn-secondary btn-sm" id="export-csv">Export CSV</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Requirement</th><th>Date</th><th>Status</th></tr></thead><tbody id="leads-table"></tbody></table></div>
+      </section>
+
+      <!-- Analytics -->
+      <section class="page-section" id="page-analytics">
+        <div class="dashboard-header"><h1>Analytics</h1></div>
+        <div class="chart-card"><h3>Daily Views</h3><div class="chart-box"><canvas id="chart-views"></canvas></div></div>
+        <div class="chart-card"><h3>Lead Growth</h3><div class="chart-box"><canvas id="chart-leads"></canvas></div></div>
+        <div class="card"><h3 style="margin-bottom:1rem">Top Products</h3><div class="table-wrap"><table><thead><tr><th>Product</th><th>Views</th><th>Leads</th></tr></thead><tbody id="top-prod"></tbody></table></div></div>
+      </section>
+
+      <!-- Subscription -->
+      <section class="page-section" id="page-subscription">
+        <div class="dashboard-header"><h1>Subscription</h1></div>
+        <div class="card" style="max-width:480px;margin-bottom:1.5rem">
+          <p class="text-sm text-muted">Current Plan</p>
+          <h2 id="sub-plan-name" style="margin:0.5rem 0">Free</h2>
+          <p class="text-sm text-muted" id="sub-expires"></p>
+          <div style="display:flex;gap:0.5rem;margin-top:1rem">
+            <button class="btn btn-primary btn-sm" onclick="upgradeTo('pro')">Upgrade to Pro ₹499</button>
+            <button class="btn btn-secondary btn-sm" onclick="upgradeTo('proplus')">Pro+ ₹999</button>
+          </div>
+        </div>
+        <div class="card"><h3 style="margin-bottom:1rem">Payment History</h3><div id="payment-history"></div></div>
+      </section>
+
+      <!-- Share -->
+      <section class="page-section" id="page-share">
+        <div class="dashboard-header"><h1>Share Store</h1></div>
+        <div class="card" style="max-width:440px;margin:0 auto;text-align:center">
+          <input class="form-input" id="shop-url" readonly style="margin-bottom:1rem">
+          <div id="qr-box" style="display:inline-block"></div>
+          <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:1rem">
+            <button class="btn btn-primary btn-sm" id="copy-url">Copy Link</button>
+            <button class="btn btn-secondary btn-sm" id="share-wa">WhatsApp</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="product-modal">
+    <div class="modal">
+      <div class="modal-header"><h3 id="pm-title">Add Product</h3><button class="modal-close" data-close-modal>×</button></div>
+      <form id="product-form">
+        <input type="hidden" id="edit-pid">
+        <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="p-title" required></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="p-desc" rows="2"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Price ₹</label><input class="form-input" id="p-price" type="number"></div>
+          <div class="form-group"><label class="form-label">Discount ₹</label><input class="form-input" id="p-disc" type="number"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Category</label><input class="form-input" id="p-cat"></div>
+        <button type="submit" class="btn btn-primary" style="margin-top:1rem">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="bulk-modal">
+    <div class="modal">
+      <div class="modal-header"><h3>Bulk Upload</h3><button class="modal-close" data-close-modal>×</button></div>
+      <p class="text-sm text-muted" style="margin-bottom:1rem">Paste CSV: title,price,description,category (one per line)</p>
+      <textarea class="form-textarea" id="bulk-csv" rows="8" placeholder="Product A,999,Description,Category"></textarea>
+      <button class="btn btn-primary btn-block" style="margin-top:1rem" id="bulk-submit">Upload Products</button>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/shared.js"></script>
+  <script>
+    var vendorId = '';
+    var vendor = null, charts = {}, plans = {};
+    var bLogo = InstaHelp.setupUploadZone('b-logo-zone','b-logo-input','b-logo-preview',false);
+    var bCover = InstaHelp.setupUploadZone('b-cover-zone','b-cover-input','b-cover-preview',false);
+
+    function updateStatusBanner(v) {
+      var banner = document.getElementById('status-banner');
+      var pubBtn = document.getElementById('publish-btn');
+      var prevBtn = document.getElementById('preview-btn');
+      if (!banner || !v) return;
+      if (v.Status === 'pending') {
+        banner.style.display = 'block';
+        banner.style.background = 'var(--warning-light)';
+        banner.style.color = '#92700C';
+        banner.textContent = '⏳ Pending approval — customize your store here. Your public page goes live after admin approval (you\'ll get an email).';
+        if (pubBtn) { pubBtn.disabled = true; pubBtn.title = 'Available after admin approval'; }
+        if (prevBtn) prevBtn.title = 'Preview unavailable until approved';
+      } else if (v.Status === 'active') {
+        banner.style.display = 'block';
+        banner.style.background = 'var(--success-light)';
+        banner.style.color = 'var(--success)';
+        banner.textContent = '✓ Store is live — save changes here to update your public page instantly.';
+        if (pubBtn) { pubBtn.disabled = false; pubBtn.title = ''; }
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    function saveLiveStore(done) {
+      google.script.run.withSuccessHandler(function(res) {
+        if (!res || !res.success) { InstaHelp.toast((res && res.error) || 'Could not save', 'error'); return; }
+        google.script.run.withSuccessHandler(function(pub) {
+          if (pub && pub.success) InstaHelp.toast('Live store updated!', 'success');
+          else InstaHelp.toast((pub && pub.error) || 'Saved locally', pub && pub.success ? 'success' : 'error');
+          if (done) done();
+        }).publishStore(vendorId);
+      }).updateStore(vendorId, {
+        description: document.getElementById('b-desc').value,
+        workingHours: document.getElementById('b-hours').value,
+        serviceAreas: document.getElementById('b-areas').value,
+        logo: bLogo.getFiles(), coverBanner: bCover.getFiles(),
+        themeColors: { primary: document.getElementById('color-primary').value, accent: document.getElementById('color-accent').value }
+      });
+    }
+
+    function init() {
+      if (!vendorId) vendorId = InstaHelp.getQueryParam('vendorId');
+      if (!vendorId) { document.querySelector('.dashboard-main').innerHTML = '<div class="empty-state"><h2>Vendor ID required</h2><p>Open the link from your approval email, or use ?vendorId=YOUR_ID</p></div>'; return; }
+      google.script.run.withSuccessHandler(function(r) { plans = r.plans || {}; }).getPlans();
+      loadVendor();
+    }
+
+    function loadVendor() {
+      google.script.run.withSuccessHandler(function(res) {
+        if (!res.success) return;
+        vendor = res.vendor;
+        updateStatusBanner(vendor);
+        document.getElementById('v-name').textContent = vendor.BusinessName;
+        var plan = vendor.Plan || 'free';
+        var badge = document.getElementById('plan-badge');
+        badge.textContent = (plans[plan] || {name:plan}).name || plan;
+        badge.className = 'plan-badge plan-' + plan;
+        document.getElementById('sub-plan-name').textContent = badge.textContent + ' Plan';
+        if (vendor.PlanExpiresAt) document.getElementById('sub-expires').textContent = 'Expires: ' + InstaHelp.formatDate(vendor.PlanExpiresAt);
+        document.getElementById('b-desc').value = vendor.Description || '';
+        document.getElementById('b-hours').value = vendor.WorkingHours || '';
+        document.getElementById('b-areas').value = vendor.ServiceAreas || '';
+        var theme = InstaHelp.parseJSON(vendor.ThemeColors, {primary:'#FFD600',accent:'#0F0F0F'});
+        document.getElementById('color-primary').value = theme.primary;
+        document.getElementById('color-accent').value = theme.accent;
+        if (vendor.Logo) bLogo.setFiles([vendor.Logo]);
+        if (vendor.CoverBanner) bCover.setFiles([vendor.CoverBanner]);
+        renderTemplatePicker(vendor.Plan || 'free', vendor.Template || 'classic');
+        loadAnalytics(); loadProducts(); loadLeads(); loadPayments(); setupShare();
+      }).getVendor(vendorId);
+    }
+
+    function renderTemplatePicker(planId, current) {
+      var limits = plans[planId] || {templates:['classic']};
+      var tpls = {classic:'Classic',luxury:'Luxury',service:'Service',travel:'Travel'};
+      var html = '';
+      Object.keys(tpls).forEach(function(id) {
+        var locked = limits.templates.indexOf(id) === -1;
+        html += '<div class="tpl-opt' + (current===id?' active':'') + (locked?' locked':'') + '" data-id="'+id+'" onclick="' + (locked?'':'selectTpl(\''+id+'\')') + '">' +
+          (locked ? '🔒 ' : '') + tpls[id] + '</div>';
+      });
+      document.getElementById('tpl-picker').innerHTML = html;
+    }
+
+    function selectTpl(id) {
+      google.script.run.withSuccessHandler(function(res) {
+        if (res.success) { vendor.Template = id; renderTemplatePicker(vendor.Plan||'free', id); InstaHelp.toast('Template updated', 'success'); }
+        else InstaHelp.toast(res.error, 'error');
+      }).changeTemplate(vendorId, id);
+    }
+
+    function loadAnalytics() {
+      google.script.run.withSuccessHandler(function(res) {
+        if (!res.success) return;
+        document.getElementById('k-views').textContent = res.totals.views;
+        document.getElementById('k-leads').textContent = res.totals.leads;
+        document.getElementById('k-wa').textContent = res.totals.whatsappClicks;
+        document.getElementById('k-calls').textContent = res.totals.calls;
+        document.getElementById('k-prods').textContent = res.productCount;
+        document.getElementById('k-revenue').textContent = '₹' + (res.revenue || 0);
+        renderChart('chart-overview', res.daily, 'Views', '#FFD600');
+        renderChart('chart-views', res.daily, 'Views', '#FFD600');
+        renderChart('chart-leads', res.daily, 'Leads', '#16A34A', 'bar');
+        var tb = document.getElementById('top-prod');
+        tb.innerHTML = (res.topProducts||[]).map(function(p){return '<tr><td>'+p.Title+'</td><td>'+(p.Views||0)+'</td><td>'+(p.Leads||0)+'</td></tr>';}).join('') || '<tr><td colspan="3">No data</td></tr>';
+      }).getAnalytics(vendorId);
+    }
+
+    function renderChart(id, data, field, color, type) {
+      var ctx = document.getElementById(id);
+      if (!ctx) return;
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(ctx, {
+        type: type || 'line',
+        data: { labels: data.map(function(d){return InstaHelp.formatDate(d.Date);}), datasets: [{ data: data.map(function(d){return Number(d[field])||0;}), borderColor: color, backgroundColor: color+'22', fill: type!=='bar', tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    }
+
+    function loadProducts() {
+      google.script.run.withSuccessHandler(function(res) {
+        var tb = document.getElementById('prod-table');
+        if (!res.products.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-state">No products</td></tr>'; return; }
+        tb.innerHTML = res.products.map(function(p) {
+          var imgs = InstaHelp.parseJSON(p.Images,[]);
+          return '<tr><td>'+(imgs[0]?'<img src="'+imgs[0]+'" style="width:36px;height:36px;border-radius:6px;object-fit:cover">':'—')+'</td><td><strong>'+p.Title+'</strong></td><td>'+InstaHelp.formatCurrency(p.Price)+'</td><td>'+(p.Category||'—')+'</td><td>'+(p.Views||0)+'</td><td><button class="btn btn-ghost btn-sm" onclick="editProd(\''+p.ProductID+'\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="delProd(\''+p.ProductID+'\')">Del</button></td></tr>';
+        }).join('');
+      }).getVendorProducts(vendorId);
+    }
+
+    function loadLeads() {
+      google.script.run.withSuccessHandler(function(res) {
+        var tb = document.getElementById('leads-table');
+        var statuses = ['new','contacted','converted','closed'];
+        tb.innerHTML = (res.leads||[]).reverse().map(function(l) {
+          return '<tr><td>'+l.CustomerName+'</td><td>'+l.Phone+'</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(l.Requirement||'')+'</td><td>'+InstaHelp.formatDate(l.CreatedAt)+'</td><td><select class="form-select" style="padding:0.375rem;font-size:0.8125rem" onchange="setLeadStatus(\''+l.LeadID+'\',this.value)">'+statuses.map(function(s){return '<option value="'+s+'"'+(l.Status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td></tr>';
+        }).join('') || '<tr><td colspan="5">No leads yet</td></tr>';
+      }).getVendorLeads(vendorId);
+    }
+
+    function loadPayments() {
+      google.script.run.withSuccessHandler(function(res) {
+        var el = document.getElementById('payment-history');
+        if (!res.payments.length) { el.innerHTML = '<p class="text-muted text-sm">No payments yet</p>'; return; }
+        el.innerHTML = res.payments.reverse().map(function(p) {
+          return '<div class="invoice-row"><span>'+InstaHelp.formatDate(p.Date)+' · '+(p.Plan||'')+'</span><span><strong>₹'+p.Amount+'</strong> <span class="badge badge-success">'+p.Status+'</span></span></div>';
+        }).join('');
+      }).getVendorPayments(vendorId);
+    }
+
+    function setupShare() {
+      if (!vendor || !vendor.ShopSlug) return;
+      var url = INSTAHELP_CONFIG.getShopUrl(vendor.ShopSlug);
+      document.getElementById('shop-url').value = url;
+      document.getElementById('view-shop').href = url;
+      document.getElementById('qr-box').innerHTML = '';
+      new QRCode(document.getElementById('qr-box'), { text: url, width: 160, height: 160 });
+    }
+
+    function openProductModal() { document.getElementById('edit-pid').value=''; document.getElementById('product-form').reset(); document.getElementById('pm-title').textContent='Add Product'; InstaHelp.openModal('product-modal'); }
+    function editProd(id) {
+      google.script.run.withSuccessHandler(function(res) {
+        var p = res.products.find(function(x){return x.ProductID===id;});
+        if (!p) return;
+        document.getElementById('edit-pid').value = id;
+        document.getElementById('p-title').value = p.Title;
+        document.getElementById('p-desc').value = p.Description||'';
+        document.getElementById('p-price').value = p.Price||'';
+        document.getElementById('p-disc').value = p.DiscountPrice||'';
+        document.getElementById('p-cat').value = p.Category||'';
+        document.getElementById('pm-title').textContent = 'Edit Product';
+        InstaHelp.openModal('product-modal');
+      }).getVendorProducts(vendorId);
+    }
+    function delProd(id) { if (!confirm('Delete?')) return; google.script.run.withSuccessHandler(function(){loadProducts();loadAnalytics();}).deleteProduct(id); }
+    function setLeadStatus(id, s) { google.script.run.withSuccessHandler(function(){InstaHelp.toast('Updated','success');}).updateLeadStatus(id,s); }
+
+    function upgradeTo(planId) {
+      google.script.run.withSuccessHandler(function(res) {
+        if (!res.success) { InstaHelp.toast(res.error,'error'); return; }
+        if (res.free) { loadVendor(); return; }
+        var rzp = new Razorpay({
+          key: res.keyId, amount: res.amount, currency: 'INR', order_id: res.orderId,
+          name: 'InstaHelp', description: planId + ' Plan',
+          handler: function(r) {
+            google.script.run.withSuccessHandler(function(v) {
+              if (v.success) { InstaHelp.toast('Upgraded!','success'); loadVendor(); loadPayments(); }
+            }).verifyPayment({ orderId: r.razorpay_order_id, paymentId: r.razorpay_payment_id, signature: r.razorpay_signature, plan: planId });
+          },
+          theme: { color: '#FFD600' }
+        });
+        rzp.open();
+      }).upgradePlan(vendorId, planId);
+    }
+
+    document.getElementById('product-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var data = { vendorId: vendorId, title: document.getElementById('p-title').value, description: document.getElementById('p-desc').value, price: document.getElementById('p-price').value, discountPrice: document.getElementById('p-disc').value, category: document.getElementById('p-cat').value };
+      var eid = document.getElementById('edit-pid').value;
+      var cb = function() { InstaHelp.closeModal('product-modal'); loadProducts(); loadAnalytics(); InstaHelp.toast('Saved','success'); };
+      if (eid) google.script.run.withSuccessHandler(cb).updateProduct(eid, data);
+      else google.script.run.withSuccessHandler(cb).addProduct(data);
+    });
+
+    document.getElementById('builder-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      saveLiveStore();
+    });
+
+    document.getElementById('publish-btn').addEventListener('click', function() {
+      if (vendor && vendor.Status === 'pending') {
+        InstaHelp.toast('Your store must be approved first. You will receive an email when it goes live.', 'error');
+        return;
+      }
+      saveLiveStore();
+    });
+
+    document.getElementById('preview-btn').addEventListener('click', function() {
+      if (!vendor || !vendor.ShopSlug) return;
+      if (vendor.Status !== 'active') {
+        InstaHelp.toast('Public preview is available after admin approval.', 'error');
+        return;
+      }
+      window.open(INSTAHELP_CONFIG.getShopUrl(vendor.ShopSlug), '_blank');
+    });
+
+    document.getElementById('bulk-submit').addEventListener('click', function() {
+      var lines = document.getElementById('bulk-csv').value.trim().split('\n');
+      var products = lines.map(function(l) { var p=l.split(','); return { title:p[0], price:p[1], description:p[2]||'', category:p[3]||'' }; }).filter(function(p){return p.title;});
+      google.script.run.withSuccessHandler(function(){ InstaHelp.closeModal('bulk-modal'); loadProducts(); InstaHelp.toast('Uploaded','success'); }).bulkAddProducts(vendorId, products);
+    });
+
+    document.getElementById('export-csv').addEventListener('click', function() {
+      google.script.run.withSuccessHandler(function(res) {
+        var a = document.createElement('a'); a.href = 'data:text/csv,'+encodeURIComponent(res.csv); a.download = 'leads.csv'; a.click();
+      }).exportLeadsCSV(vendorId);
+    });
+
+    document.getElementById('copy-url').addEventListener('click', function() { InstaHelp.copyToClipboard(document.getElementById('shop-url').value); });
+    document.getElementById('share-wa').addEventListener('click', function() {
+      window.open('https://wa.me/?text='+encodeURIComponent('Visit my store: '+document.getElementById('shop-url').value),'_blank');
+    });
+
+    document.querySelectorAll('.nav-item[data-page]').forEach(function(n) {
+      n.addEventListener('click', function(e) { e.preventDefault();
+        document.querySelectorAll('.nav-item').forEach(function(x){x.classList.remove('active');});
+        n.classList.add('active');
+        document.querySelectorAll('.page-section').forEach(function(s){s.classList.remove('active');});
+        document.getElementById('page-'+n.dataset.page).classList.add('active');
+        document.querySelector('.sidebar').classList.remove('open');
+        InstaHelp.initLucide();
+      });
+    });
+
+    document.getElementById('theme-toggle').addEventListener('click', InstaHelp.toggleTheme);
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

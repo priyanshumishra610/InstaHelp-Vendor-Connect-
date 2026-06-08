@@ -1,0 +1,19 @@
+{
+  "buildCommand": "npm run build",
+  "rewrites": [
+    { "source": "/vendors/apply", "destination": "/vendor-registration.html" },
+    { "source": "/shop/:slug", "destination": "/shop.html" },
+    { "source": "/vendor/dashboard", "destination": "/vendor-dashboard.html" },
+    { "source": "/admin/vendors", "destination": "/admin-dashboard.html" },
+    { "source": "/showcase", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}

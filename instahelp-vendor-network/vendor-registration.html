@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(function(){var F='instahelp-vendor-network',b='/';if(location.protocol==='file:'){var h=location.href.split('#')[0].split('?')[0];b=h.slice(0,h.lastIndexOf('/')+1);}else{var p=location.pathname,i=p.indexOf('/'+F+'/');if(i!==-1)b=p.substring(0,i+F.length+2);}var el=document.createElement('base');el.setAttribute('data-ih-base','');el.href=b;var hd=document.head||document.documentElement;hd.insertBefore(el,hd.firstChild);window.INSTAHELP_BASE=b;})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Your Store | InstaHelp Store Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest" defer></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <style>
+    .onboard-hero {
+      background: linear-gradient(135deg, #0F0F0F 0%, #1a1a2e 55%, #16213e 100%);
+      color: white; padding: 2.5rem 0 3rem; position: relative; overflow: hidden;
+    }
+    .onboard-hero::before {
+      content: ''; position: absolute; top: -40%; right: -10%; width: 420px; height: 420px;
+      background: radial-gradient(circle, rgba(255,214,0,0.14) 0%, transparent 70%); border-radius: 50%;
+    }
+    .onboard-hero .container { position: relative; z-index: 1; }
+    .onboard-body { margin-top: -1.5rem; padding-bottom: 4rem; }
+    .onboard-card { background: var(--surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); padding: 2rem; }
+    .step-panel { display: none; } .step-panel.active { display: block; animation: fadeIn 0.4s ease; }
+    .template-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 1rem; }
+    .template-card { border: 2px solid var(--border-light); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; transition: all 0.2s; }
+    .template-card:hover, .template-card.selected { border-color: var(--brand); box-shadow: var(--shadow-brand); transform: translateY(-2px); }
+    .template-preview { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+    .template-preview.classic { background: linear-gradient(135deg,#232f3e,#37475a); }
+    .template-preview.luxury { background: #000; color: #f5f5f7; }
+    .template-preview.service { background: linear-gradient(135deg,#2d3748,#4a5568); color: white; }
+    .template-preview.travel { background: linear-gradient(135deg,#1a365d,#2c5282); color: white; }
+    .template-body { padding: 1rem; }
+    .plan-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 1rem; }
+    .plan-card { border: 2px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.5rem; cursor: pointer; transition: all 0.2s; position: relative; }
+    .plan-card.selected { border-color: var(--brand); background: var(--brand-light); }
+    .plan-card.popular::before { content: 'POPULAR'; position: absolute; top: -10px; right: 1rem; background: var(--brand); font-size: 0.625rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 4px; }
+    .plan-price { font-size: 2rem; font-weight: 800; }
+    .plan-features { list-style: none; margin-top: 1rem; font-size: 0.8125rem; }
+    .plan-features li { padding: 0.25rem 0; display: flex; gap: 0.5rem; align-items: flex-start; }
+    .plan-features li::before { content: '✓'; color: var(--success); font-weight: 700; }
+    .payment-box { background: var(--surface-elevated); border-radius: var(--radius-lg); padding: 2rem; text-align: center; }
+    .success-screen { text-align: center; padding: 3rem; }
+    .success-icon { width: 80px; height: 80px; background: var(--success-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
+    @media(max-width:640px){ .onboard-card{padding:1.25rem} }
+  </style>
+</head>
+<body>
+  <div class="onboard-hero">
+    <div class="container">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+        <div class="sidebar-logo-mark">IH</div>
+        <span style="font-weight:700">InstaHelp Store Builder</span>
+      </div>
+      <h1 style="color:white">Launch Your Online Store</h1>
+      <p style="color:rgba(255,255,255,0.65);max-width:480px">Create a premium storefront in minutes. Choose a template, pick a plan, and start collecting leads.</p>
+    </div>
+  </div>
+
+  <div class="onboard-body">
+    <div class="container container-narrow">
+      <div class="onboard-card" id="form-wrap">
+        <div class="steps" id="steps-nav">
+          <div class="step active" data-step="1"><div class="step-circle">1</div><div class="step-label">Business</div></div>
+          <div class="step" data-step="2"><div class="step-circle">2</div><div class="step-label">Store</div></div>
+          <div class="step" data-step="3"><div class="step-circle">3</div><div class="step-label">Media</div></div>
+          <div class="step" data-step="4"><div class="step-circle">4</div><div class="step-label">Template</div></div>
+          <div class="step" data-step="5"><div class="step-circle">5</div><div class="step-label">Plan</div></div>
+          <div class="step" data-step="6"><div class="step-circle">6</div><div class="step-label">Payment</div></div>
+          <div class="step" data-step="7"><div class="step-circle">7</div><div class="step-label">Submit</div></div>
+        </div>
+
+        <!-- Step 1: Business -->
+        <div class="step-panel active" id="step-1">
+          <h2>Business Information</h2>
+          <p class="text-muted text-sm" style="margin-bottom:1.5rem">Tell us about your business</p>
+          <div class="form-group"><label class="form-label">Business Name *</label><input class="form-input" id="businessName" required></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Owner Name *</label><input class="form-input" id="ownerName" required></div>
+            <div class="form-group"><label class="form-label">Mobile *</label><input class="form-input" id="phone" type="tel" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">WhatsApp</label><input class="form-input" id="whatsapp" type="tel"></div>
+            <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="email" type="email" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Category *</label>
+              <select class="form-select" id="category" required>
+                <option value="">Select</option>
+                <option>Travel</option><option>Hotels</option><option>Real Estate</option><option>Doctors</option>
+                <option>Beauty</option><option>Education</option><option>Electronics</option><option>Restaurants</option><option>Services</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Years in Business</label><input class="form-input" id="yearsInBusiness" type="number"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">City *</label><input class="form-input" id="city" required></div>
+            <div class="form-group"><label class="form-label">State</label><input class="form-input" id="state"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: Store Info -->
+        <div class="step-panel" id="step-2">
+          <h2>Store Information</h2>
+          <div class="form-group"><label class="form-label">Description *</label><textarea class="form-textarea" id="description" required></textarea></div>
+          <div class="form-group"><label class="form-label">Service Areas</label><input class="form-input" id="serviceAreas"></div>
+          <div class="form-group"><label class="form-label">Working Hours</label><input class="form-input" id="workingHours" placeholder="Mon-Sat 9AM-8PM"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Website</label><input class="form-input" id="website"></div>
+            <div class="form-group"><label class="form-label">Instagram</label><input class="form-input" id="instagram"></div>
+          </div>
+        </div>
+
+        <!-- Step 3: Media -->
+        <div class="step-panel" id="step-3">
+          <h2>Media Uploads</h2>
+          <div class="form-group"><label class="form-label">Logo</label>
+            <div class="upload-zone" id="logo-zone"><p class="text-sm text-muted">Upload logo</p></div>
+            <input type="file" id="logo-input" accept="image/*" hidden><div class="upload-preview" id="logo-preview"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Cover Banner</label>
+            <div class="upload-zone" id="cover-zone"><p class="text-sm text-muted">1200×400 recommended</p></div>
+            <input type="file" id="cover-input" accept="image/*" hidden><div class="upload-preview" id="cover-preview"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Gallery</label>
+            <div class="upload-zone" id="gallery-zone"><p class="text-sm text-muted">Multiple images</p></div>
+            <input type="file" id="gallery-input" accept="image/*" multiple hidden><div class="upload-preview" id="gallery-preview"></div>
+          </div>
+        </div>
+
+        <!-- Step 4: Template -->
+        <div class="step-panel" id="step-4">
+          <h2>Choose Your Template</h2>
+          <p class="text-muted text-sm" style="margin-bottom:1.5rem">Select a design that fits your business</p>
+          <div class="template-grid" id="template-grid"></div>
+        </div>
+
+        <!-- Step 5: Plan -->
+        <div class="step-panel" id="step-5">
+          <h2>Choose Your Plan</h2>
+          <p class="text-muted text-sm" style="margin-bottom:1.5rem">Start free, upgrade anytime</p>
+          <div class="plan-grid" id="plan-grid"></div>
+        </div>
+
+        <!-- Step 6: Payment -->
+        <div class="step-panel" id="step-6">
+          <h2>Payment</h2>
+          <div class="payment-box" id="payment-box">
+            <div id="payment-free" style="display:none">
+              <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
+              <h3>Free Plan Selected</h3>
+              <p class="text-muted">No payment required. Continue to submit your application.</p>
+            </div>
+            <div id="payment-paid" style="display:none">
+              <h3 id="payment-plan-name">Pro Plan</h3>
+              <p class="plan-price" id="payment-amount">₹499<span style="font-size:1rem;font-weight:400">/mo</span></p>
+              <p class="text-muted text-sm" style="margin:1rem 0">Secure payment via Razorpay</p>
+              <button class="btn btn-primary btn-lg" id="pay-btn"><i data-lucide="credit-card"></i> Pay Now</button>
+              <p class="text-xs text-muted" style="margin-top:1rem">UPI · Cards · Net Banking · Wallets</p>
+            </div>
+            <div id="payment-done" style="display:none">
+              <div class="success-icon"><i data-lucide="check" style="color:var(--success)"></i></div>
+              <h3>Payment Successful!</h3>
+              <p class="text-muted">Your plan is activated</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7: Review -->
+        <div class="step-panel" id="step-7">
+          <h2>Review & Submit</h2>
+          <div id="review-content" style="margin-bottom:1.5rem"></div>
+        </div>
+
+        <div class="step-actions" style="display:flex;justify-content:space-between;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-light)">
+          <button class="btn btn-ghost" id="prev-btn" style="visibility:hidden">← Back</button>
+          <button class="btn btn-primary" id="next-btn">Continue →</button>
+        </div>
+      </div>
+
+      <div class="onboard-card success-screen" id="success-screen" style="display:none">
+        <div class="success-icon"><i data-lucide="check" style="color:var(--success);width:40px;height:40px"></i></div>
+        <h2>Application Submitted!</h2>
+        <p class="text-secondary" style="max-width:440px;margin:1rem auto">Your application is <strong>pending admin review</strong>. Your public store page will <em>not</em> be visible until approved.</p>
+        <p class="text-secondary" style="max-width:440px;margin:0 auto 1rem;font-size:0.9rem">We sent a confirmation email. When approved, you'll receive another email with your <strong>live store link</strong> and <strong>dashboard access</strong> to customize everything.</p>
+        <div class="badge badge-warning" id="success-ref" style="margin:1rem 0">Ref: —</div>
+        <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem">
+          <a href="./" class="btn btn-primary">Back to InstaHelp Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/shared.js"></script>
+  <script>
+    var currentStep = 1, totalSteps = 7;
+    var formData = { plan: 'free', template: 'classic', paymentVerified: false, vendorId: null };
+    var plans = {}, templates = {}, razorpayKey = '';
+
+    function showSuccess(vendorId, res) {
+      document.getElementById('form-wrap').style.display = 'none';
+      document.getElementById('success-screen').style.display = 'block';
+      document.getElementById('success-ref').textContent = 'Reference: ' + vendorId + ' · Status: Pending approval';
+      if (res && res.emailSent === false && res.emailError) {
+        InstaHelp.toast('Application saved. Email could not be sent — save your reference ID.', 'error');
+      }
+    }
+
+    var logoUp = InstaHelp.setupUploadZone('logo-zone','logo-input','logo-preview',false);
+    var coverUp = InstaHelp.setupUploadZone('cover-zone','cover-input','cover-preview',false);
+    var galleryUp = InstaHelp.setupUploadZone('gallery-zone','gallery-input','gallery-preview',true);
+
+    function init() {
+      google.script.run.withSuccessHandler(function(r) { if (r.success) plans = r.plans; renderPlans(); }).getPlans();
+      google.script.run.withSuccessHandler(function(r) { if (r.success) templates = r.templates; renderTemplates(); }).getStoreTemplates();
+      google.script.run.withSuccessHandler(function(r) {
+        if (r.success && r.keyId) razorpayKey = r.keyId;
+      }).getRazorpayKeyId();
+      updateSteps();
+    }
+
+    function renderTemplates() {
+      var html = '';
+      Object.keys(templates).forEach(function(id) {
+        var t = templates[id];
+        html += '<div class="template-card' + (formData.template === id ? ' selected' : '') + '" data-id="' + id + '" onclick="selectTemplate(\'' + id + '\')">' +
+          '<div class="template-preview ' + id + '">' + (id === 'classic' ? '🛒' : id === 'luxury' ? '✦' : id === 'service' ? '💼' : '✈️') + '</div>' +
+          '<div class="template-body"><strong>' + t.name + '</strong><p class="text-xs text-muted" style="margin:0.25rem 0">' + t.tagline + '</p><p class="text-xs text-muted">Best for: ' + t.bestFor + '</p></div></div>';
+      });
+      document.getElementById('template-grid').innerHTML = html;
+    }
+
+    function selectTemplate(id) {
+      formData.template = id;
+      document.querySelectorAll('.template-card').forEach(function(c) { c.classList.toggle('selected', c.dataset.id === id); });
+    }
+
+    function renderPlans() {
+      var planList = [
+        { id: 'free', features: ['Basic template','10 products','Basic analytics','InstaHelp branding','QR + WhatsApp'] },
+        { id: 'pro', features: ['3 premium templates','Unlimited products','Advanced analytics','No branding','Featured listing'], popular: true },
+        { id: 'proplus', features: ['All 4 templates','Priority placement','Premium analytics','Marketing tools','Dedicated support'] }
+      ];
+      var html = '';
+      planList.forEach(function(p) {
+        var plan = plans[p.id] || { price: 0, name: p.id };
+        html += '<div class="plan-card' + (formData.plan === p.id ? ' selected' : '') + (p.popular ? ' popular' : '') + '" data-id="' + p.id + '" onclick="selectPlan(\'' + p.id + '\')">' +
+          '<h3>' + plan.name + '</h3><div class="plan-price">₹' + plan.price + (plan.price > 0 ? '<span style="font-size:0.875rem;font-weight:400">/mo</span>' : '') + '</div>' +
+          '<ul class="plan-features">' + p.features.map(function(f) { return '<li>' + f + '</li>'; }).join('') + '</ul></div>';
+      });
+      document.getElementById('plan-grid').innerHTML = html;
+    }
+
+    function selectPlan(id) {
+      formData.plan = id;
+      formData.paymentVerified = id === 'free';
+      document.querySelectorAll('.plan-card').forEach(function(c) { c.classList.toggle('selected', c.dataset.id === id); });
+    }
+
+    function updateSteps() {
+      document.querySelectorAll('.step').forEach(function(s) {
+        var n = +s.dataset.step;
+        s.classList.remove('active','done');
+        if (n < currentStep) s.classList.add('done');
+        if (n === currentStep) s.classList.add('active');
+        s.querySelector('.step-circle').textContent = n < currentStep ? '✓' : n;
+      });
+      document.querySelectorAll('.step-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById('step-' + currentStep).classList.add('active');
+      document.getElementById('prev-btn').style.visibility = currentStep > 1 ? 'visible' : 'hidden';
+      var nextLabel = currentStep === totalSteps ? 'Submit Application' : currentStep === 6 && formData.plan !== 'free' && !formData.paymentVerified ? 'Continue (Pay first)' : 'Continue →';
+      document.getElementById('next-btn').textContent = nextLabel;
+      if (currentStep === 6) setupPaymentStep();
+      if (currentStep === 7) buildReview();
+      InstaHelp.initLucide();
+    }
+
+    function setupPaymentStep() {
+      var isFree = formData.plan === 'free';
+      document.getElementById('payment-free').style.display = isFree ? 'block' : 'none';
+      document.getElementById('payment-paid').style.display = !isFree && !formData.paymentVerified ? 'block' : 'none';
+      document.getElementById('payment-done').style.display = !isFree && formData.paymentVerified ? 'block' : 'none';
+      if (!isFree && !formData.paymentVerified) {
+        var plan = plans[formData.plan];
+        document.getElementById('payment-plan-name').textContent = plan.name + ' Plan';
+        document.getElementById('payment-amount').innerHTML = '₹' + plan.price + '<span style="font-size:1rem;font-weight:400">/mo</span>';
+      }
+    }
+
+    function collectData() {
+      formData.businessName = document.getElementById('businessName').value.trim();
+      formData.ownerName = document.getElementById('ownerName').value.trim();
+      formData.phone = document.getElementById('phone').value.trim();
+      formData.whatsapp = document.getElementById('whatsapp').value.trim();
+      formData.email = document.getElementById('email').value.trim();
+      formData.category = document.getElementById('category').value;
+      formData.yearsInBusiness = document.getElementById('yearsInBusiness').value;
+      formData.city = document.getElementById('city').value.trim();
+      formData.state = document.getElementById('state').value.trim();
+      formData.description = document.getElementById('description').value.trim();
+      formData.serviceAreas = document.getElementById('serviceAreas').value.trim();
+      formData.workingHours = document.getElementById('workingHours').value.trim();
+      formData.website = document.getElementById('website').value.trim();
+      formData.instagram = document.getElementById('instagram').value.trim();
+      formData.logo = logoUp.getFiles();
+      formData.coverBanner = coverUp.getFiles();
+      formData.gallery = galleryUp.getFiles();
+    }
+
+    function validateStep() {
+      if (currentStep === 1) {
+        collectData();
+        if (!formData.businessName || !formData.ownerName || !formData.phone || !formData.email || !formData.category || !formData.city) {
+          InstaHelp.toast('Fill required fields', 'error'); return false;
+        }
+      }
+      if (currentStep === 2) {
+        collectData();
+        if (!formData.description) { InstaHelp.toast('Add description', 'error'); return false; }
+      }
+      if (currentStep === 3) collectData();
+      if (currentStep === 6 && formData.plan !== 'free' && !formData.paymentVerified) {
+        InstaHelp.toast('Complete payment first', 'error'); return false;
+      }
+      return true;
+    }
+
+    function buildReview() {
+      collectData();
+      var plan = plans[formData.plan] || { name: formData.plan };
+      var tpl = templates[formData.template] || { name: formData.template };
+      document.getElementById('review-content').innerHTML =
+        '<div class="card card-flat"><p><strong>Business:</strong> ' + formData.businessName + '</p>' +
+        '<p><strong>City:</strong> ' + formData.city + ' · <strong>Category:</strong> ' + formData.category + '</p>' +
+        '<p><strong>Template:</strong> ' + tpl.name + ' · <strong>Plan:</strong> ' + plan.name + '</p>' +
+        '<p class="text-sm text-muted" style="margin-top:0.5rem">' + formData.description + '</p></div>';
+    }
+
+    document.getElementById('pay-btn').addEventListener('click', function() {
+      collectData();
+      var btn = this; btn.disabled = true; btn.textContent = 'Creating order...';
+
+      function startPayment(vendorId) {
+        formData.vendorId = vendorId;
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          if (!res.success) { InstaHelp.toast(res.error, 'error'); btn.innerHTML = '<i data-lucide="credit-card"></i> Pay Now'; return; }
+          if (res.free) { formData.paymentVerified = true; setupPaymentStep(); return; }
+
+          var options = {
+            key: res.keyId || razorpayKey,
+            amount: res.amount,
+            currency: res.currency,
+            name: 'InstaHelp Store Builder',
+            description: plans[formData.plan].name + ' Plan',
+            order_id: res.orderId,
+            handler: function(response) {
+              google.script.run
+                .withSuccessHandler(function(v) {
+                  if (v.success) {
+                    formData.paymentVerified = true;
+                    formData.vendorId = v.vendorId;
+                    setupPaymentStep();
+                    InstaHelp.toast('Payment successful!', 'success');
+                  }
+                })
+                .verifyPayment({
+                  orderId: response.razorpay_order_id,
+                  paymentId: response.razorpay_payment_id,
+                  signature: response.razorpay_signature,
+                  plan: formData.plan
+                });
+            },
+            prefill: { name: formData.ownerName, email: formData.email, contact: formData.phone },
+            theme: { color: '#FFD600' }
+          };
+          var rzp = new Razorpay(options);
+          rzp.open();
+          btn.innerHTML = '<i data-lucide="credit-card"></i> Pay Now';
+          InstaHelp.initLucide();
+        })
+        .withFailureHandler(function(err) { btn.disabled = false; InstaHelp.toast(err.message, 'error'); })
+        .createRazorpayOrder(vendorId, formData.plan, 'subscription');
+      }
+
+      if (formData.vendorId) {
+        startPayment(formData.vendorId);
+      } else {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res.success) { btn.disabled = false; InstaHelp.toast(res.error, 'error'); return; }
+            startPayment(res.vendorId);
+          })
+          .withFailureHandler(function(err) { btn.disabled = false; InstaHelp.toast(err.message, 'error'); })
+          .submitVendorApplication(Object.assign({}, formData, { products: [] }));
+      }
+    });
+
+    document.getElementById('next-btn').addEventListener('click', function() {
+      if (!validateStep()) return;
+      if (currentStep < totalSteps) { currentStep++; updateSteps(); }
+      else submitApp();
+    });
+
+    document.getElementById('prev-btn').addEventListener('click', function() {
+      if (currentStep > 1) { currentStep--; updateSteps(); }
+    });
+
+    function submitApp() {
+      collectData();
+      var btn = document.getElementById('next-btn');
+      btn.disabled = true; btn.textContent = 'Submitting...';
+      formData.paymentVerified = formData.plan === 'free' || formData.paymentVerified;
+
+      if (formData.vendorId) {
+        google.script.run
+          .withSuccessHandler(function() {
+            btn.disabled = false;
+            showSuccess(formData.vendorId, res);
+          })
+          .withFailureHandler(function(err) { btn.disabled = false; InstaHelp.toast(err.message, 'error'); })
+          .updateVendor(formData.vendorId, formData);
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          if (res.success) {
+            showSuccess(res.vendorId, res);
+          } else { InstaHelp.toast(res.error, 'error'); btn.textContent = 'Submit Application'; }
+        })
+        .withFailureHandler(function(err) { btn.disabled = false; InstaHelp.toast(err.message, 'error'); })
+        .submitVendorApplication(formData);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1218 @@
+/**
+ * InstaHelp Vendor Store Builder - Google Apps Script Backend
+ * Deploy as Web App: Execute as Me | Anyone can access
+ */
+
+var SPREADSHEET_ID = '1-TjwourKbMFaz-LpFMIROmYyqgrK_CQJ3_9ZhWrSnm8';
+var DRIVE_FOLDER_NAME = 'InstaHelp Vendor Media';
+
+// Razorpay Live keys — keep Code.gs private; do not commit to public repos
+var RAZORPAY_KEY_ID = 'rzp_live_SxW7oDR9YnHxcV';
+var RAZORPAY_KEY_SECRET = 'BIDVHZossd79AvBRVyPXwsRA';
+
+// Resend — transactional email
+var RESEND_API_KEY = 're_PLXzK5Ta_LKZmsjUyRMFwgLnkovLWx1Eu';
+var RESEND_FROM_EMAIL = 'InstaHelp <onboarding@resend.dev>';
+// Public site URL (Vercel) — used in approval emails
+var FRONTEND_URL = 'https://instahelp.in';
+
+var SHEETS = {
+  VENDORS: 'Vendors',
+  APPLICATIONS: 'Applications',
+  PRODUCTS: 'Products',
+  LEADS: 'Leads',
+  ANALYTICS: 'Analytics',
+  PAYMENTS: 'Payments',
+  SHOWCASE_FORMS: 'ShowcaseForms'
+};
+
+var HEADERS = {
+  VENDORS: ['VendorID','BusinessName','OwnerName','Phone','WhatsApp','Email','Category','YearsInBusiness','City','State','Description','ServiceAreas','WorkingHours','Website','Instagram','Facebook','Logo','CoverBanner','Gallery','Status','ShopSlug','Verified','Featured','Disabled','Suspended','Rating','Plan','Template','ThemeColors','PlanExpiresAt','SubscriptionId','ShowBranding','Published','CreatedAt','UpdatedAt'],
+  APPLICATIONS: ['ApplicationID','VendorID','BusinessName','OwnerName','Phone','WhatsApp','Email','Category','YearsInBusiness','City','State','Description','ServiceAreas','WorkingHours','Website','Instagram','Facebook','Logo','CoverBanner','Gallery','ProductsJSON','Plan','Template','PaymentID','GSTCertificate','ShopLicense','Aadhaar','PAN','Status','SubmittedAt','ReviewedAt','ReviewNotes'],
+  PRODUCTS: ['ProductID','VendorID','Title','Description','Price','DiscountPrice','Images','Category','Views','Leads','CreatedAt','UpdatedAt'],
+  LEADS: ['LeadID','VendorID','CustomerName','Phone','Requirement','Status','Source','CreatedAt','UpdatedAt'],
+  ANALYTICS: ['RecordID','VendorID','Views','UniqueVisitors','WhatsappClicks','Calls','Leads','TrafficSource','Date'],
+  PAYMENTS: ['PaymentID','VendorID','OrderID','RazorpayPaymentId','Amount','Plan','BillingType','Status','Date'],
+  SHOWCASE_FORMS: ['SubmissionID','FormID','FullName','Phone','Email','Service','Message','Source','PriorPayment','EvidenceConsent','ReferrerUrl','LandingPage','UtmSource','UtmMedium','UtmCampaign','ConfusionReferralFlag','ConfusionInstance','FormToken','Status','CreatedAt']
+};
+
+var PLANS = {
+  free: { id: 'free', name: 'Free', price: 0, maxProducts: 10, templates: ['classic'], branding: true, analytics: 'basic', featured: false },
+  pro: { id: 'pro', name: 'Pro', price: 499, maxProducts: -1, templates: ['classic','luxury','service'], branding: false, analytics: 'advanced', featured: true },
+  proplus: { id: 'proplus', name: 'Pro+', price: 999, maxProducts: -1, templates: ['classic','luxury','service','travel'], branding: false, analytics: 'premium', featured: true, priority: true }
+};
+
+var STORE_TEMPLATES = {
+  classic: { id: 'classic', name: 'Classic Store', tagline: 'Amazon-inspired retail layout', bestFor: 'Electronics, Shops, Retail' },
+  luxury: { id: 'luxury', name: 'Luxury Business', tagline: 'Apple-inspired premium design', bestFor: 'Real Estate, Luxury Services' },
+  service: { id: 'service', name: 'Service Pro', tagline: 'Urban Company-style services', bestFor: 'Salons, Doctors, Agencies' },
+  travel: { id: 'travel', name: 'Travel Premium', tagline: 'Airbnb-inspired experiences', bestFor: 'Travel, Tours, Hotels' }
+};
+
+// ─── Admin Auth ────────────────────────────────────────────────
+var ADMIN_PASSWORD = "we'll-get-it-done";
+var ADMIN_CACHE_PREFIX = 'ih_admin_';
+var ADMIN_SESSION_TTL = 21600; // 6 hours
+
+function loginAdmin(password) {
+  if (password !== ADMIN_PASSWORD) {
+    return { success: false, error: 'Invalid password' };
+  }
+  var token = Utilities.getUuid();
+  CacheService.getScriptCache().put(ADMIN_CACHE_PREFIX + token, '1', ADMIN_SESSION_TTL);
+  return { success: true, token: token };
+}
+
+function validateAdminSession(token) {
+  if (!token) return { success: false };
+  var valid = CacheService.getScriptCache().get(ADMIN_CACHE_PREFIX + token) === '1';
+  return { success: valid };
+}
+
+function logoutAdmin(token) {
+  if (token) CacheService.getScriptCache().remove(ADMIN_CACHE_PREFIX + token);
+  return { success: true };
+}
+
+function checkAdminAuth(adminToken) {
+  if (!adminToken || CacheService.getScriptCache().get(ADMIN_CACHE_PREFIX + adminToken) !== '1') {
+    return { success: false, error: 'Unauthorized. Please log in again.' };
+  }
+  return null;
+}
+
+// ─── Resend Email ──────────────────────────────────────────────
+function getFrontendUrl() {
+  return FRONTEND_URL.replace(/\/$/, '');
+}
+
+function sendEmailViaResend(to, subject, html) {
+  if (!to || !String(to).trim()) return { success: false, error: 'No recipient email' };
+  try {
+    var response = UrlFetchApp.fetch('https://api.resend.com/emails', {
+      method: 'post',
+      headers: {
+        'Authorization': 'Bearer ' + RESEND_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify({
+        from: RESEND_FROM_EMAIL,
+        to: [String(to).trim()],
+        subject: subject,
+        html: html
+      }),
+      muteHttpExceptions: true
+    });
+    var code = response.getResponseCode();
+    var body = {};
+    try { body = JSON.parse(response.getContentText()); } catch (e) {}
+    if (code >= 200 && code < 300) return { success: true, id: body.id };
+    return { success: false, error: body.message || response.getContentText() };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function emailWrapper(title, bodyHtml) {
+  return '<div style="font-family:Plus Jakarta Sans,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#12141A">' +
+    '<div style="background:#FFD600;padding:14px 20px;border-radius:12px 12px 0 0;font-weight:800">InstaHelp®</div>' +
+    '<div style="border:1px solid #E4E4E0;border-top:none;border-radius:0 0 12px 12px;padding:24px;background:#fff">' +
+    '<h2 style="margin:0 0 12px;font-size:1.25rem">' + title + '</h2>' + bodyHtml +
+    '<p style="margin-top:24px;font-size:12px;color:#7A7E8F">InstaHelp® · +91 70227 02220 · mail@instahelp.in</p></div></div>';
+}
+
+function sendVendorApplicationEmail(vendor) {
+  var email = vendor.Email || vendor.email;
+  if (!email) return { success: false, error: 'No email on file' };
+  var name = vendor.OwnerName || vendor.BusinessName || 'there';
+  var vid = vendor.VendorID || vendor.vendorId;
+  var html = emailWrapper('Application received', '<p>Hi ' + name + ',</p>' +
+    '<p>Thank you for applying to InstaHelp Store Builder. We have received your vendor application.</p>' +
+    '<p><strong>Reference:</strong> ' + vid + '</p>' +
+    '<p>Our team will review your details within 24–48 hours. Once approved, you will receive another email with your <strong>live store link</strong> and <strong>dashboard access</strong> to customize your page.</p>' +
+    '<p>Your public store page will not be visible until admin approval.</p>');
+  return sendEmailViaResend(email, 'InstaHelp — Vendor application received', html);
+}
+
+function sendVendorApprovedEmail(vendor) {
+  var email = vendor.Email;
+  if (!email) return { success: false, error: 'No email on file' };
+  var base = getFrontendUrl();
+  var shopUrl = base + '/shop/' + encodeURIComponent(vendor.ShopSlug);
+  var dashUrl = base + '/vendor/dashboard?vendorId=' + encodeURIComponent(vendor.VendorID);
+  var name = vendor.OwnerName || vendor.BusinessName;
+  var html = emailWrapper('Your store is live!', '<p>Hi ' + name + ',</p>' +
+    '<p>Great news — your InstaHelp vendor application has been <strong>approved</strong>.</p>' +
+    '<p style="margin:20px 0"><a href="' + shopUrl + '" style="display:inline-block;background:#FFD600;color:#12141A;padding:12px 22px;border-radius:50px;font-weight:700;text-decoration:none">View your live store →</a></p>' +
+    '<p>Customize products, design, and leads from your dashboard:</p>' +
+    '<p><a href="' + dashUrl + '">' + dashUrl + '</a></p>' +
+    '<p>All updates you make in the dashboard will reflect on your live store page.</p>');
+  return sendEmailViaResend(email, 'InstaHelp — Your store is approved & live!', html);
+}
+
+function sendVendorRejectedEmail(vendor, notes) {
+  var email = vendor.Email;
+  if (!email) return { success: false, error: 'No email on file' };
+  var name = vendor.OwnerName || vendor.BusinessName;
+  var html = emailWrapper('Application update', '<p>Hi ' + name + ',</p>' +
+    '<p>Thank you for your interest in InstaHelp Store Builder. Unfortunately we could not approve your application at this time.</p>' +
+    (notes ? '<p><strong>Note:</strong> ' + notes + '</p>' : '') +
+    '<p>Questions? Reply to this email or WhatsApp us at +91 70227 02220.</p>');
+  return sendEmailViaResend(email, 'InstaHelp — Vendor application update', html);
+}
+
+// ─── JSON API (Vercel / external frontend) ─────────────────────
+function jsonOutput(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function routeApi(payload) {
+  var action = payload.action;
+  var args = payload.args || [];
+  var data = payload.data;
+
+  switch (action) {
+    case 'getPlans': return getPlans();
+    case 'getStoreTemplates': return getStoreTemplates();
+    case 'getRazorpayKeyId': return { success: true, keyId: getRazorpayKeyId() };
+    case 'getWebAppUrl': return { success: true, url: getWebAppUrl() };
+    case 'loginAdmin': return loginAdmin(args[0]);
+    case 'validateAdminSession': return validateAdminSession(args[0]);
+    case 'logoutAdmin': return logoutAdmin(args[0]);
+    case 'getAdminStats': return getAdminStats(args[0]);
+    case 'getAllApplications': return getAllApplications(args[0]);
+    case 'getAllVendors': return getAllVendors(args[0]);
+    case 'getAllLeads': return getAllLeads(args[0]);
+    case 'getRevenueAnalytics': return getRevenueAnalytics(args[0]);
+    case 'approveVendor': return approveVendor(args[0], args[1], args[2]);
+    case 'rejectVendor': return rejectVendor(args[0], args[1], args[2]);
+    case 'featureVendor': return featureVendor(args[0], args[1], args[2]);
+    case 'verifyVendor': return verifyVendor(args[0], args[1], args[2]);
+    case 'suspendVendor': return suspendVendor(args[0], args[1], args[2]);
+    case 'adminSetVendorPlan': return adminSetVendorPlan(args[0], args[1], args[2]);
+    case 'submitVendorApplication': return submitVendorApplication(args[0]);
+    case 'updateVendor': return updateVendor(args[0], args[1]);
+    case 'getVendor': return getVendor(args[0]);
+    case 'getVendorStore': return getVendorStore(args[0]);
+    case 'updateStore': return updateStore(args[0], args[1]);
+    case 'changeTemplate': return changeTemplate(args[0], args[1]);
+    case 'publishStore': return publishStore(args[0]);
+    case 'createRazorpayOrder': return createRazorpayOrder(args[0], args[1], args[2]);
+    case 'verifyPayment': return verifyPayment(args[0]);
+    case 'upgradePlan': return upgradePlan(args[0], args[1]);
+    case 'downgradePlan': return downgradePlan(args[0], args[1]);
+    case 'getVendorProducts': return getVendorProducts(args[0]);
+    case 'addProduct': return addProduct(args[0]);
+    case 'updateProduct': return updateProduct(args[0], args[1]);
+    case 'deleteProduct': return deleteProduct(args[0]);
+    case 'bulkAddProducts': return bulkAddProducts(args[0], args[1]);
+    case 'saveLead': return saveLead(args[0]);
+    case 'getVendorLeads': return getVendorLeads(args[0]);
+    case 'updateLeadStatus': return updateLeadStatus(args[0], args[1]);
+    case 'exportLeadsCSV': return exportLeadsCSV(args[0]);
+    case 'recordView': return recordView(args[0], args[1]);
+    case 'recordWhatsappClick': return recordWhatsappClick(args[0]);
+    case 'recordCallClick': return recordCallClick(args[0]);
+    case 'getAnalytics': return getAnalytics(args[0]);
+    case 'getVendorAnalytics': return getVendorAnalytics(args[0]);
+    case 'generateQRCode': return generateQRCode(args[0]);
+    case 'getVendorPayments': return getVendorPayments(args[0]);
+    case 'submitShowcaseForm': return submitShowcaseForm(args[0]);
+    case 'initializeSheets': return initializeSheets();
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
+// ─── Routing (GAS-hosted HTML fallback) ──────────────────────
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action) {
+    return jsonOutput(routeApi({ action: e.parameter.action, args: [e.parameter.arg0, e.parameter.arg1, e.parameter.arg2] }));
+  }
+  var page = (e && e.parameter && e.parameter.page) ? e.parameter.page : 'apply';
+  var template;
+  switch (page) {
+    case 'shop':
+      template = HtmlService.createTemplateFromFile('shop');
+      template.shopSlug = e.parameter.shop || '';
+      break;
+    case 'dashboard':
+      template = HtmlService.createTemplateFromFile('vendor-dashboard');
+      template.vendorId = e.parameter.vendorId || '';
+      break;
+    case 'admin':
+      template = HtmlService.createTemplateFromFile('admin-dashboard');
+      break;
+    default:
+      template = HtmlService.createTemplateFromFile('vendor-registration');
+  }
+  return template.evaluate()
+    .setTitle('InstaHelp Store Builder')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
+function doPost(e) {
+  try {
+    var data = {};
+    if (e && e.postData && e.postData.contents) {
+      try { data = JSON.parse(e.postData.contents); } catch (err) {}
+    }
+    if (!data.action && e && e.parameter) data = e.parameter;
+
+    if (data.action) {
+      return jsonOutput(routeApi(data));
+    }
+    if (data.fullname || data.message) {
+      return jsonOutput(submitShowcaseForm(data));
+    }
+    return jsonOutput({ success: false, error: 'Invalid request' });
+  } catch (err) {
+    return jsonOutput({ success: false, error: err.message });
+  }
+}
+
+// ─── Sheet Helpers ─────────────────────────────────────────────
+function initializeSheets() {
+  var ss = getSpreadsheet();
+  Object.keys(SHEETS).forEach(function(key) {
+    var sheetName = SHEETS[key];
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      if (HEADERS[key]) {
+        sheet.getRange(1, 1, 1, HEADERS[key].length).setValues([HEADERS[key]]);
+        sheet.getRange(1, 1, 1, HEADERS[key].length).setFontWeight('bold').setBackground('#1a1a2e').setFontColor('#ffffff');
+        sheet.setFrozenRows(1);
+      }
+    }
+  });
+  return { success: true };
+}
+
+function getSpreadsheet() {
+  if (SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE') throw new Error('Set SPREADSHEET_ID in Code.gs');
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
+function getSheet(sheetName) { return getSpreadsheet().getSheetByName(sheetName); }
+
+function getColMap(sheetName) {
+  var sheet = getSheet(sheetName);
+  var headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+  var map = {};
+  headers.forEach(function(h, i) { if (h) map[h] = i + 1; });
+  return map;
+}
+
+function setField(sheetName, rowIndex, field, value) {
+  var col = getColMap(sheetName)[field];
+  if (col) getSheet(sheetName).getRange(rowIndex, col).setValue(value);
+}
+
+function generateId(prefix) {
+  return prefix + '_' + Utilities.getUuid().replace(/-/g, '').substring(0, 12).toUpperCase();
+}
+
+function rowToObject(headers, row) {
+  var obj = {};
+  for (var i = 0; i < headers.length; i++) obj[headers[i]] = row[i];
+  return obj;
+}
+
+function getAllRows(sheetName) {
+  var sheet = getSheet(sheetName);
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  var headers = data[0];
+  var rows = [];
+  for (var i = 1; i < data.length; i++) rows.push(rowToObject(headers, data[i]));
+  return rows;
+}
+
+function getRowByColumn(sheet, columnIndex, value) {
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][columnIndex]) === String(value)) {
+      var obj = rowToObject(headers, data[i]);
+      obj._rowIndex = i + 1;
+      return obj;
+    }
+  }
+  return null;
+}
+
+function getRowByField(sheetName, field, value) {
+  var sheet = getSheet(sheetName);
+  var col = getColMap(sheetName)[field] - 1;
+  return getRowByColumn(sheet, col, value);
+}
+
+// ─── Media ─────────────────────────────────────────────────────
+function uploadToDrive(base64Data, fileName, mimeType) {
+  try {
+    if (!base64Data || base64Data.indexOf('base64,') === -1) return '';
+    var bytes = Utilities.base64Decode(base64Data.split('base64,')[1]);
+    var blob = Utilities.newBlob(bytes, mimeType || 'image/jpeg', fileName);
+    var folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
+    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(DRIVE_FOLDER_NAME);
+    var file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return 'https://drive.google.com/uc?id=' + file.getId();
+  } catch (e) { return ''; }
+}
+
+function processMediaField(value, fileName) {
+  if (!value) return '';
+  if (typeof value === 'string' && value.indexOf('http') === 0) return value;
+  if (typeof value === 'string' && value.indexOf('base64') !== -1) return uploadToDrive(value, fileName, 'image/jpeg');
+  return value;
+}
+
+function processMediaArray(arr, prefix) {
+  if (!arr || !Array.isArray(arr)) return JSON.stringify([]);
+  return JSON.stringify(arr.map(function(item, idx) {
+    if (typeof item === 'string' && item.indexOf('http') === 0) return item;
+    return processMediaField(item, prefix + '_' + idx + '.jpg');
+  }));
+}
+
+// ─── Plans & Templates API ─────────────────────────────────────
+function getPlans() {
+  return { success: true, plans: PLANS };
+}
+
+function getStoreTemplates() {
+  return { success: true, templates: STORE_TEMPLATES };
+}
+
+function getRazorpayKeyId() {
+  return RAZORPAY_KEY_ID;
+}
+
+function getPlanLimits(planId) {
+  return PLANS[planId] || PLANS.free;
+}
+
+// ─── Slug ──────────────────────────────────────────────────────
+function generateShopSlug(businessName) {
+  var slug = businessName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+  var existing = getAllRows(SHEETS.VENDORS).map(function(v) { return v.ShopSlug; });
+  var base = slug, n = 1;
+  while (existing.indexOf(slug) !== -1) { slug = base + '-' + n; n++; }
+  return slug;
+}
+
+// ─── Razorpay ──────────────────────────────────────────────────
+function createRazorpayOrder(vendorId, planId, billingType) {
+  try {
+    initializeSheets();
+    var plan = PLANS[planId];
+    if (!plan || plan.price === 0) return { success: true, free: true, plan: planId };
+
+    var amount = plan.price * 100;
+    var receipt = vendorId + '_' + Date.now();
+    var payload = {
+      amount: amount,
+      currency: 'INR',
+      receipt: receipt,
+      notes: { vendorId: vendorId, plan: planId, billingType: billingType || 'one_time' }
+    };
+
+    var response = UrlFetchApp.fetch('https://api.razorpay.com/v1/orders', {
+      method: 'post',
+      headers: {
+        Authorization: 'Basic ' + Utilities.base64Encode(RAZORPAY_KEY_ID + ':' + RAZORPAY_KEY_SECRET),
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+
+    var result = JSON.parse(response.getContentText());
+    if (result.error) return { success: false, error: result.error.description || 'Payment order failed' };
+
+    var paymentId = generateId('PAY');
+    getSheet(SHEETS.PAYMENTS).appendRow([
+      paymentId, vendorId, result.id, '', plan.price, planId,
+      billingType || 'one_time', 'created', new Date().toISOString()
+    ]);
+
+    return {
+      success: true,
+      orderId: result.id,
+      amount: amount,
+      currency: 'INR',
+      keyId: RAZORPAY_KEY_ID,
+      paymentRecordId: paymentId,
+      plan: planId
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function verifyRazorpaySignature(orderId, paymentId, signature) {
+  var body = orderId + '|' + paymentId;
+  var bytes = Utilities.computeHmacSha256Signature(body, RAZORPAY_KEY_SECRET);
+  var generated = bytes.map(function(b) {
+    var v = (b < 0 ? b + 256 : b).toString(16);
+    return v.length === 1 ? '0' + v : v;
+  }).join('');
+  return generated === signature;
+}
+
+function verifyPayment(data) {
+  try {
+    initializeSheets();
+    var valid = verifyRazorpaySignature(data.orderId, data.paymentId, data.signature);
+    if (!valid) return { success: false, error: 'Invalid payment signature' };
+
+    var payments = getAllRows(SHEETS.PAYMENTS);
+    var payment = null;
+    payments.forEach(function(p) {
+      if (p.OrderID === data.orderId) payment = p;
+    });
+    if (!payment) return { success: false, error: 'Payment record not found' };
+
+    var row = getRowByField(SHEETS.PAYMENTS, 'PaymentID', payment.PaymentID);
+    setField(SHEETS.PAYMENTS, row._rowIndex, 'RazorpayPaymentId', data.paymentId);
+    setField(SHEETS.PAYMENTS, row._rowIndex, 'Status', 'captured');
+
+    var planId = payment.Plan || data.plan || 'pro';
+    activatePlan(payment.VendorID, planId, payment.BillingType);
+
+    return { success: true, vendorId: payment.VendorID, plan: planId };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function activatePlan(vendorId, planId, billingType) {
+  var plan = PLANS[planId] || PLANS.free;
+  var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+  if (!row) return;
+  var expires = new Date();
+  if (billingType === 'subscription' || plan.price > 0) expires.setMonth(expires.getMonth() + 1);
+  else expires.setFullYear(expires.getFullYear() + 10);
+
+  setField(SHEETS.VENDORS, row._rowIndex, 'Plan', planId);
+  setField(SHEETS.VENDORS, row._rowIndex, 'PlanExpiresAt', expires.toISOString());
+  setField(SHEETS.VENDORS, row._rowIndex, 'ShowBranding', plan.branding);
+  setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+}
+
+function upgradePlan(vendorId, newPlanId) {
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    if (PLANS[newPlanId].price === 0) {
+      activatePlan(vendorId, newPlanId, 'one_time');
+      return { success: true, plan: newPlanId };
+    }
+    return createRazorpayOrder(vendorId, newPlanId, 'subscription');
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function downgradePlan(vendorId, newPlanId) {
+  try {
+    activatePlan(vendorId, newPlanId || 'free', 'one_time');
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (row && newPlanId === 'free') {
+      setField(SHEETS.VENDORS, row._rowIndex, 'Template', 'classic');
+      setField(SHEETS.VENDORS, row._rowIndex, 'Featured', false);
+    }
+    return { success: true, plan: newPlanId || 'free' };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getVendorPayments(vendorId) {
+  try {
+    var payments = getAllRows(SHEETS.PAYMENTS).filter(function(p) { return p.VendorID === vendorId; });
+    return { success: true, payments: payments };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── Vendor Application ────────────────────────────────────────
+function submitVendorApplication(data) {
+  try {
+    initializeSheets();
+    var vendorId = data.vendorId || generateId('VND');
+    var existing = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    var appId = generateId('APP');
+    var slug = existing ? existing.ShopSlug : generateShopSlug(data.businessName);
+    var now = new Date().toISOString();
+    var planId = data.plan || 'free';
+    var templateId = data.template || 'classic';
+    var plan = PLANS[planId] || PLANS.free;
+
+    if (plan.templates.indexOf(templateId) === -1) templateId = plan.templates[0];
+
+    var logo = processMediaField(data.logo, vendorId + '_logo.jpg');
+    var cover = processMediaField(data.coverBanner, vendorId + '_cover.jpg');
+    var gallery = processMediaArray(data.gallery || [], vendorId + '_gallery');
+    var themeColors = data.themeColors ? JSON.stringify(data.themeColors) : '{"primary":"#FFD600","accent":"#0F0F0F"}';
+
+    if (!existing) {
+      getSheet(SHEETS.VENDORS).appendRow([
+        vendorId, data.businessName, data.ownerName, data.phone, data.whatsapp || data.phone,
+        data.email, data.category || '', data.yearsInBusiness || '', data.city || '', data.state || '',
+        data.description || '', data.serviceAreas || '', data.workingHours || '',
+        data.website || '', data.instagram || '', data.facebook || '',
+        logo, cover, gallery, 'pending', slug, false, plan.featured, false, false, 4.8,
+        planId, templateId, themeColors, '', '', plan.branding, false, now, now
+      ]);
+    } else {
+      var row = existing;
+      setField(SHEETS.VENDORS, row._rowIndex, 'BusinessName', data.businessName);
+      setField(SHEETS.VENDORS, row._rowIndex, 'Plan', planId);
+      setField(SHEETS.VENDORS, row._rowIndex, 'Template', templateId);
+      setField(SHEETS.VENDORS, row._rowIndex, 'ThemeColors', themeColors);
+      if (logo) setField(SHEETS.VENDORS, row._rowIndex, 'Logo', logo);
+      if (cover) setField(SHEETS.VENDORS, row._rowIndex, 'CoverBanner', cover);
+      setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', now);
+    }
+
+    getSheet(SHEETS.APPLICATIONS).appendRow([
+      appId, vendorId, data.businessName, data.ownerName, data.phone, data.whatsapp || data.phone,
+      data.email, data.category || '', data.yearsInBusiness || '', data.city || '', data.state || '',
+      data.description || '', data.serviceAreas || '', data.workingHours || '',
+      data.website || '', data.instagram || '', data.facebook || '',
+      logo, cover, gallery, JSON.stringify(data.products || []),
+      planId, templateId, data.paymentId || '',
+      processMediaField(data.gstCertificate, vendorId + '_gst.pdf'),
+      processMediaField(data.shopLicense, vendorId + '_license.pdf'),
+      processMediaField(data.aadhaar, vendorId + '_aadhaar.pdf'),
+      processMediaField(data.pan, vendorId + '_pan.pdf'),
+      'pending', now, '', ''
+    ]);
+
+    if (planId === 'free' || data.paymentVerified) activatePlan(vendorId, planId, 'one_time');
+
+    (data.products || []).forEach(function(p) {
+      addProduct({ vendorId: vendorId, title: p.title, description: p.description, price: p.price, discountPrice: p.discountPrice, category: p.category, images: p.images || [] });
+    });
+
+    var emailResult = sendVendorApplicationEmail({
+      VendorID: vendorId, Email: data.email, OwnerName: data.ownerName, BusinessName: data.businessName
+    });
+
+    return {
+      success: true, vendorId: vendorId, applicationId: appId, shopSlug: slug,
+      plan: planId, template: templateId, status: 'pending',
+      emailSent: emailResult.success, emailError: emailResult.error || ''
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── Vendor Store ──────────────────────────────────────────────
+function getVendor(identifier) {
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', identifier) || getRowByField(SHEETS.VENDORS, 'ShopSlug', identifier);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    delete row._rowIndex;
+    row.planLimits = getPlanLimits(row.Plan || 'free');
+    return { success: true, vendor: row };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getVendorStore(slug) {
+  try {
+    var vendorRes = getVendor(slug);
+    if (!vendorRes.success) return vendorRes;
+    var vendor = vendorRes.vendor;
+    if (vendor.Suspended === true || vendor.Suspended === 'TRUE' || vendor.Disabled === true || vendor.Disabled === 'TRUE') {
+      return { success: false, error: 'Store suspended' };
+    }
+    if (vendor.Status !== 'active') {
+      if (vendor.Status === 'pending') return { success: false, error: 'This store is pending admin approval' };
+      if (vendor.Status === 'rejected') return { success: false, error: 'This store is not available' };
+      return { success: false, error: 'Store not available' };
+    }
+    if (vendor.Published !== true && vendor.Published !== 'TRUE') {
+      return { success: false, error: 'Store is being set up. Please check back soon.' };
+    }
+    var productsRes = getVendorProducts(vendor.VendorID);
+    var plan = getPlanLimits(vendor.Plan || 'free');
+    var products = productsRes.products || [];
+    if (plan.maxProducts > 0) products = products.slice(0, plan.maxProducts);
+
+    return {
+      success: true,
+      store: {
+        vendor: vendor,
+        products: products,
+        template: vendor.Template || 'classic',
+        themeColors: parseJSONSafe(vendor.ThemeColors, { primary: '#FFD600', accent: '#0F0F0F' }),
+        showBranding: vendor.ShowBranding === true || vendor.ShowBranding === 'TRUE' || plan.branding,
+        plan: plan
+      }
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function updateStore(vendorId, data) { return updateVendor(vendorId, data); }
+
+function changeTemplate(vendorId, templateId) {
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    var plan = getPlanLimits(row.Plan || 'free');
+    if (plan.templates.indexOf(templateId) === -1) {
+      return { success: false, error: 'Template not available on your plan. Upgrade to unlock.' };
+    }
+    setField(SHEETS.VENDORS, row._rowIndex, 'Template', templateId);
+    setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+    return { success: true, template: templateId };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function updateVendor(vendorId, data) {
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+
+    var fields = ['BusinessName','OwnerName','Phone','WhatsApp','Email','Category','YearsInBusiness','City','State','Description','ServiceAreas','WorkingHours','Website','Instagram','Facebook'];
+    var keys = ['businessName','ownerName','phone','whatsapp','email','category','yearsInBusiness','city','state','description','serviceAreas','workingHours','website','instagram','facebook'];
+    keys.forEach(function(k, i) {
+      if (data[k] !== undefined) setField(SHEETS.VENDORS, row._rowIndex, fields[i], data[k]);
+    });
+
+    if (data.logo) setField(SHEETS.VENDORS, row._rowIndex, 'Logo', processMediaField(data.logo, vendorId + '_logo.jpg'));
+    if (data.coverBanner) setField(SHEETS.VENDORS, row._rowIndex, 'CoverBanner', processMediaField(data.coverBanner, vendorId + '_cover.jpg'));
+    if (data.gallery) setField(SHEETS.VENDORS, row._rowIndex, 'Gallery', processMediaArray(data.gallery, vendorId + '_gallery'));
+    if (data.themeColors) setField(SHEETS.VENDORS, row._rowIndex, 'ThemeColors', JSON.stringify(data.themeColors));
+    if (data.published !== undefined) setField(SHEETS.VENDORS, row._rowIndex, 'Published', data.published);
+    setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function publishStore(vendorId) {
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    if (row.Status !== 'active') {
+      return { success: false, error: 'Your store must be approved by admin before it can go live. You will receive an email when approved.' };
+    }
+    setField(SHEETS.VENDORS, row._rowIndex, 'Published', true);
+    setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+    return { success: true, shopSlug: row.ShopSlug };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── Admin Vendor Actions ──────────────────────────────────────
+function approveVendor(vendorId, notes, adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'active');
+    setField(SHEETS.VENDORS, row._rowIndex, 'Verified', true);
+    setField(SHEETS.VENDORS, row._rowIndex, 'Published', true);
+    setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+
+    getAllRows(SHEETS.APPLICATIONS).forEach(function(app) {
+      if (app.VendorID === vendorId && app.Status === 'pending') {
+        var appRow = getRowByField(SHEETS.APPLICATIONS, 'ApplicationID', app.ApplicationID);
+        if (appRow) {
+          setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'Status', 'approved');
+          setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewedAt', new Date().toISOString());
+          setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewNotes', notes || 'Approved');
+        }
+      }
+    });
+
+    var vendorData = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    delete vendorData._rowIndex;
+    var emailResult = sendVendorApprovedEmail(vendorData);
+
+    return {
+      success: true, shopSlug: row.ShopSlug,
+      shopUrl: getFrontendUrl() + '/shop/' + encodeURIComponent(row.ShopSlug),
+      dashboardUrl: getFrontendUrl() + '/vendor/dashboard?vendorId=' + encodeURIComponent(vendorId),
+      emailSent: emailResult.success, emailError: emailResult.error || ''
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function rejectVendor(vendorId, notes, adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'rejected');
+    setField(SHEETS.VENDORS, row._rowIndex, 'Published', false);
+    setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+
+    var vendorData = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    delete vendorData._rowIndex;
+    var emailResult = sendVendorRejectedEmail(vendorData, notes);
+
+    return { success: true, emailSent: emailResult.success };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function suspendVendor(vendorId, suspended, adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    setField(SHEETS.VENDORS, row._rowIndex, 'Suspended', suspended === true || suspended === 'true');
+    if (suspended) setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'suspended');
+    else setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'active');
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function featureVendor(vendorId, featured, adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    setField(SHEETS.VENDORS, row._rowIndex, 'Featured', featured === true || featured === 'true');
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function verifyVendor(vendorId, verified, adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!row) return { success: false, error: 'Vendor not found' };
+    setField(SHEETS.VENDORS, row._rowIndex, 'Verified', verified === true || verified === 'true');
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function disableVendor(vendorId, disabled, adminToken) { return suspendVendor(vendorId, disabled, adminToken); }
+
+function getAllVendors(adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    return { success: true, vendors: getAllRows(SHEETS.VENDORS) };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getAllApplications(adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    return { success: true, applications: getAllRows(SHEETS.APPLICATIONS) };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function adminSetVendorPlan(vendorId, planId, adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    activatePlan(vendorId, planId, 'manual');
+    return { success: true, plan: planId };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── Products ──────────────────────────────────────────────────
+function getVendorProducts(vendorId) {
+  try {
+    return { success: true, products: getAllRows(SHEETS.PRODUCTS).filter(function(p) { return p.VendorID === vendorId; }) };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function addProduct(data) {
+  try {
+    var vendor = getRowByField(SHEETS.VENDORS, 'VendorID', data.vendorId);
+    if (vendor) {
+      var plan = getPlanLimits(vendor.Plan || 'free');
+      var count = getAllRows(SHEETS.PRODUCTS).filter(function(p) { return p.VendorID === data.vendorId; }).length;
+      if (plan.maxProducts > 0 && count >= plan.maxProducts) {
+        return { success: false, error: 'Product limit reached. Upgrade to Pro for unlimited products.' };
+      }
+    }
+    var productId = generateId('PRD');
+    var now = new Date().toISOString();
+    getSheet(SHEETS.PRODUCTS).appendRow([
+      productId, data.vendorId, data.title, data.description || '', data.price || 0,
+      data.discountPrice || '', processMediaArray(data.images || [], productId),
+      data.category || '', 0, 0, now, now
+    ]);
+    return { success: true, productId: productId };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function updateProduct(productId, data) {
+  try {
+    var row = getRowByField(SHEETS.PRODUCTS, 'ProductID', productId);
+    if (!row) return { success: false, error: 'Product not found' };
+    if (data.title) setField(SHEETS.PRODUCTS, row._rowIndex, 'Title', data.title);
+    if (data.description !== undefined) setField(SHEETS.PRODUCTS, row._rowIndex, 'Description', data.description);
+    if (data.price !== undefined) setField(SHEETS.PRODUCTS, row._rowIndex, 'Price', data.price);
+    if (data.discountPrice !== undefined) setField(SHEETS.PRODUCTS, row._rowIndex, 'DiscountPrice', data.discountPrice);
+    if (data.category) setField(SHEETS.PRODUCTS, row._rowIndex, 'Category', data.category);
+    if (data.images) setField(SHEETS.PRODUCTS, row._rowIndex, 'Images', processMediaArray(data.images, productId));
+    setField(SHEETS.PRODUCTS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function deleteProduct(productId) {
+  try {
+    var row = getRowByField(SHEETS.PRODUCTS, 'ProductID', productId);
+    if (!row) return { success: false, error: 'Product not found' };
+    getSheet(SHEETS.PRODUCTS).deleteRow(row._rowIndex);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function bulkAddProducts(vendorId, products) {
+  try {
+    var results = [];
+    (products || []).forEach(function(p) {
+      results.push(addProduct({ vendorId: vendorId, title: p.title, description: p.description, price: p.price, category: p.category, images: p.images || [] }));
+    });
+    return { success: true, results: results };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── Leads ─────────────────────────────────────────────────────
+function saveLead(data) {
+  try {
+    var leadId = generateId('LD');
+    var now = new Date().toISOString();
+    getSheet(SHEETS.LEADS).appendRow([
+      leadId, data.vendorId, data.customerName, data.phone,
+      data.requirement || '', 'new', data.source || 'form', now, now
+    ]);
+    incrementAnalytics(data.vendorId, 'Leads', data.trafficSource || '');
+    return { success: true, leadId: leadId };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getVendorLeads(vendorId) {
+  try {
+    return { success: true, leads: getAllRows(SHEETS.LEADS).filter(function(l) { return l.VendorID === vendorId; }) };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getAllLeads(adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    return { success: true, leads: getAllRows(SHEETS.LEADS) };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function updateLeadStatus(leadId, status) {
+  try {
+    var row = getRowByField(SHEETS.LEADS, 'LeadID', leadId);
+    if (!row) return { success: false, error: 'Lead not found' };
+    setField(SHEETS.LEADS, row._rowIndex, 'Status', status);
+    setField(SHEETS.LEADS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function exportLeadsCSV(vendorId) {
+  try {
+    var leads = getAllRows(SHEETS.LEADS).filter(function(l) { return l.VendorID === vendorId; });
+    var csv = 'Name,Phone,Requirement,Status,Date\n';
+    leads.forEach(function(l) {
+      csv += '"' + l.CustomerName + '","' + l.Phone + '","' + (l.Requirement || '').replace(/"/g, '""') + '","' + l.Status + '","' + l.CreatedAt + '"\n';
+    });
+    return { success: true, csv: csv };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── Analytics ─────────────────────────────────────────────────
+function incrementAnalytics(vendorId, field, trafficSource) {
+  var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var sheet = getSheet(SHEETS.ANALYTICS);
+  var data = sheet.getDataRange().getValues();
+  var colMap = getColMap(SHEETS.ANALYTICS);
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][colMap.VendorID - 1] === vendorId && data[i][colMap.Date - 1] === today) {
+      var fieldCol = { Views: 'Views', WhatsappClicks: 'WhatsappClicks', Calls: 'Calls', Leads: 'Leads' }[field];
+      if (fieldCol && colMap[fieldCol]) {
+        var cur = Number(data[i][colMap[fieldCol] - 1]) || 0;
+        sheet.getRange(i + 1, colMap[fieldCol]).setValue(cur + 1);
+      }
+      if (field === 'Views' && colMap.UniqueVisitors) {
+        var uv = Number(data[i][colMap.UniqueVisitors - 1]) || 0;
+        sheet.getRange(i + 1, colMap.UniqueVisitors).setValue(uv + 1);
+      }
+      if (trafficSource && colMap.TrafficSource) {
+        sheet.getRange(i + 1, colMap.TrafficSource).setValue(trafficSource);
+      }
+      return;
+    }
+  }
+
+  var row = [];
+  var headers = HEADERS.ANALYTICS;
+  headers.forEach(function(h) {
+    if (h === 'RecordID') row.push(generateId('AN'));
+    else if (h === 'VendorID') row.push(vendorId);
+    else if (h === 'Views') row.push(field === 'Views' ? 1 : 0);
+    else if (h === 'UniqueVisitors') row.push(field === 'Views' ? 1 : 0);
+    else if (h === 'WhatsappClicks') row.push(field === 'WhatsappClicks' ? 1 : 0);
+    else if (h === 'Calls') row.push(field === 'Calls' ? 1 : 0);
+    else if (h === 'Leads') row.push(field === 'Leads' ? 1 : 0);
+    else if (h === 'TrafficSource') row.push(trafficSource || '');
+    else if (h === 'Date') row.push(today);
+    else row.push('');
+  });
+  sheet.appendRow(row);
+}
+
+function recordView(vendorId, trafficSource) {
+  try { incrementAnalytics(vendorId, 'Views', trafficSource || ''); return { success: true }; }
+  catch (e) { return { success: false, error: e.message }; }
+}
+
+function recordWhatsappClick(vendorId) {
+  try { incrementAnalytics(vendorId, 'WhatsappClicks'); return { success: true }; }
+  catch (e) { return { success: false, error: e.message }; }
+}
+
+function recordCallClick(vendorId) {
+  try { incrementAnalytics(vendorId, 'Calls'); return { success: true }; }
+  catch (e) { return { success: false, error: e.message }; }
+}
+
+function getAnalytics(vendorId) { return getVendorAnalytics(vendorId); }
+
+function getVendorAnalytics(vendorId) {
+  try {
+    var analytics = getAllRows(SHEETS.ANALYTICS).filter(function(a) { return a.VendorID === vendorId; });
+    var totals = { views: 0, uniqueVisitors: 0, whatsappClicks: 0, calls: 0, leads: 0 };
+    analytics.forEach(function(a) {
+      totals.views += Number(a.Views) || 0;
+      totals.uniqueVisitors += Number(a.UniqueVisitors) || 0;
+      totals.whatsappClicks += Number(a.WhatsappClicks) || 0;
+      totals.calls += Number(a.Calls) || 0;
+      totals.leads += Number(a.Leads) || 0;
+    });
+    var products = getAllRows(SHEETS.PRODUCTS).filter(function(p) { return p.VendorID === vendorId; });
+    var vendor = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    var payments = getAllRows(SHEETS.PAYMENTS).filter(function(p) {
+      return p.VendorID === vendorId && p.Status === 'captured';
+    });
+    var revenue = payments.reduce(function(s, p) { return s + (Number(p.Amount) || 0); }, 0);
+
+    return {
+      success: true,
+      totals: totals,
+      daily: analytics,
+      monthly: groupAnalyticsByMonth(analytics),
+      productCount: products.length,
+      topProducts: products.sort(function(a, b) { return (Number(b.Views) || 0) - (Number(a.Views) || 0); }).slice(0, 10),
+      trafficSources: getTrafficSources(analytics),
+      revenue: revenue,
+      plan: vendor ? (vendor.Plan || 'free') : 'free'
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function groupAnalyticsByMonth(analytics) {
+  var months = {};
+  analytics.forEach(function(a) {
+    var m = String(a.Date || '').substring(0, 7);
+    if (!m) return;
+    if (!months[m]) months[m] = { month: m, views: 0, leads: 0 };
+    months[m].views += Number(a.Views) || 0;
+    months[m].leads += Number(a.Leads) || 0;
+  });
+  return Object.keys(months).sort().map(function(k) { return months[k]; });
+}
+
+function getTrafficSources(analytics) {
+  var sources = {};
+  analytics.forEach(function(a) {
+    var s = a.TrafficSource || 'direct';
+    sources[s] = (sources[s] || 0) + (Number(a.Views) || 0);
+  });
+  return sources;
+}
+
+function getRevenueData() {
+  var payments = getAllRows(SHEETS.PAYMENTS).filter(function(p) { return p.Status === 'captured'; });
+  var total = payments.reduce(function(s, p) { return s + (Number(p.Amount) || 0); }, 0);
+  var byPlan = { free: 0, pro: 0, proplus: 0 };
+  var byMonth = {};
+  payments.forEach(function(p) {
+    var plan = p.Plan || 'pro';
+    if (byPlan[plan] !== undefined) byPlan[plan] += Number(p.Amount) || 0;
+    var m = String(p.Date || '').substring(0, 7);
+    if (m) byMonth[m] = (byMonth[m] || 0) + (Number(p.Amount) || 0);
+  });
+  return { success: true, totalRevenue: total, byPlan: byPlan, byMonth: byMonth, payments: payments };
+}
+
+function getRevenueAnalytics(adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    return getRevenueData();
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getAdminStats(adminToken) {
+  var auth = checkAdminAuth(adminToken);
+  if (auth) return auth;
+  try {
+    var vendors = getAllRows(SHEETS.VENDORS);
+    var leads = getAllRows(SHEETS.LEADS);
+    var analytics = getAllRows(SHEETS.ANALYTICS);
+    var revenue = getRevenueData();
+    var totalViews = analytics.reduce(function(s, a) { return s + (Number(a.Views) || 0); }, 0);
+    var topVendors = vendors.filter(function(v) { return v.Status === 'active'; }).slice(0, 5);
+
+    return {
+      success: true,
+      stats: {
+        totalVendors: vendors.length,
+        pendingApprovals: vendors.filter(function(v) { return v.Status === 'pending'; }).length,
+        activeShops: vendors.filter(function(v) { return v.Status === 'active'; }).length,
+        totalLeads: leads.length,
+        totalViews: totalViews,
+        totalRevenue: revenue.success ? revenue.totalRevenue : 0,
+        planBreakdown: {
+          free: vendors.filter(function(v) { return (v.Plan || 'free') === 'free'; }).length,
+          pro: vendors.filter(function(v) { return v.Plan === 'pro'; }).length,
+          proplus: vendors.filter(function(v) { return v.Plan === 'proplus'; }).length
+        }
+      },
+      topVendors: topVendors
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── QR & URL ──────────────────────────────────────────────────
+function generateQRCode(vendorId) {
+  try {
+    var vendor = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+    if (!vendor) return { success: false, error: 'Vendor not found' };
+    var url = getWebAppUrl() + '?page=shop&shop=' + vendor.ShopSlug;
+    return { success: true, url: url, slug: vendor.ShopSlug };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getWebAppUrl() {
+  try { return ScriptApp.getService().getUrl() || ''; } catch (e) { return ''; }
+}
+
+// ─── Showcase Form ─────────────────────────────────────────────
+function submitShowcaseForm(data) {
+  try {
+    initializeSheets();
+    if (data.honeypot && String(data.honeypot).trim()) return { success: true, spam: true };
+    var fullName = String(data.fullname || '').trim();
+    var message = String(data.message || '').trim();
+    if (!fullName || !message) return { success: false, error: 'Required fields missing' };
+    var id = generateId('SF');
+    getSheet(SHEETS.SHOWCASE_FORMS).appendRow([
+      id, data.form_id || 'hero_form_v3', fullName, data.phone || '', data.email || '',
+      data.service || '', message, data.source || '', data.prior_payment || '',
+      data.evidence_consent === 'on', data.referrer_url || '', data.landing_page || '',
+      data.utm_source || '', data.utm_medium || '', data.utm_campaign || '',
+      data.confusion_referral_flag || '', data.confusion_instance || '', data.form_token || '',
+      'new', new Date().toISOString()
+    ]);
+    return { success: true, submissionId: id };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getAllShowcaseSubmissions() {
+  return { success: true, submissions: getAllRows(SHEETS.SHOWCASE_FORMS) };
+}
+
+function parseJSONSafe(str, fallback) {
+  try { return JSON.parse(str); } catch (e) { return fallback; }
+}
+
+function requestChanges(vendorId, notes) {
+  var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+  if (row) setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'changes_requested');
+  return { success: true };
+}
+
+function broadcastNotification(message, type) {
+  var count = getAllRows(SHEETS.VENDORS).filter(function(v) { return v.Status === 'active'; }).length;
+  Logger.log('Broadcast [' + type + '] to ' + count + ': ' + message);
+  return { success: true, recipientCount: count };
+}

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(function(){var F='instahelp-vendor-network',b='/';if(location.protocol==='file:'){var h=location.href.split('#')[0].split('?')[0];b=h.slice(0,h.lastIndexOf('/')+1);}else{var p=location.pathname,i=p.indexOf('/'+F+'/');if(i!==-1)b=p.substring(0,i+F.length+2);}var el=document.createElement('base');el.setAttribute('data-ih-base','');el.href=b;var hd=document.head||document.documentElement;hd.insertBefore(el,hd.firstChild);window.INSTAHELP_BASE=b;})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | InstaHelp Store Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <style>
+    .page-section{display:none}.page-section.active{display:block;animation:fadeIn .3s}
+    .chart-box{height:280px;position:relative}
+    .revenue-hero{background:linear-gradient(135deg,#0F0F0F,#1a1a2e);color:white;border-radius:var(--radius-xl);padding:2rem;margin-bottom:1.5rem}
+    .revenue-hero .big{font-size:2.5rem;font-weight:800}
+    .plan-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:1rem}
+    .plan-bar span{height:100%}
+    .admin-login-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0F0F0F,#1a1a2e);padding:1.5rem}
+    .admin-login-card{background:var(--surface);border-radius:var(--radius-xl);padding:2.5rem;width:100%;max-width:400px;box-shadow:var(--shadow-lg);text-align:center}
+    .admin-login-card h1{font-size:1.5rem;margin:1rem 0 0.25rem}
+    .admin-login-card p{color:var(--ink-muted);font-size:0.875rem;margin-bottom:1.5rem}
+    .admin-login-card .sidebar-logo-mark{width:56px;height:56px;font-size:1.25rem;margin:0 auto}
+  </style>
+</head>
+<body>
+  <div id="admin-login" class="admin-login-gate">
+    <div class="admin-login-card">
+      <div class="sidebar-logo-mark">IH</div>
+      <h1>Admin Access</h1>
+      <p>InstaHelp Store Builder — authorized personnel only</p>
+      <form id="admin-login-form">
+        <div class="form-group" style="text-align:left">
+          <label class="form-label">Password</label>
+          <input type="password" id="admin-password" class="form-input" placeholder="Enter admin password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">Sign In</button>
+      </form>
+      <p id="login-error" class="text-sm" style="color:var(--danger);margin-top:0.75rem;display:none"></p>
+    </div>
+  </div>
+
+  <div id="admin-app" style="display:none">
+  <div class="mobile-header">
+    <button class="btn btn-icon" id="sidebar-toggle"><i data-lucide="menu"></i></button>
+    <span style="font-weight:700">Admin</span>
+    <button class="btn btn-icon" id="theme-toggle"><i data-lucide="moon"></i></button>
+  </div>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><div class="sidebar-logo-mark">IH</div><div><div style="font-weight:700">InstaHelp</div><div class="text-xs text-muted">Admin Panel</div></div></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-page="overview"><i data-lucide="layout-dashboard"></i> Overview</a>
+        <a class="nav-item" data-page="applications"><i data-lucide="file-text"></i> Applications</a>
+        <a class="nav-item" data-page="vendors"><i data-lucide="store"></i> Vendors</a>
+        <a class="nav-item" data-page="subscriptions"><i data-lucide="credit-card"></i> Subscriptions</a>
+        <a class="nav-item" data-page="revenue"><i data-lucide="indian-rupee"></i> Revenue</a>
+        <a class="nav-item" data-page="leads"><i data-lucide="users"></i> Leads</a>
+        <a class="nav-item" data-page="analytics"><i data-lucide="bar-chart-3"></i> Analytics</a>
+      </nav>
+      <div style="padding:0.75rem;border-top:1px solid var(--border-light);margin-top:auto">
+        <button class="nav-item" id="logout-btn" style="width:100%;border:none;background:none;cursor:pointer"><i data-lucide="log-out"></i> Sign Out</button>
+      </div>
+    </aside>
+    <main class="dashboard-main">
+      <section class="page-section active" id="page-overview">
+        <div class="dashboard-header"><h1>Platform Overview</h1><span class="badge badge-brand">Store Builder</span></div>
+        <div class="kpi-grid" id="admin-kpis"></div>
+        <div class="card" style="margin-top:1.5rem"><h3 style="margin-bottom:1rem">Plan Distribution</h3><div id="plan-dist"></div></div>
+      </section>
+
+      <section class="page-section" id="page-applications">
+        <div class="dashboard-header"><h1>Applications</h1><input class="form-input" id="app-search" placeholder="Search..." style="max-width:280px"></div>
+        <div class="table-wrap"><table><thead><tr><th>Business</th><th>Plan</th><th>Template</th><th>City</th><th>Status</th><th>Actions</th></tr></thead><tbody id="apps-table"></tbody></table></div>
+      </section>
+
+      <section class="page-section" id="page-vendors">
+        <div class="dashboard-header"><h1>Vendor Management</h1><input class="form-input" id="vendor-search" placeholder="Search..." style="max-width:280px"></div>
+        <div class="table-wrap"><table><thead><tr><th>Business</th><th>Slug</th><th>Plan</th><th>Template</th><th>Status</th><th>Actions</th></tr></thead><tbody id="vendors-table"></tbody></table></div>
+      </section>
+
+      <section class="page-section" id="page-subscriptions">
+        <div class="dashboard-header"><h1>Subscription Management</h1></div>
+        <div class="table-wrap"><table><thead><tr><th>Vendor</th><th>Plan</th><th>Expires</th><th>Actions</th></tr></thead><tbody id="subs-table"></tbody></table></div>
+      </section>
+
+      <section class="page-section" id="page-revenue">
+        <div class="dashboard-header"><h1>Revenue Dashboard</h1></div>
+        <div class="revenue-hero"><p style="opacity:0.7">Total Revenue</p><div class="big" id="total-revenue">₹0</div></div>
+        <div class="form-row">
+          <div class="card"><h3>By Plan</h3><div id="rev-by-plan"></div></div>
+          <div class="card"><h3>Monthly</h3><div class="chart-box"><canvas id="rev-chart"></canvas></div></div>
+        </div>
+        <div class="card" style="margin-top:1.5rem"><h3 style="margin-bottom:1rem">Payment History</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Vendor</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead><tbody id="payments-table"></tbody></table></div></div>
+      </section>
+
+      <section class="page-section" id="page-leads">
+        <div class="dashboard-header"><h1>Lead Monitoring</h1></div>
+        <div class="kpi-grid" style="margin-bottom:1.5rem">
+          <div class="kpi-card"><div class="kpi-value" id="leads-total">0</div><div class="kpi-label">Total Leads</div></div>
+          <div class="kpi-card"><div class="kpi-value" id="leads-new">0</div><div class="kpi-label">New</div></div>
+          <div class="kpi-card"><div class="kpi-value" id="leads-conv">0</div><div class="kpi-label">Converted</div></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Vendor</th><th>Requirement</th><th>Status</th><th>Date</th></tr></thead><tbody id="all-leads"></tbody></table></div>
+      </section>
+
+      <section class="page-section" id="page-analytics">
+        <div class="dashboard-header"><h1>Platform Analytics</h1></div>
+        <div class="kpi-grid" style="margin-bottom:1.5rem">
+          <div class="kpi-card"><div class="kpi-value" id="plat-views">0</div><div class="kpi-label">Total Views</div></div>
+        </div>
+        <div class="card"><h3 style="margin-bottom:1rem">Top Vendors</h3><div class="table-wrap"><table><thead><tr><th>Business</th><th>City</th><th>Plan</th><th>Status</th></tr></thead><tbody id="top-vendors"></tbody></table></div></div>
+      </section>
+    </main>
+  </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/shared.js"></script>
+  <script>
+    var allVendors = [], allApps = [], allLeads = [], revChart = null;
+    var adminToken = sessionStorage.getItem('ih_admin_token') || '';
+
+    function handleAuthError(res) {
+      if (res && res.error && res.error.indexOf('Unauthorized') !== -1) {
+        adminLogout();
+        return true;
+      }
+      return false;
+    }
+
+    function showAdminApp() {
+      document.getElementById('admin-login').style.display = 'none';
+      document.getElementById('admin-app').style.display = 'block';
+      init();
+      InstaHelp.initLucide();
+    }
+
+    function adminLogout() {
+      if (adminToken) google.script.run.logoutAdmin(adminToken);
+      sessionStorage.removeItem('ih_admin_token');
+      adminToken = '';
+      document.getElementById('admin-app').style.display = 'none';
+      document.getElementById('admin-login').style.display = 'flex';
+      document.getElementById('admin-password').value = '';
+    }
+
+    function tryRestoreSession() {
+      if (!adminToken) return;
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) showAdminApp();
+          else adminLogout();
+        })
+        .withFailureHandler(adminLogout)
+        .validateAdminSession(adminToken);
+    }
+
+    document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('login-btn');
+      var err = document.getElementById('login-error');
+      err.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+          if (res.success) {
+            adminToken = res.token;
+            sessionStorage.setItem('ih_admin_token', adminToken);
+            showAdminApp();
+          } else {
+            err.textContent = res.error || 'Invalid password';
+            err.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function() {
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+          err.textContent = 'Login failed. Try again.';
+          err.style.display = 'block';
+        })
+        .loginAdmin(document.getElementById('admin-password').value);
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', adminLogout);
+
+    function init() { loadStats(); loadApps(); loadVendors(); loadLeads(); loadRevenue(); }
+
+    function loadStats() {
+      google.script.run.withSuccessHandler(function(res) {
+        if (handleAuthError(res) || !res.success) return;
+        var s = res.stats;
+        document.getElementById('admin-kpis').innerHTML =
+          kpi('Total Vendors', s.totalVendors) + kpi('Active Stores', s.activeShops) + kpi('Pending', s.pendingApprovals) +
+          kpi('Total Leads', s.totalLeads) + kpi('Total Views', s.totalViews) + kpi('Revenue', '₹' + (s.totalRevenue||0));
+        var pb = s.planBreakdown || {};
+        var total = (pb.free||0) + (pb.pro||0) + (pb.proplus||0) || 1;
+        document.getElementById('plan-dist').innerHTML =
+          '<div class="plan-bar"><span style="width:'+(pb.free/total*100)+'%;background:#ccc"></span><span style="width:'+(pb.pro/total*100)+'%;background:var(--brand)"></span><span style="width:'+(pb.proplus/total*100)+'%;background:#1a1a2e"></span></div>' +
+          '<div style="display:flex;gap:1.5rem;margin-top:0.75rem;font-size:0.8125rem"><span>Free: '+pb.free+'</span><span>Pro: '+pb.pro+'</span><span>Pro+: '+pb.proplus+'</span></div>';
+        document.getElementById('plat-views').textContent = s.totalViews;
+        var tv = document.getElementById('top-vendors');
+        tv.innerHTML = (res.topVendors||[]).map(function(v){return '<tr><td>'+v.BusinessName+'</td><td>'+(v.City||'')+'</td><td>'+(v.Plan||'free')+'</td><td>'+v.Status+'</td></tr>';}).join('');
+      }).getAdminStats(adminToken);
+    }
+
+    function kpi(label, val) { return '<div class="kpi-card"><div class="kpi-value">'+val+'</div><div class="kpi-label">'+label+'</div></div>'; }
+
+    function loadApps() {
+      google.script.run.withSuccessHandler(function(res) {
+        allApps = res.applications || [];
+        renderApps(allApps);
+      }).getAllApplications(adminToken);
+    }
+
+    function renderApps(apps) {
+      document.getElementById('apps-table').innerHTML = apps.reverse().map(function(a) {
+        var sc = a.Status==='approved'?'badge-success':a.Status==='rejected'?'badge-danger':'badge-warning';
+        return '<tr><td><strong>'+a.BusinessName+'</strong></td><td>'+(a.Plan||'free')+'</td><td>'+(a.Template||'classic')+'</td><td>'+(a.City||'')+'</td><td><span class="badge '+sc+'">'+a.Status+'</span></td><td>' +
+          (a.Status==='pending'?'<button class="btn btn-success btn-sm" onclick="approve(\''+a.VendorID+'\')">Approve</button> <button class="btn btn-danger btn-sm" onclick="reject(\''+a.VendorID+'\')">Reject</button>':'—')+'</td></tr>';
+      }).join('') || '<tr><td colspan="6">No applications</td></tr>';
+    }
+
+    function loadVendors() {
+      google.script.run.withSuccessHandler(function(res) {
+        allVendors = res.vendors || [];
+        renderVendors(allVendors);
+        renderSubs(allVendors);
+      }).getAllVendors(adminToken);
+    }
+
+    function renderVendors(vendors) {
+      document.getElementById('vendors-table').innerHTML = vendors.map(function(v) {
+        return '<tr><td><strong>'+v.BusinessName+'</strong></td><td class="text-sm">'+(v.ShopSlug||'')+'</td><td>'+(v.Plan||'free')+'</td><td>'+(v.Template||'classic')+'</td><td>'+v.Status+'</td><td style="white-space:nowrap">' +
+          '<button class="btn btn-ghost btn-sm" onclick="feature(\''+v.VendorID+'\',true)">Feature</button> ' +
+          '<button class="btn btn-ghost btn-sm" onclick="verify(\''+v.VendorID+'\',true)">Verify</button> ' +
+          '<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="suspend(\''+v.VendorID+'\',true)">Suspend</button></td></tr>';
+      }).join('');
+    }
+
+    function renderSubs(vendors) {
+      document.getElementById('subs-table').innerHTML = vendors.filter(function(v){return v.Status==='active';}).map(function(v) {
+        return '<tr><td>'+v.BusinessName+'</td><td>'+(v.Plan||'free')+'</td><td>'+InstaHelp.formatDate(v.PlanExpiresAt)+'</td><td>' +
+          '<button class="btn btn-ghost btn-sm" onclick="setPlan(\''+v.VendorID+'\',\'pro\')">→ Pro</button> ' +
+          '<button class="btn btn-ghost btn-sm" onclick="setPlan(\''+v.VendorID+'\',\'free\')">→ Free</button></td></tr>';
+      }).join('');
+    }
+
+    function loadLeads() {
+      google.script.run.withSuccessHandler(function(res) {
+        allLeads = res.leads || [];
+        document.getElementById('leads-total').textContent = allLeads.length;
+        document.getElementById('leads-new').textContent = allLeads.filter(function(l){return l.Status==='new';}).length;
+        document.getElementById('leads-conv').textContent = allLeads.filter(function(l){return l.Status==='converted';}).length;
+        var vm = {}; allVendors.forEach(function(v){vm[v.VendorID]=v.BusinessName;});
+        document.getElementById('all-leads').innerHTML = allLeads.reverse().map(function(l) {
+          return '<tr><td>'+l.CustomerName+'</td><td>'+l.Phone+'</td><td>'+(vm[l.VendorID]||l.VendorID)+'</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(l.Requirement||'')+'</td><td>'+l.Status+'</td><td>'+InstaHelp.formatDate(l.CreatedAt)+'</td></tr>';
+        }).join('');
+      }).getAllLeads(adminToken);
+    }
+
+    function loadRevenue() {
+      google.script.run.withSuccessHandler(function(res) {
+        if (!res.success) return;
+        document.getElementById('total-revenue').textContent = '₹' + res.totalRevenue.toLocaleString('en-IN');
+        var bp = res.byPlan || {};
+        document.getElementById('rev-by-plan').innerHTML =
+          '<p>Pro: <strong>₹'+(bp.pro||0)+'</strong></p><p>Pro+: <strong>₹'+(bp.proplus||0)+'</strong></p>';
+        var months = Object.keys(res.byMonth||{}).sort();
+        var ctx = document.getElementById('rev-chart');
+        if (revChart) revChart.destroy();
+        revChart = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ data: months.map(function(m){return res.byMonth[m];}), backgroundColor: '#FFD600', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        var vm = {}; allVendors.forEach(function(v){vm[v.VendorID]=v.BusinessName;});
+        document.getElementById('payments-table').innerHTML = (res.payments||[]).reverse().map(function(p) {
+          return '<tr><td>'+InstaHelp.formatDate(p.Date)+'</td><td>'+(vm[p.VendorID]||p.VendorID)+'</td><td>'+p.Plan+'</td><td>₹'+p.Amount+'</td><td><span class="badge badge-success">'+p.Status+'</span></td></tr>';
+        }).join('');
+      }).getRevenueAnalytics(adminToken);
+    }
+
+    function approve(id) {
+      google.script.run.withSuccessHandler(function(r) {
+        if (handleAuthError(r)) return;
+        loadStats(); loadApps(); loadVendors();
+        var msg = 'Approved — store is live';
+        if (r.emailSent) msg += ' & email sent to vendor';
+        else if (r.emailError) msg += ' (email failed: ' + r.emailError + ')';
+        InstaHelp.toast(msg, r.emailSent ? 'success' : 'error');
+      }).approveVendor(id, '', adminToken);
+    }
+    function reject(id) { var n=prompt('Reason?'); if(n===null)return; google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r)){loadStats();loadApps();loadVendors();}}).rejectVendor(id,n,adminToken); }
+    function feature(id,v) { google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r))loadVendors();}).featureVendor(id,v,adminToken); }
+    function verify(id,v) { google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r))loadVendors();}).verifyVendor(id,v,adminToken); }
+    function suspend(id,v) { google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r))loadVendors();}).suspendVendor(id,v,adminToken); }
+    function setPlan(id,plan) { google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r)){loadVendors();InstaHelp.toast('Plan updated','success');}}).adminSetVendorPlan(id,plan,adminToken); }
+
+    document.getElementById('app-search').addEventListener('input', function(e) {
+      var q = e.target.value.toLowerCase();
+      renderApps(allApps.filter(function(a){return a.BusinessName.toLowerCase().indexOf(q)!==-1;}));
+    });
+    document.getElementById('vendor-search').addEventListener('input', function(e) {
+      var q = e.target.value.toLowerCase();
+      renderVendors(allVendors.filter(function(v){return v.BusinessName.toLowerCase().indexOf(q)!==-1||(v.ShopSlug||'').toLowerCase().indexOf(q)!==-1;}));
+    });
+
+    document.querySelectorAll('.nav-item[data-page]').forEach(function(n) {
+      n.addEventListener('click', function(e) { e.preventDefault();
+        document.querySelectorAll('.nav-item').forEach(function(x){x.classList.remove('active');});
+        n.classList.add('active');
+        document.querySelectorAll('.page-section').forEach(function(s){s.classList.remove('active');});
+        document.getElementById('page-'+n.dataset.page).classList.add('active');
+        document.querySelector('.sidebar').classList.remove('open');
+        if (n.dataset.page==='revenue') loadRevenue();
+        InstaHelp.initLucide();
+      });
+    });
+
+    document.getElementById('theme-toggle').addEventListener('click', InstaHelp.toggleTheme);
+    document.addEventListener('DOMContentLoaded', tryRestoreSession);
+  </script>
+</body>
+</html>

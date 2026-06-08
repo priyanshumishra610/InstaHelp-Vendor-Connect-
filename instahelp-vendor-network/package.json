@@ -1,0 +1,10 @@
+{
+  "name": "instahelp-vendor-network",
+  "version": "1.0.0",
+  "private": true,
+  "description": "InstaHelp Vendor Store Builder — static frontend on Vercel, GAS API backend",
+  "scripts": {
+    "build": "node scripts/inject-env.js",
+    "dev": "npx serve . -p 3000"
+  }
+}
