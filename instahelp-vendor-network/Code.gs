@@ -193,9 +193,43 @@ function jsonOutput(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+function normalizeApiArgs(args) {
+  if (!args || !args.length) return [];
+  return args.map(function(a) {
+    if (typeof a !== 'string' || !a) return a;
+    var c = a.charAt(0);
+    if (c === '{' || c === '[') {
+      try { return JSON.parse(a); } catch (e) {}
+    }
+    return a;
+  });
+}
+
+function parseGetApiArgs(e) {
+  var p = e.parameter || {};
+  if (p.args) {
+    try {
+      var parsed = JSON.parse(p.args);
+      return normalizeApiArgs(Array.isArray(parsed) ? parsed : [parsed]);
+    } catch (err) {}
+  }
+  var args = [];
+  var i = 0;
+  while (Object.prototype.hasOwnProperty.call(p, 'arg' + i)) {
+    args.push(p['arg' + i]);
+    i++;
+  }
+  if (!args.length) {
+    if (p.arg0 !== undefined) args.push(p.arg0);
+    if (p.arg1 !== undefined) args.push(p.arg1);
+    if (p.arg2 !== undefined) args.push(p.arg2);
+  }
+  return normalizeApiArgs(args);
+}
+
 function routeApi(payload) {
   var action = payload.action;
-  var args = payload.args || [];
+  var args = normalizeApiArgs(payload.args || []);
   var data = payload.data;
 
   switch (action) {
@@ -254,7 +288,7 @@ function routeApi(payload) {
 // ─── Routing (GAS-hosted HTML fallback) ──────────────────────
 function doGet(e) {
   if (e && e.parameter && e.parameter.action) {
-    return jsonOutput(routeApi({ action: e.parameter.action, args: [e.parameter.arg0, e.parameter.arg1, e.parameter.arg2] }));
+    return jsonOutput(routeApi({ action: e.parameter.action, args: parseGetApiArgs(e) }));
   }
   var page = (e && e.parameter && e.parameter.page) ? e.parameter.page : 'apply';
   var template;

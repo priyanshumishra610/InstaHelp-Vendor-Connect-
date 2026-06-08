@@ -1,5 +1,6 @@
 /**
- * InstaHelp API client — connects Vercel frontend to Google Apps Script backend
+ * InstaHelp API client — connects Vercel frontend to Google Apps Script backend.
+ * Uses GET (not POST): GAS web app deployments return 405 on cross-origin POST.
  */
 var InstaHelpAPI = (function() {
   'use strict';
@@ -8,26 +9,51 @@ var InstaHelpAPI = (function() {
     return (window.INSTAHELP_CONFIG && window.INSTAHELP_CONFIG.apiUrl) || '';
   }
 
-  function call(action, args) {
-    var payload = { action: action, args: args || [] };
-
-    return fetch(getUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload),
-      redirect: 'follow'
-    }).then(function(res) {
-      return res.text().then(function(text) {
-        try {
-          return JSON.parse(text);
-        } catch (e) {
-          return {
-            success: false,
-            error: 'API returned invalid JSON. Redeploy Code.gs as Web App (Execute as Me, Anyone).'
-          };
-        }
-      });
+  function parseResponse(res) {
+    return res.text().then(function(text) {
+      if (!text || text.charAt(0) === '<') {
+        return {
+          success: false,
+          error: 'API unreachable. Redeploy Code.gs as Web App (Execute as Me, Anyone) and update apiUrl in js/config.js.'
+        };
+      }
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        return {
+          success: false,
+          error: 'API returned invalid JSON. Redeploy Code.gs as Web App (Execute as Me, Anyone).'
+        };
+      }
     });
+  }
+
+  function serializeArg(arg) {
+    if (arg === undefined || arg === null) return '';
+    if (typeof arg === 'object') return JSON.stringify(arg);
+    return String(arg);
+  }
+
+  function call(action, args) {
+    args = args || [];
+    var params = new URLSearchParams();
+    params.set('action', action);
+
+    var hasObject = args.some(function(a) { return a !== null && typeof a === 'object'; });
+    if (args.length > 3 || hasObject) {
+      params.set('args', JSON.stringify(args));
+    } else {
+      for (var i = 0; i < args.length; i++) {
+        params.set('arg' + i, serializeArg(args[i]));
+      }
+    }
+
+    var url = getUrl() + (getUrl().indexOf('?') === -1 ? '?' : '&') + params.toString();
+
+    return fetch(url, {
+      method: 'GET',
+      redirect: 'follow'
+    }).then(parseResponse);
   }
 
   return { call: call };
@@ -44,7 +70,10 @@ var InstaHelpAPI = (function() {
       var self = this;
       InstaHelpAPI.call(action, args)
         .then(function(res) { if (self._ok) self._ok(res); })
-        .catch(function(err) { if (self._err) self._err(err); })
+        .catch(function(err) {
+          if (self._err) self._err(err);
+          else if (self._ok) self._ok({ success: false, error: (err && err.message) || 'Network error' });
+        })
         .finally(function() { self._ok = null; self._err = null; });
     }
   };
@@ -59,7 +88,7 @@ var InstaHelpAPI = (function() {
     'getVendorProducts', 'addProduct', 'updateProduct', 'deleteProduct', 'bulkAddProducts',
     'saveLead', 'getVendorLeads', 'updateLeadStatus', 'exportLeadsCSV',
     'recordView', 'recordWhatsappClick', 'recordCallClick', 'getAnalytics', 'getVendorAnalytics',
-    'generateQRCode', 'getVendorPayments', 'submitShowcaseForm', 'initializeSheets'
+    'generateQRCode', 'getVendorPayments', 'submitShowcaseForm', 'initializeSheets', 'setupSheetReviewControls'
   ];
 
   methods.forEach(function(method) {
