@@ -28,8 +28,8 @@ var SHEETS = {
 };
 
 var HEADERS = {
-  VENDORS: ['VendorID','BusinessName','OwnerName','Phone','WhatsApp','Email','Category','YearsInBusiness','City','State','Description','ServiceAreas','WorkingHours','Website','Instagram','Facebook','Logo','CoverBanner','Gallery','Status','ShopSlug','Verified','Featured','Disabled','Suspended','Rating','Plan','Template','ThemeColors','PlanExpiresAt','SubscriptionId','ShowBranding','Published','CreatedAt','UpdatedAt'],
-  APPLICATIONS: ['ApplicationID','VendorID','BusinessName','OwnerName','Phone','WhatsApp','Email','Category','YearsInBusiness','City','State','Description','ServiceAreas','WorkingHours','Website','Instagram','Facebook','Logo','CoverBanner','Gallery','ProductsJSON','Plan','Template','PaymentID','GSTCertificate','ShopLicense','Aadhaar','PAN','Status','SubmittedAt','ReviewedAt','ReviewNotes'],
+  VENDORS: ['VendorID','BusinessName','OwnerName','Phone','WhatsApp','Email','Category','YearsInBusiness','City','State','Description','ServiceAreas','WorkingHours','Website','Instagram','Facebook','Logo','CoverBanner','Gallery','Status','ShopSlug','Verified','Featured','Disabled','Suspended','Rating','Plan','Template','ThemeColors','PlanExpiresAt','SubscriptionId','ShowBranding','Published','CreatedAt','UpdatedAt','ReviewAction','ReviewNotes'],
+  APPLICATIONS: ['ApplicationID','VendorID','BusinessName','OwnerName','Phone','WhatsApp','Email','Category','YearsInBusiness','City','State','Description','ServiceAreas','WorkingHours','Website','Instagram','Facebook','Logo','CoverBanner','Gallery','ProductsJSON','Plan','Template','PaymentID','GSTCertificate','ShopLicense','Aadhaar','PAN','Status','SubmittedAt','ReviewedAt','ReviewNotes','ReviewAction'],
   PRODUCTS: ['ProductID','VendorID','Title','Description','Price','DiscountPrice','Images','Category','Views','Leads','CreatedAt','UpdatedAt'],
   LEADS: ['LeadID','VendorID','CustomerName','Phone','Requirement','Status','Source','CreatedAt','UpdatedAt'],
   ANALYTICS: ['RecordID','VendorID','Views','UniqueVisitors','WhatsappClicks','Calls','Leads','TrafficSource','Date'],
@@ -246,6 +246,7 @@ function routeApi(payload) {
     case 'getVendorPayments': return getVendorPayments(args[0]);
     case 'submitShowcaseForm': return submitShowcaseForm(args[0]);
     case 'initializeSheets': return initializeSheets();
+    case 'setupSheetReviewControls': return setupSheetReviewControls();
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
@@ -307,7 +308,8 @@ function initializeSheets() {
   Object.keys(SHEETS).forEach(function(key) {
     ensureSheetHeaders(key);
   });
-  return { success: true };
+  setupSheetReviewControls();
+  return { success: true, message: 'Sheets ready. Use ReviewAction column: Approve or Reject.' };
 }
 
 function ensureSheetHeaders(key) {
@@ -317,15 +319,22 @@ function ensureSheetHeaders(key) {
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(sheetName);
   if (!sheet) sheet = ss.insertSheet(sheetName);
+  var maxCol = Math.max(sheet.getLastColumn(), expected.length, 1);
   var row1 = sheet.getLastRow() >= 1
-    ? sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), expected.length)).getValues()[0]
+    ? sheet.getRange(1, 1, 1, maxCol).getValues()[0]
     : [];
-  var needsHeaders = sheet.getLastRow() === 0 || !row1[0] || String(row1[0]).trim() !== expected[0];
-  if (needsHeaders) {
+  var needsFullReset = sheet.getLastRow() === 0 || !row1[0] || String(row1[0]).trim() !== expected[0];
+  if (needsFullReset) {
     sheet.getRange(1, 1, 1, expected.length).setValues([expected]);
-    sheet.getRange(1, 1, 1, expected.length).setFontWeight('bold').setBackground('#1a1a2e').setFontColor('#ffffff');
-    sheet.setFrozenRows(1);
+  } else {
+    var merged = [];
+    for (var i = 0; i < expected.length; i++) {
+      merged.push(row1[i] ? row1[i] : expected[i]);
+    }
+    sheet.getRange(1, 1, 1, expected.length).setValues([merged]);
   }
+  sheet.getRange(1, 1, 1, expected.length).setFontWeight('bold').setBackground('#1a1a2e').setFontColor('#ffffff');
+  sheet.setFrozenRows(1);
 }
 
 function getSpreadsheet() {
@@ -633,7 +642,7 @@ function submitVendorApplication(data) {
         data.description || '', data.serviceAreas || '', data.workingHours || '',
         data.website || '', data.instagram || '', data.facebook || '',
         logo, cover, gallery, 'pending', slug, false, plan.featured, false, false, 4.8,
-        planId, templateId, themeColors, '', '', plan.branding, false, now, now
+        planId, templateId, themeColors, '', '', plan.branding, false, now, now, '', ''
       ]);
     } else {
       var row = existing;
@@ -659,7 +668,7 @@ function submitVendorApplication(data) {
         processMediaField(data.shopLicense, vendorId + '_license.pdf'),
         processMediaField(data.aadhaar, vendorId + '_aadhaar.pdf'),
         processMediaField(data.pan, vendorId + '_pan.pdf'),
-        'pending', now, '', ''
+        'pending', now, '', '', ''
       ]);
     } catch (appErr) {
       Logger.log('Applications row error (vendor still saved): ' + appErr.message);
@@ -792,38 +801,75 @@ function publishStore(vendorId) {
 }
 
 // ─── Admin Vendor Actions ──────────────────────────────────────
+function approveVendorCore(vendorId, notes) {
+  var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+  if (!row) return { success: false, error: 'Vendor not found' };
+  var now = new Date().toISOString();
+  setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'active');
+  setField(SHEETS.VENDORS, row._rowIndex, 'Verified', true);
+  setField(SHEETS.VENDORS, row._rowIndex, 'Published', true);
+  setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', now);
+  if (notes) setField(SHEETS.VENDORS, row._rowIndex, 'ReviewNotes', notes);
+  setField(SHEETS.VENDORS, row._rowIndex, 'ReviewAction', 'Done');
+
+  getAllRows(SHEETS.APPLICATIONS).forEach(function(app) {
+    if (app.VendorID === vendorId && String(app.Status || '').toLowerCase() === 'pending') {
+      var appRow = getRowByField(SHEETS.APPLICATIONS, 'ApplicationID', app.ApplicationID);
+      if (appRow) {
+        setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'Status', 'approved');
+        setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewedAt', now);
+        setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewNotes', notes || 'Approved from sheet');
+        setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewAction', 'Done');
+      }
+    }
+  });
+
+  var vendorData = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+  delete vendorData._rowIndex;
+  var emailResult = sendVendorApprovedEmail(vendorData);
+
+  return {
+    success: true, shopSlug: row.ShopSlug,
+    shopUrl: getFrontendUrl() + '/shop/' + encodeURIComponent(row.ShopSlug),
+    dashboardUrl: getFrontendUrl() + '/vendor/dashboard?vendorId=' + encodeURIComponent(vendorId),
+    emailSent: emailResult.success, emailError: emailResult.error || ''
+  };
+}
+
+function rejectVendorCore(vendorId, notes) {
+  var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+  if (!row) return { success: false, error: 'Vendor not found' };
+  var now = new Date().toISOString();
+  setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'rejected');
+  setField(SHEETS.VENDORS, row._rowIndex, 'Published', false);
+  setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', now);
+  if (notes) setField(SHEETS.VENDORS, row._rowIndex, 'ReviewNotes', notes);
+  setField(SHEETS.VENDORS, row._rowIndex, 'ReviewAction', 'Done');
+
+  getAllRows(SHEETS.APPLICATIONS).forEach(function(app) {
+    if (app.VendorID === vendorId && String(app.Status || '').toLowerCase() === 'pending') {
+      var appRow = getRowByField(SHEETS.APPLICATIONS, 'ApplicationID', app.ApplicationID);
+      if (appRow) {
+        setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'Status', 'rejected');
+        setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewedAt', now);
+        setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewNotes', notes || 'Rejected from sheet');
+        setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewAction', 'Done');
+      }
+    }
+  });
+
+  var vendorData = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
+  delete vendorData._rowIndex;
+  var emailResult = sendVendorRejectedEmail(vendorData, notes);
+
+  return { success: true, emailSent: emailResult.success };
+}
+
 function approveVendor(vendorId, notes, adminToken) {
   var auth = checkAdminAuth(adminToken);
   if (auth) return auth;
   try {
-    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
-    if (!row) return { success: false, error: 'Vendor not found' };
-    setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'active');
-    setField(SHEETS.VENDORS, row._rowIndex, 'Verified', true);
-    setField(SHEETS.VENDORS, row._rowIndex, 'Published', true);
-    setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
-
-    getAllRows(SHEETS.APPLICATIONS).forEach(function(app) {
-      if (app.VendorID === vendorId && app.Status === 'pending') {
-        var appRow = getRowByField(SHEETS.APPLICATIONS, 'ApplicationID', app.ApplicationID);
-        if (appRow) {
-          setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'Status', 'approved');
-          setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewedAt', new Date().toISOString());
-          setField(SHEETS.APPLICATIONS, appRow._rowIndex, 'ReviewNotes', notes || 'Approved');
-        }
-      }
-    });
-
-    var vendorData = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
-    delete vendorData._rowIndex;
-    var emailResult = sendVendorApprovedEmail(vendorData);
-
-    return {
-      success: true, shopSlug: row.ShopSlug,
-      shopUrl: getFrontendUrl() + '/shop/' + encodeURIComponent(row.ShopSlug),
-      dashboardUrl: getFrontendUrl() + '/vendor/dashboard?vendorId=' + encodeURIComponent(vendorId),
-      emailSent: emailResult.success, emailError: emailResult.error || ''
-    };
+    return approveVendorCore(vendorId, notes);
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -833,20 +879,149 @@ function rejectVendor(vendorId, notes, adminToken) {
   var auth = checkAdminAuth(adminToken);
   if (auth) return auth;
   try {
-    var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
-    if (!row) return { success: false, error: 'Vendor not found' };
-    setField(SHEETS.VENDORS, row._rowIndex, 'Status', 'rejected');
-    setField(SHEETS.VENDORS, row._rowIndex, 'Published', false);
-    setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
-
-    var vendorData = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
-    delete vendorData._rowIndex;
-    var emailResult = sendVendorRejectedEmail(vendorData, notes);
-
-    return { success: true, emailSent: emailResult.success };
+    return rejectVendorCore(vendorId, notes);
   } catch (e) {
     return { success: false, error: e.message };
   }
+}
+
+// ─── Google Sheets: Approve / Reject from spreadsheet ───────────
+function onOpen() {
+  try {
+    SpreadsheetApp.getUi()
+      .createMenu('InstaHelp Admin')
+      .addItem('Setup Review columns (Approve/Reject dropdown)', 'setupSheetReviewControls')
+      .addItem('Approve selected row', 'menuApproveSelectedRow')
+      .addItem('Reject selected row', 'menuRejectSelectedRow')
+      .addSeparator()
+      .addItem('Initialize all sheets', 'initializeSheets')
+      .addToUi();
+  } catch (e) {
+    Logger.log('onOpen: ' + e.message);
+  }
+}
+
+function setupSheetReviewControls() {
+  ensureSheetHeaders('VENDORS');
+  ensureSheetHeaders('APPLICATIONS');
+  applyReviewDropdown(SHEETS.VENDORS);
+  applyReviewDropdown(SHEETS.APPLICATIONS);
+  return { success: true, message: 'ReviewAction columns ready on Vendors & Applications sheets.' };
+}
+
+function applyReviewDropdown(sheetName) {
+  var sheet = getSheet(sheetName);
+  if (!sheet) return;
+  var colMap = getColMap(sheetName);
+  var actionCol = colMap['ReviewAction'];
+  if (!actionCol) return;
+  var lastRow = Math.max(sheet.getLastRow(), 500);
+  var rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['', 'Approve', 'Reject', 'Done'], true)
+    .setAllowInvalid(true)
+    .build();
+  sheet.getRange(2, actionCol, lastRow, 1).setDataValidation(rule);
+  sheet.getRange(1, actionCol)
+    .setBackground('#FFD600')
+    .setFontWeight('bold')
+    .setNote('Select Approve or Reject — action runs automatically. Add notes in ReviewNotes first.');
+  if (colMap['ReviewNotes']) {
+    sheet.getRange(1, colMap['ReviewNotes']).setBackground('#FFF8CC').setFontWeight('bold');
+  }
+}
+
+function onEdit(e) {
+  try {
+    if (!e || !e.range || e.range.getRow() < 2) return;
+    var sheet = e.range.getSheet();
+    var sheetName = sheet.getName();
+    if (sheetName !== SHEETS.VENDORS && sheetName !== SHEETS.APPLICATIONS) return;
+
+    var colMap = getColMap(sheetName);
+    var reviewCol = colMap['ReviewAction'];
+    if (!reviewCol || e.range.getColumn() !== reviewCol) return;
+
+    var action = String(e.value || '').trim().toLowerCase();
+    if (!action || action === 'done' || action === 'pending') return;
+
+    var vendorId = String(sheet.getRange(e.range.getRow(), colMap['VendorID']).getValue() || '').trim();
+    if (!vendorId) return;
+
+    var notesCol = colMap['ReviewNotes'];
+    var notes = notesCol ? String(sheet.getRange(e.range.getRow(), notesCol).getValue() || '') : '';
+
+    var lock = LockService.getScriptLock();
+    if (!lock.tryLock(8000)) return;
+    try {
+      processSheetReviewAction(sheetName, e.range.getRow(), action, vendorId, notes);
+    } finally {
+      lock.releaseLock();
+    }
+  } catch (err) {
+    Logger.log('onEdit error: ' + err.message);
+  }
+}
+
+function processSheetReviewAction(sheetName, rowIndex, action, vendorId, notes) {
+  var result;
+  if (action === 'approve' || action === 'approved') {
+    result = approveVendorCore(vendorId, notes);
+  } else if (action === 'reject' || action === 'rejected') {
+    result = rejectVendorCore(vendorId, notes);
+  } else {
+    return { success: false, error: 'Unknown action: ' + action };
+  }
+
+  var sheet = getSheet(sheetName);
+  var actionCol = getColMap(sheetName)['ReviewAction'];
+  if (sheet && actionCol) {
+    sheet.getRange(rowIndex, actionCol).setValue(result.success ? 'Done' : 'Error');
+  }
+  if (!result.success) {
+    SpreadsheetApp.getActiveSpreadsheet().toast(result.error || 'Action failed', 'InstaHelp', 5);
+  } else {
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      action.indexOf('reject') !== -1 ? 'Vendor rejected' : 'Vendor approved & store live',
+      'InstaHelp',
+      5
+    );
+  }
+  return result;
+}
+
+function menuApproveSelectedRow() {
+  runMenuReviewAction('approve');
+}
+
+function menuRejectSelectedRow() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt('Reject vendor', 'Reason (optional):', ui.ButtonSet.OK_CANCEL);
+  if (response.getSelectedButton() !== ui.Button.OK) return;
+  runMenuReviewAction('reject', response.getResponseText() || '');
+}
+
+function runMenuReviewAction(action, notes) {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var sheetName = sheet.getName();
+  if (sheetName !== SHEETS.VENDORS && sheetName !== SHEETS.APPLICATIONS) {
+    SpreadsheetApp.getUi().alert('Select a row on the Vendors or Applications sheet.');
+    return;
+  }
+  var row = SpreadsheetApp.getActiveRange().getRow();
+  if (row < 2) {
+    SpreadsheetApp.getUi().alert('Select a data row (not the header).');
+    return;
+  }
+  var colMap = getColMap(sheetName);
+  var vendorId = String(sheet.getRange(row, colMap['VendorID']).getValue() || '').trim();
+  if (!vendorId) {
+    SpreadsheetApp.getUi().alert('No VendorID in this row.');
+    return;
+  }
+  if (!notes && colMap['ReviewNotes']) {
+    notes = String(sheet.getRange(row, colMap['ReviewNotes']).getValue() || '');
+  }
+  processSheetReviewAction(sheetName, row, action, vendorId, notes);
 }
 
 function suspendVendor(vendorId, suspended, adminToken) {
