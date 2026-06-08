@@ -67,14 +67,16 @@ var InstaHelpAPI = (function() {
     withSuccessHandler: function(fn) { this._ok = fn; return this; },
     withFailureHandler: function(fn) { this._err = fn; return this; },
     _invoke: function(action, args) {
-      var self = this;
+      var ok = this._ok;
+      var err = this._err;
+      this._ok = null;
+      this._err = null;
       InstaHelpAPI.call(action, args)
-        .then(function(res) { if (self._ok) self._ok(res); })
-        .catch(function(err) {
-          if (self._err) self._err(err);
-          else if (self._ok) self._ok({ success: false, error: (err && err.message) || 'Network error' });
-        })
-        .finally(function() { self._ok = null; self._err = null; });
+        .then(function(res) { if (ok) ok(res); })
+        .catch(function(e) {
+          if (err) err(e);
+          else if (ok) ok({ success: false, error: (e && e.message) || 'Network error' });
+        });
     }
   };
 

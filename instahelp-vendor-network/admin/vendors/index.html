@@ -199,7 +199,11 @@
 
     function loadStats() {
       google.script.run.withSuccessHandler(function(res) {
-        if (handleAuthError(res) || !res.success) return;
+        if (handleAuthError(res)) return;
+        if (!res || !res.success) {
+          InstaHelp.toast((res && res.error) || 'Could not load overview stats', 'error');
+          return;
+        }
         var s = res.stats;
         document.getElementById('admin-kpis').innerHTML =
           kpi('Total Vendors', s.totalVendors) + kpi('Active Stores', s.activeShops) + kpi('Pending', s.pendingApprovals) +
@@ -263,7 +267,12 @@
     function loadVendors() {
       google.script.run
         .withSuccessHandler(function(res) {
-          if (handleAuthError(res) || !res || !res.success) return;
+          if (handleAuthError(res)) return;
+          if (!res || !res.success) {
+            InstaHelp.toast((res && res.error) || 'Could not load vendors', 'error');
+            renderVendors([]);
+            return;
+          }
           allVendors = res.vendors || [];
           renderVendors(allVendors);
           renderSubs(allVendors);
