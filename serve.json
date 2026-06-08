@@ -1,9 +1,10 @@
 {
   "rewrites": [
-    { "source": "/instahelp-vendor-network/vendors/apply", "destination": "/instahelp-vendor-network/vendor-registration.html" },
-    { "source": "/instahelp-vendor-network/shop/:slug", "destination": "/instahelp-vendor-network/shop.html" },
-    { "source": "/instahelp-vendor-network/vendor/dashboard", "destination": "/instahelp-vendor-network/vendor-dashboard.html" },
-    { "source": "/instahelp-vendor-network/admin/vendors", "destination": "/instahelp-vendor-network/admin-dashboard.html" },
-    { "source": "/instahelp-vendor-network/showcase", "destination": "/instahelp-vendor-network/index.html" }
+    { "source": "/instahelp-vendor-network/shop/:slug", "destination": "/instahelp-vendor-network/shop/index.html" }
+  ],
+  "redirects": [
+    { "source": "/instahelp-vendor-network/vendor-registration.html", "destination": "/instahelp-vendor-network/vendors/apply" },
+    { "source": "/instahelp-vendor-network/vendor-dashboard.html", "destination": "/instahelp-vendor-network/vendor/dashboard" },
+    { "source": "/instahelp-vendor-network/admin-dashboard.html", "destination": "/instahelp-vendor-network/admin/vendors" }
   ]
 }

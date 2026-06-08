@@ -10,9 +10,10 @@ var DRIVE_FOLDER_NAME = 'InstaHelp Vendor Media';
 var RAZORPAY_KEY_ID = 'rzp_live_SxW7oDR9YnHxcV';
 var RAZORPAY_KEY_SECRET = 'BIDVHZossd79AvBRVyPXwsRA';
 
-// Resend — transactional email
+// Resend — transactional email (same as resend.emails.send in Node SDK)
 var RESEND_API_KEY = 're_PLXzK5Ta_LKZmsjUyRMFwgLnkovLWx1Eu';
-var RESEND_FROM_EMAIL = 'InstaHelp <onboarding@resend.dev>';
+var RESEND_FROM_EMAIL = 'onboarding@resend.dev';
+var ADMIN_NOTIFY_EMAIL = 'instahelpblr@gmail.com';
 // Public site URL (Vercel) — used in approval emails
 var FRONTEND_URL = 'https://instahelp.in';
 
@@ -86,31 +87,45 @@ function getFrontendUrl() {
   return FRONTEND_URL.replace(/\/$/, '');
 }
 
-function sendEmailViaResend(to, subject, html) {
+function sendEmailViaResend(to, subject, html, options) {
+  options = options || {};
   if (!to || !String(to).trim()) return { success: false, error: 'No recipient email' };
   try {
+    var payload = {
+      from: RESEND_FROM_EMAIL,
+      to: Array.isArray(to) ? to : [String(to).trim()],
+      subject: subject,
+      html: html
+    };
+    if (options.replyTo) payload.reply_to = options.replyTo;
+    if (options.bcc) payload.bcc = Array.isArray(options.bcc) ? options.bcc : [options.bcc];
+
     var response = UrlFetchApp.fetch('https://api.resend.com/emails', {
       method: 'post',
       headers: {
         'Authorization': 'Bearer ' + RESEND_API_KEY,
         'Content-Type': 'application/json'
       },
-      payload: JSON.stringify({
-        from: RESEND_FROM_EMAIL,
-        to: [String(to).trim()],
-        subject: subject,
-        html: html
-      }),
+      payload: JSON.stringify(payload),
       muteHttpExceptions: true
     });
     var code = response.getResponseCode();
     var body = {};
     try { body = JSON.parse(response.getContentText()); } catch (e) {}
     if (code >= 200 && code < 300) return { success: true, id: body.id };
-    return { success: false, error: body.message || response.getContentText() };
+    return { success: false, error: body.message || response.getContentText(), status: code };
   } catch (e) {
     return { success: false, error: e.message };
   }
+}
+
+/** Run once in Apps Script editor: Run → testResendEmail */
+function testResendEmail() {
+  return sendEmailViaResend(
+    ADMIN_NOTIFY_EMAIL,
+    'InstaHelp — Resend connected',
+    '<p>Congrats on sending your <strong>first email</strong> from InstaHelp Code.gs!</p>'
+  );
 }
 
 function emailWrapper(title, bodyHtml) {
@@ -131,7 +146,14 @@ function sendVendorApplicationEmail(vendor) {
     '<p><strong>Reference:</strong> ' + vid + '</p>' +
     '<p>Our team will review your details within 24–48 hours. Once approved, you will receive another email with your <strong>live store link</strong> and <strong>dashboard access</strong> to customize your page.</p>' +
     '<p>Your public store page will not be visible until admin approval.</p>');
-  return sendEmailViaResend(email, 'InstaHelp — Vendor application received', html);
+  var result = sendEmailViaResend(email, 'InstaHelp — Vendor application received', html, {
+    replyTo: ADMIN_NOTIFY_EMAIL
+  });
+  sendEmailViaResend(ADMIN_NOTIFY_EMAIL, 'New vendor application — ' + vid,
+    '<p><strong>' + (vendor.BusinessName || 'New vendor') + '</strong> applied.</p>' +
+    '<p>Reference: ' + vid + '<br>Email: ' + email + '</p>' +
+    '<p>Review in Admin → Approve to send live store link.</p>');
+  return result;
 }
 
 function sendVendorApprovedEmail(vendor) {
@@ -147,7 +169,9 @@ function sendVendorApprovedEmail(vendor) {
     '<p>Customize products, design, and leads from your dashboard:</p>' +
     '<p><a href="' + dashUrl + '">' + dashUrl + '</a></p>' +
     '<p>All updates you make in the dashboard will reflect on your live store page.</p>');
-  return sendEmailViaResend(email, 'InstaHelp — Your store is approved & live!', html);
+  return sendEmailViaResend(email, 'InstaHelp — Your store is approved & live!', html, {
+    replyTo: ADMIN_NOTIFY_EMAIL
+  });
 }
 
 function sendVendorRejectedEmail(vendor, notes) {
@@ -158,7 +182,9 @@ function sendVendorRejectedEmail(vendor, notes) {
     '<p>Thank you for your interest in InstaHelp Store Builder. Unfortunately we could not approve your application at this time.</p>' +
     (notes ? '<p><strong>Note:</strong> ' + notes + '</p>' : '') +
     '<p>Questions? Reply to this email or WhatsApp us at +91 70227 02220.</p>');
-  return sendEmailViaResend(email, 'InstaHelp — Vendor application update', html);
+  return sendEmailViaResend(email, 'InstaHelp — Vendor application update', html, {
+    replyTo: ADMIN_NOTIFY_EMAIL
+  });
 }
 
 // ─── JSON API (Vercel / external frontend) ─────────────────────

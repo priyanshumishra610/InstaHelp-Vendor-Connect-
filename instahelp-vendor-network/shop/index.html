@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(function(){var F='instahelp-vendor-network',b='/';if(location.protocol==='file:'){var h=location.href.split('#')[0].split('?')[0];b=h.slice(0,h.lastIndexOf('/')+1);}else{var p=location.pathname,i=p.indexOf('/'+F+'/');if(i!==-1)b=p.substring(0,i+F.length+2);}var el=document.createElement('base');el.setAttribute('data-ih-base','');el.href=b;var hd=document.head||document.documentElement;hd.insertBefore(el,hd.firstChild);window.INSTAHELP_BASE=b;})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store | InstaHelp</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shared.css">
+  <link rel="stylesheet" href="/css/shop-templates.css">
+  <style>
+    body { margin: 0; }
+    .shop-loader { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #fafafa; }
+    .shop-error { text-align: center; padding: 4rem 1.5rem; }
+    .share-bar { position: fixed; top: 1rem; right: 1rem; z-index: 80; display: flex; gap: 0.5rem; }
+    .share-btn { width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    @media(max-width:768px){ .share-bar{top:auto;bottom:5rem;right:1rem;flex-direction:column} }
+  </style>
+</head>
+<body>
+  <div id="shop-loader" class="shop-loader">
+    <div style="text-align:center"><div class="skeleton" style="width:64px;height:64px;border-radius:50%;margin:0 auto 1rem"></div><div class="skeleton" style="width:180px;height:16px;margin:0 auto"></div></div>
+  </div>
+  <div id="shop-root" style="display:none"></div>
+  <div class="share-bar" id="share-bar" style="display:none">
+    <button class="share-btn" id="btn-share" title="Share">🔗</button>
+    <button class="share-btn" id="btn-qr" title="QR Code">▦</button>
+  </div>
+  <div class="modal-overlay" id="qr-modal">
+    <div class="modal" style="text-align:center">
+      <div class="modal-header"><h3>Scan to Visit Store</h3><button class="modal-close" data-close-modal>×</button></div>
+      <div id="qr-code"></div>
+      <p class="text-sm text-muted" id="qr-url" style="margin-top:1rem;word-break:break-all"></p>
+    </div>
+  </div>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/shared.js"></script>
+  <script src="/js/shop-templates.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    var shopSlug = '';
+    document.addEventListener('DOMContentLoaded', function() {
+      shopSlug = InstaHelp.getShopSlugFromPath();
+      if (!shopSlug) { showError('Shop not found'); return; }
+
+      var traffic = InstaHelp.getQueryParam('utm_source') || document.referrer || 'direct';
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res.success) { showError(res.error || 'Store not found'); return; }
+          var store = res.store;
+          StoreActions.setVendor(store.vendor);
+          document.getElementById('shop-root').innerHTML = StoreTemplates.render(store);
+          document.getElementById('shop-root').style.display = 'block';
+          document.getElementById('shop-loader').style.display = 'none';
+          document.title = store.vendor.BusinessName + ' | InstaHelp';
+          document.getElementById('share-bar').style.display = 'flex';
+          google.script.run.recordView(store.vendor.VendorID, traffic);
+          setupShare(store.vendor);
+        })
+        .withFailureHandler(function(err) { showError(err.message); })
+        .getVendorStore(shopSlug);
+    });
+
+    function showError(msg) {
+      document.getElementById('shop-loader').innerHTML = '<div class="shop-error"><h2>Store Unavailable</h2><p class="text-muted">' + msg + '</p></div>';
+    }
+
+    function setupShare(v) {
+      var url = INSTAHELP_CONFIG.getShopUrl(v.ShopSlug);
+      document.getElementById('btn-share').onclick = function() {
+        if (navigator.share) navigator.share({ title: v.BusinessName, url: url });
+        else InstaHelp.copyToClipboard(url);
+      };
+      document.getElementById('btn-qr').onclick = function() {
+        document.getElementById('qr-code').innerHTML = '';
+        new QRCode(document.getElementById('qr-code'), { text: url, width: 200, height: 200 });
+        document.getElementById('qr-url').textContent = url;
+        InstaHelp.openModal('qr-modal');
+      };
+    }
+  </script>
+</body>
+</html>

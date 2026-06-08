@@ -14,6 +14,12 @@ window.INSTAHELP_CONFIG = {
     return window.location.origin + this.getAppRoot();
   },
   getShopUrl: function(slug) {
-    return window.location.origin + this.path('shop/' + encodeURIComponent(slug));
+    return window.location.origin + '/shop/' + encodeURIComponent(slug);
+  },
+  routes: {
+    home: '/',
+    register: '/vendors/apply',
+    dashboard: '/vendor/dashboard',
+    admin: '/admin/vendors'
   }
 };

@@ -1,0 +1,15 @@
+{
+  "buildCommand": "cd instahelp-vendor-network && npm run build",
+  "outputDirectory": "instahelp-vendor-network",
+  "rewrites": [
+    { "source": "/shop/:slug", "destination": "/shop/index.html" }
+  ],
+  "redirects": [
+    { "source": "/vendor-registration.html", "destination": "/vendors/apply", "permanent": true },
+    { "source": "/vendor-dashboard.html", "destination": "/vendor/dashboard", "permanent": true },
+    { "source": "/admin-dashboard.html", "destination": "/admin/vendors", "permanent": true },
+    { "source": "/shop.html", "destination": "/", "permanent": false },
+    { "source": "/showcase", "destination": "/", "permanent": false },
+    { "source": "/showcase.html", "destination": "/", "permanent": true }
+  ]
+}

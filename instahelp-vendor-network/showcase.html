@@ -373,7 +373,7 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
   nav.main-nav{display:none}.nav-ham{display:flex}
   .nav-btns .nav-call{display:none}
   .nav-btns .nav-vendor{display:inline-flex;font-size:.8rem;padding:8px 14px}
-  nav.main-nav a[href="vendors/apply"]{font-weight:700;color:var(--ink)}
+  nav.main-nav a[href="/vendors/apply"]{font-weight:700;color:var(--ink)}
   .svc-grid{grid-template-columns:repeat(2,1fr)}
   .svc-card.tall{grid-row:span 1}
   .svc-card.wide{grid-column:span 2}
@@ -406,7 +406,7 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
 <!-- STORE BUILDER PROMO -->
 <div class="promo-banner" id="promo-banner" role="region" aria-label="Announcement">
   <span>✦ <strong>NEW:</strong> InstaHelp Store Builder — launch your online shop with premium templates &amp; Razorpay payments.</span>
-  <a href="vendors/apply">Register as Vendor →</a>
+  <a href="/vendors/apply">Register as Vendor →</a>
   <button type="button" class="promo-close" id="promo-close" aria-label="Dismiss announcement">×</button>
 </div>
 
@@ -419,11 +419,11 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
       <a href="#how-it-works">How it works</a>
       <a href="#faq">FAQ</a>
       <a href="#contact-section">Contact</a>
-      <a href="vendors/apply">Register as Vendor</a>
+      <a href="/vendors/apply">Register as Vendor</a>
     </nav>
     <div class="nav-btns">
       <a href="tel:+917022702220" class="btn btn-ghost nav-call"><i data-lucide="phone" style="width:14px;height:14px"></i> Call</a>
-      <a href="vendors/apply" class="btn btn-dark nav-vendor">Register as Vendor</a>
+      <a href="/vendors/apply" class="btn btn-dark nav-vendor">Register as Vendor</a>
       <a href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20with..." class="btn btn-yellow" target="_blank" rel="noopener">Get it done</a>
     </div>
     <button class="nav-ham" aria-label="Open menu"><span></span><span></span><span></span></button>
@@ -701,7 +701,7 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
   </div>
 </div>
 
-<script src="js/config.js"></script>
+<script src="/js/config.js"></script>
 <script>
 // ── Promo banner dismiss ──
 (function(){var b=document.getElementById('promo-banner'),c=document.getElementById('promo-close');if(localStorage.getItem('ih-promo-dismissed')==='1'&&b)b.classList.add('hidden');if(c)c.addEventListener('click',function(){if(b){b.classList.add('hidden');localStorage.setItem('ih-promo-dismissed','1');}});})();

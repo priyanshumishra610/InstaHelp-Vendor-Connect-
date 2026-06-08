@@ -1,9 +1,10 @@
 {
   "rewrites": [
-    { "source": "/vendors/apply", "destination": "/vendor-registration.html" },
-    { "source": "/shop/:slug", "destination": "/shop.html" },
-    { "source": "/vendor/dashboard", "destination": "/vendor-dashboard.html" },
-    { "source": "/admin/vendors", "destination": "/admin-dashboard.html" },
-    { "source": "/showcase", "destination": "/index.html" }
+    { "source": "/shop/:slug", "destination": "/shop/index.html" }
+  ],
+  "redirects": [
+    { "source": "/vendor-registration.html", "destination": "/vendors/apply" },
+    { "source": "/vendor-dashboard.html", "destination": "/vendor/dashboard" },
+    { "source": "/admin-dashboard.html", "destination": "/admin/vendors" }
   ]
 }

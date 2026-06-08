@@ -1,19 +1,13 @@
 {
   "buildCommand": "npm run build",
   "rewrites": [
-    { "source": "/vendors/apply", "destination": "/vendor-registration.html" },
-    { "source": "/shop/:slug", "destination": "/shop.html" },
-    { "source": "/vendor/dashboard", "destination": "/vendor-dashboard.html" },
-    { "source": "/admin/vendors", "destination": "/admin-dashboard.html" },
-    { "source": "/showcase", "destination": "/index.html" }
+    { "source": "/shop/:slug", "destination": "/shop/index.html" }
   ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
-    }
+  "redirects": [
+    { "source": "/vendor-registration.html", "destination": "/vendors/apply", "permanent": true },
+    { "source": "/vendor-dashboard.html", "destination": "/vendor/dashboard", "permanent": true },
+    { "source": "/admin-dashboard.html", "destination": "/admin/vendors", "permanent": true },
+    { "source": "/showcase", "destination": "/", "permanent": false },
+    { "source": "/showcase.html", "destination": "/", "permanent": true }
   ]
 }
