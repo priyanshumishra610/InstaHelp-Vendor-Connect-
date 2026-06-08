@@ -11,6 +11,7 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link rel="stylesheet" href="/css/shared.css">
+  <link rel="stylesheet" href="/css/mobile.css">
   <style>
     .page-section{display:none}.page-section.active{display:block;animation:fadeIn .3s}
     .chart-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem}
@@ -32,7 +33,6 @@
     <span style="font-weight:700">Store Builder</span>
     <button class="btn btn-icon" id="theme-toggle"><i data-lucide="moon"></i></button>
   </div>
-  <div id="status-banner" style="display:none;margin:0;padding:0.875rem 1.25rem;font-size:0.875rem;font-weight:600;text-align:center"></div>
   <div class="dashboard-layout">
     <aside class="sidebar">
       <div class="sidebar-logo"><div class="sidebar-logo-mark">IH</div><div><div style="font-weight:700">InstaHelp</div><div class="text-xs text-muted">Store Builder</div></div></div>
@@ -50,6 +50,7 @@
       </div>
     </aside>
     <main class="dashboard-main">
+      <div id="status-banner" class="status-banner" style="display:none"></div>
       <!-- Overview -->
       <section class="page-section active" id="page-overview">
         <div class="dashboard-header">

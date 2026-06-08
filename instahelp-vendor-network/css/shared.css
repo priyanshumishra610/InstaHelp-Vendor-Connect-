@@ -300,11 +300,11 @@ tr:hover td { background: var(--surface-elevated); }
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
-  .dashboard-main { margin-left: 0; padding: 1.25rem; padding-top: 4.5rem; }
+  .dashboard-main { margin-left: 0; }
   .mobile-header {
     position: fixed; top: 0; left: 0; right: 0; z-index: 99;
     background: var(--surface); border-bottom: 1px solid var(--border-light);
-    padding: 0.875rem 1.25rem; display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
   }
 }
 
