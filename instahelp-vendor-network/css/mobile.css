@@ -10,14 +10,12 @@
     padding-right: 0.75rem !important;
   }
 
-  /* ─── Stop sideways / layout overflow ─── */
+  /* ─── Stop sideways scroll (not on layout — avoids clipping sidebar) ─── */
   html {
-    overflow-x: hidden;
     width: 100%;
   }
 
   body {
-    overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
     position: relative;
@@ -132,6 +130,13 @@
     height: 44px;
     min-height: 44px;
     padding: 0 0.625rem;
+    z-index: 110;
+  }
+
+  .mobile-header .btn-icon {
+    position: relative;
+    z-index: 111;
+    touch-action: manipulation;
   }
 
   .mobile-header > span {
@@ -147,12 +152,12 @@
   .dashboard-layout {
     padding-top: 44px;
     min-height: 100vh;
-    overflow-x: hidden;
   }
 
   .dashboard-main {
     padding: 0.75rem 0.75rem 1.25rem;
-    overflow-x: hidden;
+    overflow-x: auto;
+    max-width: 100vw;
   }
 
   .status-banner,

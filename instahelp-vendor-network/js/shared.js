@@ -140,8 +140,53 @@ var InstaHelp = (function() {
   function initSidebar() {
     var toggle = document.getElementById('sidebar-toggle');
     var sidebar = document.querySelector('.sidebar');
-    if (toggle && sidebar) {
-      toggle.addEventListener('click', function() { sidebar.classList.toggle('open'); });
+    if (!toggle || !sidebar) return;
+    if (toggle.dataset.sidebarBound === '1') return;
+    toggle.dataset.sidebarBound = '1';
+    toggle.setAttribute('type', 'button');
+
+    var backdrop = document.getElementById('sidebar-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'sidebar-backdrop';
+      backdrop.className = 'sidebar-backdrop';
+      backdrop.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(backdrop);
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('active');
+      backdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('active');
+      backdrop.setAttribute('aria-hidden', 'false');
+    }
+
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (sidebar.classList.contains('open')) closeSidebar();
+      else openSidebar();
+    });
+
+    backdrop.addEventListener('click', closeSidebar);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeSidebar();
+    });
+  }
+
+  function closeSidebar() {
+    var sidebar = document.querySelector('.sidebar');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) {
+      backdrop.classList.remove('active');
+      backdrop.setAttribute('aria-hidden', 'true');
     }
   }
 
@@ -181,6 +226,7 @@ var InstaHelp = (function() {
     initTheme: initTheme,
     toggleTheme: toggleTheme,
     initSidebar: initSidebar,
+    closeSidebar: closeSidebar,
     openModal: openModal,
     closeModal: closeModal
   };

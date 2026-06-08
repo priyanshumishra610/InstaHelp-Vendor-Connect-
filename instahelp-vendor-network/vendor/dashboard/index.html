@@ -29,7 +29,7 @@
 </head>
 <body>
   <div class="mobile-header">
-    <button class="btn btn-icon" id="sidebar-toggle"><i data-lucide="menu"></i></button>
+    <button type="button" class="btn btn-icon" id="sidebar-toggle" aria-label="Open menu"><i data-lucide="menu"></i></button>
     <span style="font-weight:700">Store Builder</span>
     <button class="btn btn-icon" id="theme-toggle"><i data-lucide="moon"></i></button>
   </div>
@@ -450,6 +450,7 @@
         document.querySelectorAll('.page-section').forEach(function(s){s.classList.remove('active');});
         document.getElementById('page-'+n.dataset.page).classList.add('active');
         document.querySelector('.sidebar').classList.remove('open');
+        InstaHelp.closeSidebar();
         InstaHelp.initLucide();
       });
     });
