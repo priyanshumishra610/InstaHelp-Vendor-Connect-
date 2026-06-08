@@ -17,7 +17,16 @@ var InstaHelpAPI = (function() {
       body: JSON.stringify(payload),
       redirect: 'follow'
     }).then(function(res) {
-      return res.json();
+      return res.text().then(function(text) {
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          return {
+            success: false,
+            error: 'API returned invalid JSON. Redeploy Code.gs as Web App (Execute as Me, Anyone).'
+          };
+        }
+      });
     });
   }
 

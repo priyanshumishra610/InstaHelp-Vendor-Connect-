@@ -304,20 +304,28 @@ function doPost(e) {
 
 // ─── Sheet Helpers ─────────────────────────────────────────────
 function initializeSheets() {
-  var ss = getSpreadsheet();
   Object.keys(SHEETS).forEach(function(key) {
-    var sheetName = SHEETS[key];
-    var sheet = ss.getSheetByName(sheetName);
-    if (!sheet) {
-      sheet = ss.insertSheet(sheetName);
-      if (HEADERS[key]) {
-        sheet.getRange(1, 1, 1, HEADERS[key].length).setValues([HEADERS[key]]);
-        sheet.getRange(1, 1, 1, HEADERS[key].length).setFontWeight('bold').setBackground('#1a1a2e').setFontColor('#ffffff');
-        sheet.setFrozenRows(1);
-      }
-    }
+    ensureSheetHeaders(key);
   });
   return { success: true };
+}
+
+function ensureSheetHeaders(key) {
+  var sheetName = SHEETS[key];
+  var expected = HEADERS[key];
+  if (!expected) return;
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet) sheet = ss.insertSheet(sheetName);
+  var row1 = sheet.getLastRow() >= 1
+    ? sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), expected.length)).getValues()[0]
+    : [];
+  var needsHeaders = sheet.getLastRow() === 0 || !row1[0] || String(row1[0]).trim() !== expected[0];
+  if (needsHeaders) {
+    sheet.getRange(1, 1, 1, expected.length).setValues([expected]);
+    sheet.getRange(1, 1, 1, expected.length).setFontWeight('bold').setBackground('#1a1a2e').setFontColor('#ffffff');
+    sheet.setFrozenRows(1);
+  }
 }
 
 function getSpreadsheet() {
@@ -352,12 +360,39 @@ function rowToObject(headers, row) {
 
 function getAllRows(sheetName) {
   var sheet = getSheet(sheetName);
+  if (!sheet || sheet.getLastRow() < 2) return [];
   var data = sheet.getDataRange().getValues();
   if (data.length <= 1) return [];
-  var headers = data[0];
+  var headers = data[0].map(function(h) { return String(h || '').trim(); });
   var rows = [];
-  for (var i = 1; i < data.length; i++) rows.push(rowToObject(headers, data[i]));
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var empty = true;
+    for (var j = 0; j < row.length; j++) {
+      if (row[j] !== '' && row[j] !== null && row[j] !== undefined) { empty = false; break; }
+    }
+    if (empty) continue;
+    var obj = rowToObject(headers, row);
+    if (obj.Status !== undefined && obj.Status !== '') obj.Status = String(obj.Status).toLowerCase().trim();
+    rows.push(obj);
+  }
   return rows;
+}
+
+function vendorToApplicationRow(v) {
+  return {
+    ApplicationID: 'VND_' + v.VendorID,
+    VendorID: v.VendorID,
+    BusinessName: v.BusinessName,
+    OwnerName: v.OwnerName,
+    Phone: v.Phone,
+    Email: v.Email,
+    Plan: v.Plan || 'free',
+    Template: v.Template || 'classic',
+    City: v.City || '',
+    Status: String(v.Status || 'pending').toLowerCase().trim(),
+    SubmittedAt: v.CreatedAt || ''
+  };
 }
 
 function getRowByColumn(sheet, columnIndex, value) {
@@ -590,6 +625,7 @@ function submitVendorApplication(data) {
     var gallery = processMediaArray(data.gallery || [], vendorId + '_gallery');
     var themeColors = data.themeColors ? JSON.stringify(data.themeColors) : '{"primary":"#FFD600","accent":"#0F0F0F"}';
 
+    ensureSheetHeaders('VENDORS');
     if (!existing) {
       getSheet(SHEETS.VENDORS).appendRow([
         vendorId, data.businessName, data.ownerName, data.phone, data.whatsapp || data.phone,
@@ -610,19 +646,24 @@ function submitVendorApplication(data) {
       setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', now);
     }
 
-    getSheet(SHEETS.APPLICATIONS).appendRow([
-      appId, vendorId, data.businessName, data.ownerName, data.phone, data.whatsapp || data.phone,
-      data.email, data.category || '', data.yearsInBusiness || '', data.city || '', data.state || '',
-      data.description || '', data.serviceAreas || '', data.workingHours || '',
-      data.website || '', data.instagram || '', data.facebook || '',
-      logo, cover, gallery, JSON.stringify(data.products || []),
-      planId, templateId, data.paymentId || '',
-      processMediaField(data.gstCertificate, vendorId + '_gst.pdf'),
-      processMediaField(data.shopLicense, vendorId + '_license.pdf'),
-      processMediaField(data.aadhaar, vendorId + '_aadhaar.pdf'),
-      processMediaField(data.pan, vendorId + '_pan.pdf'),
-      'pending', now, '', ''
-    ]);
+    ensureSheetHeaders('APPLICATIONS');
+    try {
+      getSheet(SHEETS.APPLICATIONS).appendRow([
+        appId, vendorId, data.businessName, data.ownerName, data.phone, data.whatsapp || data.phone,
+        data.email, data.category || '', data.yearsInBusiness || '', data.city || '', data.state || '',
+        data.description || '', data.serviceAreas || '', data.workingHours || '',
+        data.website || '', data.instagram || '', data.facebook || '',
+        logo, cover, gallery, JSON.stringify(data.products || []),
+        planId, templateId, data.paymentId || '',
+        processMediaField(data.gstCertificate, vendorId + '_gst.pdf'),
+        processMediaField(data.shopLicense, vendorId + '_license.pdf'),
+        processMediaField(data.aadhaar, vendorId + '_aadhaar.pdf'),
+        processMediaField(data.pan, vendorId + '_pan.pdf'),
+        'pending', now, '', ''
+      ]);
+    } catch (appErr) {
+      Logger.log('Applications row error (vendor still saved): ' + appErr.message);
+    }
 
     if (planId === 'free' || data.paymentVerified) activatePlan(vendorId, planId, 'one_time');
 
@@ -855,7 +896,12 @@ function getAllVendors(adminToken) {
   var auth = checkAdminAuth(adminToken);
   if (auth) return auth;
   try {
-    return { success: true, vendors: getAllRows(SHEETS.VENDORS) };
+    ensureSheetHeaders('VENDORS');
+    var vendors = getAllRows(SHEETS.VENDORS);
+    vendors.forEach(function(v) {
+      if (v.Status !== undefined) v.Status = String(v.Status).toLowerCase().trim();
+    });
+    return { success: true, vendors: vendors };
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -865,7 +911,26 @@ function getAllApplications(adminToken) {
   var auth = checkAdminAuth(adminToken);
   if (auth) return auth;
   try {
-    return { success: true, applications: getAllRows(SHEETS.APPLICATIONS) };
+    ensureSheetHeaders('APPLICATIONS');
+    ensureSheetHeaders('VENDORS');
+    var apps = getAllRows(SHEETS.APPLICATIONS);
+    var vendors = getAllRows(SHEETS.VENDORS);
+    var byVendorId = {};
+    apps.forEach(function(a) {
+      if (a.VendorID) byVendorId[a.VendorID] = a;
+    });
+    vendors.forEach(function(v) {
+      var status = String(v.Status || '').toLowerCase().trim();
+      if (status === 'pending' && v.VendorID && !byVendorId[v.VendorID]) {
+        var synced = vendorToApplicationRow(v);
+        apps.push(synced);
+        byVendorId[v.VendorID] = synced;
+      }
+    });
+    apps.sort(function(a, b) {
+      return String(b.SubmittedAt || '').localeCompare(String(a.SubmittedAt || ''));
+    });
+    return { success: true, applications: apps, pendingCount: apps.filter(function(a) { return a.Status === 'pending'; }).length };
   } catch (e) {
     return { success: false, error: e.message };
   }

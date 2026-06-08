@@ -70,8 +70,15 @@
       </section>
 
       <section class="page-section" id="page-applications">
-        <div class="dashboard-header"><h1>Applications</h1><input class="form-input" id="app-search" placeholder="Search..." style="max-width:280px"></div>
-        <div class="table-wrap"><table><thead><tr><th>Business</th><th>Plan</th><th>Template</th><th>City</th><th>Status</th><th>Actions</th></tr></thead><tbody id="apps-table"></tbody></table></div>
+        <div class="dashboard-header"><h1>Applications</h1>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <span class="badge badge-warning" id="pending-badge" style="display:none">0 pending</span>
+            <button class="btn btn-secondary btn-sm" type="button" id="refresh-apps">Refresh</button>
+            <input class="form-input" id="app-search" placeholder="Search..." style="max-width:280px">
+          </div>
+        </div>
+        <p id="apps-error" class="text-sm" style="color:var(--danger);display:none;margin-bottom:1rem"></p>
+        <div class="table-wrap"><table><thead><tr><th>Business</th><th>Owner</th><th>Plan</th><th>Template</th><th>City</th><th>Status</th><th>Actions</th></tr></thead><tbody id="apps-table"></tbody></table></div>
       </section>
 
       <section class="page-section" id="page-vendors">
@@ -211,35 +218,73 @@
     function kpi(label, val) { return '<div class="kpi-card"><div class="kpi-value">'+val+'</div><div class="kpi-label">'+label+'</div></div>'; }
 
     function loadApps() {
-      google.script.run.withSuccessHandler(function(res) {
-        allApps = res.applications || [];
-        renderApps(allApps);
-      }).getAllApplications(adminToken);
+      var errEl = document.getElementById('apps-error');
+      if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (handleAuthError(res)) return;
+          if (!res || !res.success) {
+            if (errEl) {
+              errEl.textContent = (res && res.error) ? res.error : 'Could not load applications. Check API deployment.';
+              errEl.style.display = 'block';
+            }
+            renderApps([]);
+            return;
+          }
+          allApps = res.applications || [];
+          var pending = res.pendingCount != null ? res.pendingCount : allApps.filter(function(a) { return a.Status === 'pending'; }).length;
+          var badge = document.getElementById('pending-badge');
+          if (badge) {
+            badge.textContent = pending + ' pending';
+            badge.style.display = pending > 0 ? 'inline-flex' : 'none';
+          }
+          renderApps(allApps);
+        })
+        .withFailureHandler(function(err) {
+          if (errEl) {
+            errEl.textContent = 'Network error: ' + (err.message || err);
+            errEl.style.display = 'block';
+          }
+          renderApps([]);
+        })
+        .getAllApplications(adminToken);
     }
 
     function renderApps(apps) {
-      document.getElementById('apps-table').innerHTML = apps.reverse().map(function(a) {
-        var sc = a.Status==='approved'?'badge-success':a.Status==='rejected'?'badge-danger':'badge-warning';
-        return '<tr><td><strong>'+a.BusinessName+'</strong></td><td>'+(a.Plan||'free')+'</td><td>'+(a.Template||'classic')+'</td><td>'+(a.City||'')+'</td><td><span class="badge '+sc+'">'+a.Status+'</span></td><td>' +
-          (a.Status==='pending'?'<button class="btn btn-success btn-sm" onclick="approve(\''+a.VendorID+'\')">Approve</button> <button class="btn btn-danger btn-sm" onclick="reject(\''+a.VendorID+'\')">Reject</button>':'—')+'</td></tr>';
-      }).join('') || '<tr><td colspan="6">No applications</td></tr>';
+      document.getElementById('apps-table').innerHTML = apps.map(function(a) {
+        var status = String(a.Status || 'pending').toLowerCase();
+        var sc = status === 'approved' ? 'badge-success' : status === 'rejected' ? 'badge-danger' : 'badge-warning';
+        var vid = (a.VendorID || '').replace(/'/g, "\\'");
+        return '<tr><td><strong>'+(a.BusinessName||'—')+'</strong><div class="text-xs text-muted">'+(a.VendorID||'')+'</div></td><td>'+(a.OwnerName||'—')+'</td><td>'+(a.Plan||'free')+'</td><td>'+(a.Template||'classic')+'</td><td>'+(a.City||'')+'</td><td><span class="badge '+sc+'">'+status+'</span></td><td>' +
+          (status === 'pending' ? '<button class="btn btn-success btn-sm" onclick="approve(\''+vid+'\')">Approve</button> <button class="btn btn-danger btn-sm" onclick="reject(\''+vid+'\')">Reject</button>' : '—')+'</td></tr>';
+      }).join('') || '<tr><td colspan="7">No applications yet. Vendors appear here after they submit the registration form.</td></tr>';
     }
 
     function loadVendors() {
-      google.script.run.withSuccessHandler(function(res) {
-        allVendors = res.vendors || [];
-        renderVendors(allVendors);
-        renderSubs(allVendors);
-      }).getAllVendors(adminToken);
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (handleAuthError(res) || !res || !res.success) return;
+          allVendors = res.vendors || [];
+          renderVendors(allVendors);
+          renderSubs(allVendors);
+        })
+        .withFailureHandler(function() { InstaHelp.toast('Could not load vendors', 'error'); })
+        .getAllVendors(adminToken);
     }
 
     function renderVendors(vendors) {
       document.getElementById('vendors-table').innerHTML = vendors.map(function(v) {
-        return '<tr><td><strong>'+v.BusinessName+'</strong></td><td class="text-sm">'+(v.ShopSlug||'')+'</td><td>'+(v.Plan||'free')+'</td><td>'+(v.Template||'classic')+'</td><td>'+v.Status+'</td><td style="white-space:nowrap">' +
-          '<button class="btn btn-ghost btn-sm" onclick="feature(\''+v.VendorID+'\',true)">Feature</button> ' +
-          '<button class="btn btn-ghost btn-sm" onclick="verify(\''+v.VendorID+'\',true)">Verify</button> ' +
-          '<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="suspend(\''+v.VendorID+'\',true)">Suspend</button></td></tr>';
-      }).join('');
+        var status = String(v.Status || '').toLowerCase();
+        var vid = (v.VendorID || '').replace(/'/g, "\\'");
+        var pendingActions = status === 'pending'
+          ? '<button class="btn btn-success btn-sm" onclick="approve(\''+vid+'\')">Approve</button> <button class="btn btn-danger btn-sm" onclick="reject(\''+vid+'\')">Reject</button> '
+          : '';
+        return '<tr><td><strong>'+(v.BusinessName||'—')+'</strong></td><td class="text-sm">'+(v.ShopSlug||'')+'</td><td>'+(v.Plan||'free')+'</td><td>'+(v.Template||'classic')+'</td><td><span class="badge '+(status==='active'?'badge-success':status==='pending'?'badge-warning':'badge-neutral')+'">'+status+'</span></td><td style="white-space:nowrap">' +
+          pendingActions +
+          '<button class="btn btn-ghost btn-sm" onclick="feature(\''+vid+'\',true)">Feature</button> ' +
+          '<button class="btn btn-ghost btn-sm" onclick="verify(\''+vid+'\',true)">Verify</button> ' +
+          '<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="suspend(\''+vid+'\',true)">Suspend</button></td></tr>';
+      }).join('') || '<tr><td colspan="6">No vendors</td></tr>';
     }
 
     function renderSubs(vendors) {
@@ -296,6 +341,10 @@
     function verify(id,v) { google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r))loadVendors();}).verifyVendor(id,v,adminToken); }
     function suspend(id,v) { google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r))loadVendors();}).suspendVendor(id,v,adminToken); }
     function setPlan(id,plan) { google.script.run.withSuccessHandler(function(r){if(!handleAuthError(r)){loadVendors();InstaHelp.toast('Plan updated','success');}}).adminSetVendorPlan(id,plan,adminToken); }
+
+    document.getElementById('refresh-apps').addEventListener('click', function() {
+      loadApps(); loadVendors(); loadStats(); InstaHelp.toast('Refreshed', 'success');
+    });
 
     document.getElementById('app-search').addEventListener('input', function(e) {
       var q = e.target.value.toLowerCase();
