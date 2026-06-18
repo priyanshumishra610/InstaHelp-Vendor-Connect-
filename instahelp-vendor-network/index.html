@@ -100,13 +100,15 @@ button{cursor:pointer;font-family:var(--font);border:none;background:none}
 .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
 /* HEADER */
 header{position:sticky;top:0;z-index:200;background:rgba(247,247,245,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
-.nav-inner{display:flex;align-items:center;gap:20px;height:62px}
-.logo{font-weight:800;font-size:1.28rem;letter-spacing:-.025em;color:var(--ink);white-space:nowrap}
+.nav-inner{display:flex;align-items:center;gap:16px;height:60px;position:relative}
+.logo{font-weight:800;font-size:1.28rem;letter-spacing:-.025em;color:var(--ink);white-space:nowrap;flex-shrink:0}
 .logo sup{font-size:.55em;vertical-align:super;font-weight:700}
-nav.main-nav{display:flex;gap:24px;margin-left:auto}
-nav.main-nav a{font-size:.875rem;font-weight:500;color:var(--ink2);transition:color .2s}
-nav.main-nav a:hover{color:var(--ink)}
-.nav-btns{display:flex;gap:10px;align-items:center;margin-left:16px}
+nav.main-nav{display:flex;gap:2px;margin-left:auto;align-items:center}
+nav.main-nav a{font-size:.84rem;font-weight:500;color:var(--ink2);padding:8px 12px;border-radius:8px;transition:color .2s,background .15s;white-space:nowrap}
+nav.main-nav a:hover{color:var(--ink);background:rgba(15,15,15,.05)}
+nav.main-nav a.nav-extra{font-weight:600;color:var(--ink)}
+nav.main-nav a.nav-extra:hover{background:rgba(255,214,0,.22)}
+.nav-btns{display:flex;gap:8px;align-items:center;margin-left:12px;flex-shrink:0}
 .btn{display:inline-flex;align-items:center;gap:7px;border-radius:50px;font-weight:600;font-size:.875rem;padding:9px 20px;transition:all var(--tr)}
 .btn-ghost{border:1.5px solid var(--border2);color:var(--ink2)}
 .btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
@@ -114,8 +116,8 @@ nav.main-nav a:hover{color:var(--ink)}
 .btn-yellow:hover{background:var(--yellow-d);transform:translateY(-1px);box-shadow:var(--shadow-md)}
 .btn-dark{background:var(--ink);color:#fff}
 .btn-dark:hover{background:#23263a;transform:translateY(-1px);box-shadow:var(--shadow-md)}
-.nav-ham{display:none;flex-direction:column;gap:5px;padding:6px;margin-left:auto}
-.nav-ham span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:.3s}
+.nav-ham{display:none;flex-direction:column;gap:5px;padding:6px;margin-left:4px;flex-shrink:0;background:none;border:none;cursor:pointer}
+.nav-ham span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:transform .25s ease,opacity .2s ease}
 /* PROMO BANNER */
 .promo-banner{background:linear-gradient(90deg,#FFD600 0%,#FFE566 45%,#FFD600 100%);background-size:200% 100%;animation:promoShine 5s ease infinite;color:var(--ink);text-align:center;padding:11px 48px 11px 16px;font-size:.84rem;font-weight:500;position:relative;z-index:201;border-bottom:1px solid rgba(0,0,0,.06)}
 .promo-banner strong{font-weight:800}
@@ -372,9 +374,7 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
   .section{padding:60px 0}
   nav.main-nav{display:none}.nav-ham{display:flex}
   .nav-btns .nav-call{display:none}
-  .nav-btns .nav-gift{display:inline-flex;font-size:.8rem;padding:8px 12px}
-  .nav-btns .nav-vendor{display:inline-flex;font-size:.8rem;padding:8px 14px}
-  nav.main-nav a[href="/vendors/apply"]{font-weight:700;color:var(--ink)}
+  .nav-btns{margin-left:auto}
   .svc-grid{grid-template-columns:repeat(2,1fr)}
   .svc-card.tall{grid-row:span 1}
   .svc-card.wide{grid-column:span 2}
@@ -421,16 +421,14 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
       <a href="#how-it-works">How it works</a>
       <a href="#faq">FAQ</a>
       <a href="#contact-section">Contact</a>
-      <a href="/gift-cards"><i data-lucide="gift" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"></i>Gift Cards</a>
-      <a href="/vendors/apply">Register as Vendor</a>
+      <a href="/gift-cards" class="nav-extra">Gift Cards</a>
+      <a href="/vendors/apply" class="nav-extra">For Vendors</a>
     </nav>
     <div class="nav-btns">
       <a href="tel:+917022702220" class="btn btn-ghost nav-call"><i data-lucide="phone" style="width:14px;height:14px"></i> Call</a>
-      <a href="/gift-cards" class="btn btn-ghost nav-gift"><i data-lucide="gift" style="width:14px;height:14px"></i> Gift Cards</a>
-      <a href="/vendors/apply" class="btn btn-dark nav-vendor">Register as Vendor</a>
       <a href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20with..." class="btn btn-yellow" target="_blank" rel="noopener">Get it done</a>
     </div>
-    <button class="nav-ham" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <button class="nav-ham" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
 </header>
 
@@ -882,16 +880,18 @@ if(nc)nc.addEventListener('click',function(){var n=document.getElementById('noti
 
 // ── Mobile nav ──
 var ham=document.querySelector('.nav-ham');
-if(ham)ham.addEventListener('click',function(){
+if(ham)ham.addEventListener('click',function(e){
+  e.stopPropagation();
   var nav=document.querySelector('nav.main-nav');if(!nav)return;
   var open=nav.getAttribute('data-open')==='true';
-  if(open){nav.removeAttribute('style');nav.removeAttribute('data-open');}
-  else{
-    var hdr=document.querySelector('header');
-    var top=hdr?Math.round(hdr.getBoundingClientRect().bottom+window.scrollY):52;
-    Object.assign(nav.style,{display:'flex',flexDirection:'column',position:'absolute',top:top+'px',left:'0',right:'0',background:'rgba(247,247,245,.97)',borderBottom:'1px solid var(--border)',padding:'12px 16px',gap:'12px',zIndex:'100'});
-    nav.setAttribute('data-open','true');
-  }
+  if(open){nav.removeAttribute('data-open');ham.setAttribute('aria-expanded','false');document.body.classList.remove('nav-menu-open');}
+  else{nav.setAttribute('data-open','true');ham.setAttribute('aria-expanded','true');document.body.classList.add('nav-menu-open');}
+});
+document.addEventListener('click',function(e){
+  var nav=document.querySelector('nav.main-nav');var ham=document.querySelector('.nav-ham');
+  if(!nav||nav.getAttribute('data-open')!=='true')return;
+  if(e.target.closest('nav.main-nav a')){nav.removeAttribute('data-open');if(ham)ham.setAttribute('aria-expanded','false');document.body.classList.remove('nav-menu-open');return;}
+  if(!e.target.closest('header')){nav.removeAttribute('data-open');if(ham)ham.setAttribute('aria-expanded','false');document.body.classList.remove('nav-menu-open');}
 });
 
 // ── DevTools protection ──
