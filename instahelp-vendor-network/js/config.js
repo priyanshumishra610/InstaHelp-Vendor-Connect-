@@ -23,6 +23,7 @@ window.INSTAHELP_CONFIG = {
     home: '/',
     register: '/vendors/apply',
     dashboard: '/vendor/dashboard',
-    admin: '/admin/vendors'
+    admin: '/admin/vendors',
+    giftCards: '/gift-cards'
   }
 };

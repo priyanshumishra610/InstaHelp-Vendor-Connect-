@@ -90,7 +90,8 @@ var InstaHelpAPI = (function() {
     'getVendorProducts', 'addProduct', 'updateProduct', 'deleteProduct', 'bulkAddProducts',
     'saveLead', 'getVendorLeads', 'updateLeadStatus', 'exportLeadsCSV',
     'recordView', 'recordWhatsappClick', 'recordCallClick', 'getAnalytics', 'getVendorAnalytics',
-    'generateQRCode', 'getVendorPayments', 'submitShowcaseForm', 'initializeSheets', 'setupSheetReviewControls'
+    'generateQRCode', 'getVendorPayments', 'submitShowcaseForm', 'getHubbleSsoToken',
+    'initializeSheets', 'setupSheetReviewControls'
   ];
 
   methods.forEach(function(method) {

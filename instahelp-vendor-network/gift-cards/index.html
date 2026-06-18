@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(function(){var F='instahelp-vendor-network',b='/';if(location.protocol==='file:'){var h=location.href.split('#')[0].split('?')[0];b=h.slice(0,h.lastIndexOf('/')+1);}else{var p=location.pathname,i=p.indexOf('/'+F+'/');if(i!==-1)b=p.substring(0,i+F.length+2);}var el=document.createElement('base');el.setAttribute('data-ih-base','');el.href=b;var hd=document.head||document.documentElement;hd.insertBefore(el,hd.firstChild);window.INSTAHELP_BASE=b;})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Gift Cards | InstaHelp</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shared.css">
+  <link rel="stylesheet" href="/css/mobile.css">
+  <style>
+    body { margin: 0; background: #f7f7f5; }
+    .gc-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      padding: 0.625rem 1rem; background: #fff; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .gc-top a { font-weight: 700; color: var(--ink); font-size: 0.875rem; }
+    .gc-top h1 { font-size: 1rem; font-weight: 700; margin: 0; flex: 1; text-align: center; }
+    .gc-gate {
+      max-width: 400px; margin: 2rem auto; padding: 0 1rem;
+    }
+    .gc-gate .card { padding: 1.5rem; }
+    .gc-sdk-wrap {
+      display: none; position: fixed; inset: 0; top: 49px; background: #fff; z-index: 40;
+    }
+    .gc-sdk-wrap.active { display: block; }
+    .gc-loading, .gc-error {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 1.5rem; text-align: center;
+      background: #fff;
+    }
+    .gc-error { display: none; }
+    .gc-error.show { display: flex; }
+    #hubble-sdk {
+      width: 100%; height: 100%; border: none; display: none;
+    }
+    #hubble-sdk.ready { display: block; }
+  </style>
+</head>
+<body>
+  <div class="gc-top">
+    <a href="/">← InstaHelp</a>
+    <h1>Gift Cards</h1>
+    <span style="width:72px"></span>
+  </div>
+
+  <div class="gc-gate" id="gc-gate">
+    <div class="card">
+      <h2 style="margin-bottom:0.5rem;font-size:1.25rem">Browse gift cards</h2>
+      <p class="text-sm text-muted" style="margin-bottom:1.25rem">450+ brands — powered by Hubble. Enter your mobile to continue.</p>
+      <form id="gc-form">
+        <div class="form-group">
+          <label class="form-label">Your name</label>
+          <input class="form-input" id="gc-name" type="text" placeholder="Full name" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile number *</label>
+          <input class="form-input" id="gc-phone" type="tel" placeholder="10-digit mobile" required autocomplete="tel" inputmode="numeric" maxlength="14">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email (optional)</label>
+          <input class="form-input" id="gc-email" type="email" placeholder="you@email.com" autocomplete="email">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="gc-submit">Continue to Gift Cards</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="gc-sdk-wrap" id="gc-sdk-wrap">
+    <div class="gc-loading" id="gc-loading">
+      <div class="skeleton" style="width:48px;height:48px;border-radius:50%;margin-bottom:1rem"></div>
+      <p class="text-sm text-muted">Loading gift cards…</p>
+    </div>
+    <div class="gc-error" id="gc-error">
+      <p style="margin-bottom:1rem" id="gc-error-msg">Unable to load gift cards.</p>
+      <button type="button" class="btn btn-primary btn-sm" id="gc-retry">Try again</button>
+    </div>
+    <iframe id="hubble-sdk" title="InstaHelp Gift Cards" allow="clipboard-write *"></iframe>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/shared.js"></script>
+  <script>
+    var savedPhone = '';
+    try {
+      savedPhone = localStorage.getItem('ih_gc_phone') || '';
+      if (savedPhone) document.getElementById('gc-phone').value = savedPhone;
+      var savedName = localStorage.getItem('ih_gc_name');
+      if (savedName) document.getElementById('gc-name').value = savedName;
+    } catch (e) {}
+
+    function showGate() {
+      document.getElementById('gc-gate').style.display = 'block';
+      document.getElementById('gc-sdk-wrap').classList.remove('active');
+      document.getElementById('hubble-sdk').classList.remove('ready');
+      document.getElementById('hubble-sdk').removeAttribute('src');
+      document.getElementById('gc-loading').style.display = 'flex';
+      document.getElementById('gc-error').classList.remove('show');
+    }
+
+    function openHubbleSdk(sdkUrl) {
+      document.getElementById('gc-gate').style.display = 'none';
+      document.getElementById('gc-sdk-wrap').classList.add('active');
+      var iframe = document.getElementById('hubble-sdk');
+      iframe.classList.remove('ready');
+      document.getElementById('gc-loading').style.display = 'flex';
+      document.getElementById('gc-error').classList.remove('show');
+      iframe.src = sdkUrl;
+    }
+
+    window.addEventListener('message', function(event) {
+      var data = event.data;
+      if (!data || data.type !== 'action') return;
+      if (data.action === 'app_ready') {
+        document.getElementById('gc-loading').style.display = 'none';
+        document.getElementById('hubble-sdk').classList.add('ready');
+      }
+      if (data.action === 'close') showGate();
+      if (data.action === 'error') {
+        document.getElementById('gc-loading').style.display = 'none';
+        document.getElementById('hubble-sdk').classList.remove('ready');
+        document.getElementById('gc-error-msg').textContent = 'Gift cards could not load. Please try again.';
+        document.getElementById('gc-error').classList.add('show');
+      }
+    });
+
+    function startGiftCards(profile) {
+      var btn = document.getElementById('gc-submit');
+      btn.disabled = true;
+      btn.textContent = 'Connecting…';
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = 'Continue to Gift Cards';
+          if (!res || !res.success) {
+            InstaHelp.toast((res && res.error) || 'Could not start gift cards', 'error');
+            return;
+          }
+          try {
+            localStorage.setItem('ih_gc_phone', profile.phone);
+            if (profile.name) localStorage.setItem('ih_gc_name', profile.name);
+            localStorage.setItem('ih_hubble_uid', profile.sub || ('ih_' + profile.phone));
+          } catch (e) {}
+          openHubbleSdk(res.sdkUrl);
+        })
+        .withFailureHandler(function() {
+          btn.disabled = false;
+          btn.textContent = 'Continue to Gift Cards';
+          InstaHelp.toast('Network error', 'error');
+        })
+        .getHubbleSsoToken(profile);
+    }
+
+    document.getElementById('gc-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var phone = document.getElementById('gc-phone').value.trim();
+      var name = document.getElementById('gc-name').value.trim();
+      var email = document.getElementById('gc-email').value.trim();
+      var uid = '';
+      try { uid = localStorage.getItem('ih_hubble_uid') || ''; } catch (err) {}
+      startGiftCards({
+        phone: phone,
+        name: name || 'InstaHelp User',
+        email: email,
+        sub: uid || undefined
+      });
+    });
+
+    document.getElementById('gc-retry').addEventListener('click', showGate);
+
+    var qPhone = new URLSearchParams(location.search).get('phone');
+    if (qPhone) {
+      document.getElementById('gc-phone').value = qPhone;
+      document.getElementById('gc-form').dispatchEvent(new Event('submit'));
+    }
+  </script>
+</body>
+</html>

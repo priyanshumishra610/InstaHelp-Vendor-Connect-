@@ -253,6 +253,9 @@
 
   /* ─── InstaHelp home / showcase ─── */
   .promo-banner {
+    display: block !important;
+    position: relative;
+    z-index: 201;
     padding: 7px 32px 7px 10px;
     font-size: 0.6875rem;
     line-height: 1.3;
@@ -283,13 +286,11 @@
     position: sticky;
     top: 0;
     z-index: 200;
-    overflow: hidden;
   }
 
   .nav-inner {
     height: 46px;
     gap: 6px;
-    overflow: hidden;
   }
 
   .logo {
@@ -304,7 +305,15 @@
     gap: 4px;
     margin-left: auto;
     flex-shrink: 0;
-    max-width: 58%;
+    max-width: 72%;
+  }
+
+  .nav-btns .nav-gift {
+    padding: 5px 9px !important;
+    font-size: 0.6875rem !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 3px;
   }
 
   .nav-ham {

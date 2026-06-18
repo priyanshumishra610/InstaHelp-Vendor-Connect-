@@ -14,8 +14,8 @@ var RAZORPAY_KEY_SECRET = 'BIDVHZossd79AvBRVyPXwsRA';
 var RESEND_API_KEY = 're_PLXzK5Ta_LKZmsjUyRMFwgLnkovLWx1Eu';
 var RESEND_FROM_EMAIL = 'onboarding@resend.dev';
 var ADMIN_NOTIFY_EMAIL = 'instahelpblr@gmail.com';
-// Public site URL (Vercel) — used in approval emails
-var FRONTEND_URL = 'https://insta-help-vendor-connect.vercel.app';
+// Public site URL — used in approval emails and dashboard links
+var FRONTEND_URL = 'https://instahelp.co';
 
 var SHEETS = {
   VENDORS: 'Vendors',
@@ -279,6 +279,7 @@ function routeApi(payload) {
     case 'generateQRCode': return generateQRCode(args[0]);
     case 'getVendorPayments': return getVendorPayments(args[0]);
     case 'submitShowcaseForm': return submitShowcaseForm(args[0]);
+    case 'getHubbleSsoToken': return getHubbleSsoToken(args[0]);
     case 'initializeSheets': return initializeSheets();
     case 'setupSheetReviewControls': return setupSheetReviewControls();
     default: return { success: false, error: 'Unknown action: ' + action };
@@ -1505,6 +1506,124 @@ function getAllShowcaseSubmissions() {
 
 function parseJSONSafe(str, fallback) {
   try { return JSON.parse(str); } catch (e) { return fallback; }
+}
+
+// ─── Hubble Gift Cards SDK (JWT SSO) ───────────────────────────
+// Run installHubbleKeys() ONCE in Apps Script editor after deploy.
+// Private key is stored in Script Properties — never expose to the frontend.
+
+var HUBBLE_CLIENT_ID_DEFAULT = 'instahelp-sdk-1z4JmIpo';
+var HUBBLE_APP_SECRET_DEFAULT = 'Ppo5udAi9CDXlN8nlPZoH8myUwAwsa7UgsKcxvxTeXrWZHhPMqACBhr7e4FDsaN4';
+var HUBBLE_SDK_BASE_URL = 'https://sdk.myhubble.money/';
+
+function getHubbleClientId() {
+  return PropertiesService.getScriptProperties().getProperty('HUBBLE_CLIENT_ID') || HUBBLE_CLIENT_ID_DEFAULT;
+}
+
+function getHubbleAppSecret() {
+  return PropertiesService.getScriptProperties().getProperty('HUBBLE_APP_SECRET') || HUBBLE_APP_SECRET_DEFAULT;
+}
+
+function getHubblePrivateKeyPem() {
+  var key = PropertiesService.getScriptProperties().getProperty('HUBBLE_PRIVATE_KEY');
+  if (!key) throw new Error('Hubble private key missing. Run installHubbleKeys() in Apps Script editor.');
+  return String(key).replace(/\\n/g, '\n').trim();
+}
+
+/** Run once: Apps Script → Run → installHubbleKeys */
+function installHubbleKeys() {
+  var props = PropertiesService.getScriptProperties();
+  props.setProperty('HUBBLE_CLIENT_ID', HUBBLE_CLIENT_ID_DEFAULT);
+  props.setProperty('HUBBLE_APP_SECRET', HUBBLE_APP_SECRET_DEFAULT);
+  props.setProperty('HUBBLE_PRIVATE_KEY',
+    '-----BEGIN RSA PRIVATE KEY-----\n' +
+    'MIIEpQIBAAKCAQEAwwtlsWzChRWXw+8OFm1q2AEmGKO/2m5UO475Nobv4tbLJ+0S\n' +
+    'mlMn2WWw3NbL2KQE0A4Jo/Et7oC1lrrYoLuq/2F3itAjo9l2gPe5BCTwo+Yc12NK\n' +
+    'k4byRFw2Sb93gBZh4+3XPy0JTL2m0X2YxUwbsphD450nW1n50Kysof/z/BXWuCwz\n' +
+    'Wre+Z3mOns5KO4EUuOIx2Ut7YR345jAlgB1HZRJUkaXfN6HMW+thagKxpLMLo3gS\n' +
+    's1fxTL2qQcebZ5AX9OyeWMKt3otvHxpgtnX3JlsU9PmRDe0s0+Qym4i+slKFszh4\n' +
+    'JsKQK7cX9RFX6dO7ooWV4tw+fKGLyXJ82SMTzQIDAQABAoIBACPlzxuupsaTyND5\n' +
+    'CKC8FrQW0goq6T6sm7gygk+02iXn3pBEo+3fbDAo9TpQFkiTN4eLbd7MnuWMrt9F\n' +
+    'GGXM5JYIPFZCJK0dcyAdd+H5Yojn61sBHVK1vZUzW5KLONVMSUwIFFu+UD3dkfxw\n' +
+    'n1OAxIBEYgpcfEfl8YKkpUlTsHYuxG1XPWkFDwQV6Vt2v1qSuxpOHwrw9hGuEPMq\n' +
+    '8M2zeC5/Dl8iIELOCvdM1pJJ+rsMLi9VYyeOhFRfDpLG6xt5hKd1vnnL//bh0eaN\n' +
+    'N1Zs93op3om1kJBXoG2YKk8n0+o6EH5k7YHkwKFoLF/Wwvdx02wvztcvSVUdONW6\n' +
+    'BiD6MoECgYEA663MJcmEFRKjCchJBr9O1G8SIXA91H4Yg7H2FdCnkBaqfiBMlob6\n' +
+    'AMzNxsYFerevp+tbiG3N98DedCp+Kk/1CJ1vG+Xhb+HYz/Yuo94PpWxlbihBdhOz\n' +
+    'j5pZPzIMrOlZ7K7FiuPqTBPvRIrG43HD/uJEnx4sliaOS2nTD3p4Br0CgYEA09yq\n' +
+    'nfezxE26xSiySGxncc1qgF0rAQgIVLSh41tSyMuZWvWaqm0zPVT3iBExyQIBXkvW\n' +
+    'XUHlPTBIlojt4qFrQu/eKd7w00xVZAXV7A3rWe/sjY1tj+Eidsi0gkMGQV4L8Dyp\n' +
+    'WK2NSvdKkX6DnUyJPuTx0fziPmvsf4PaxY3c2lECgYEAgGVW6t82TiSxHgs3fa2L\n' +
+    'zMAWKJF1neZ0hIrXflsGbsFqcPw3vWobmYP6N2h6Y7jewaS/YTwxEeDJUJA12+dj\n' +
+    'nyXl+lTq1IE+FU4RasT30S+UssbLowBourtkE8G4lhsrGn68sEYqxve1SqowYIkC\n' +
+    'NkIfEHDn6YVn0D3+9lfKPCECgYEAlAxe+haPe70pp/8BXtTKEN+P7fWtSII5eB/m\n' +
+    'BP/bQM/t8X8xvqiipthKRb5mQOXy2Nc8DF0w+WpVP0Sen8FXOCZw5GeTeMSd41Ck\n' +
+    'pdkwPuAHOP+8sU+NCt7ELUbzBxjWVOG/IWXeF6XpaPS0umYyfk30ol4KJ765PH6C\n' +
+    'kYzJ6ZECgYEAnsYfh05Rx/Qz2Hh82MX5XsSASgS5jW88fF06aJp+OgYS8jbU+KZY\n' +
+    '8KGzq1WPTP0Sk1qPZoYUeqHok5ZvwZKC/jnHnOsJMTCciqRV9elpGwytKJpbSuY1\n' +
+    'NsiyfgtWv9tmIxAnmVQXicTUJFC+w2o2uyDltMg+W+aMv949eiBZUjA=\n' +
+    '-----END RSA PRIVATE KEY-----'
+  );
+  return { success: true, message: 'Hubble credentials saved to Script Properties' };
+}
+
+function normalizeHubblePhone(phone) {
+  var digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length === 12 && digits.indexOf('91') === 0) digits = digits.slice(2);
+  if (digits.length === 11 && digits.charAt(0) === '0') digits = digits.slice(1);
+  return digits;
+}
+
+function base64UrlEncode(input) {
+  var bytes = (typeof input === 'string') ? Utilities.newBlob(input).getBytes() : input;
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/, '');
+}
+
+function createHubbleJwtRS256(payload) {
+  var header = { alg: 'RS256', typ: 'JWT' };
+  var encHeader = base64UrlEncode(JSON.stringify(header));
+  var encPayload = base64UrlEncode(JSON.stringify(payload));
+  var signingInput = encHeader + '.' + encPayload;
+  var signature = Utilities.computeRsaSha256Signature(signingInput, getHubblePrivateKeyPem());
+  return signingInput + '.' + base64UrlEncode(signature);
+}
+
+function buildHubbleSdkUrl(token) {
+  var base = HUBBLE_SDK_BASE_URL;
+  if (base.charAt(base.length - 1) !== '/') base += '/';
+  return base + '?clientId=' + encodeURIComponent(getHubbleClientId())
+    + '&appSecret=' + encodeURIComponent(getHubbleAppSecret())
+    + '&token=' + encodeURIComponent(token);
+}
+
+function getHubbleSsoToken(profile) {
+  try {
+    profile = profile || {};
+    var phone = normalizeHubblePhone(profile.phoneNumber || profile.phone || '');
+    if (phone.length !== 10) {
+      return { success: false, error: 'Enter a valid 10-digit mobile number' };
+    }
+    var now = Math.floor(new Date().getTime() / 1000);
+    var payload = {
+      sub: String(profile.sub || profile.userId || ('ih_' + phone)),
+      iss: getHubbleClientId(),
+      iat: now,
+      exp: now + 60,
+      phoneNumber: phone
+    };
+    if (profile.name) payload.name = String(profile.name).trim();
+    if (profile.email) payload.email = String(profile.email).trim();
+    if (profile.cohorts && profile.cohorts.length) payload.cohorts = profile.cohorts;
+
+    var token = createHubbleJwtRS256(payload);
+    return {
+      success: true,
+      sdkUrl: buildHubbleSdkUrl(token),
+      expiresIn: 60
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }
 
 function requestChanges(vendorId, notes) {
