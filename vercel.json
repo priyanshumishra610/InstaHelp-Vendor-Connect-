@@ -2,6 +2,7 @@
   "buildCommand": "cd instahelp-vendor-network && npm run build",
   "outputDirectory": "instahelp-vendor-network",
   "rewrites": [
+    { "source": "/app-review", "destination": "/app-review/index.html" },
     { "source": "/shop/:slug", "destination": "/shop/index.html" }
   ],
   "redirects": [
