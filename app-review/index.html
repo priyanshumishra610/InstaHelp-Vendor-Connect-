@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Review the InstaHelp App | Share Feedback</title>
+<meta name="description" content="Share your InstaHelp app review, rate your experience, and tell us what we can improve.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#FFD600">
+<link rel="canonical" href="https://www.instahelp.in/app-review">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest" defer></script>
+<style>
+:root{
+  --yellow:#FFD600;--yellow-d:#E6BE00;--yellow-pale:#FFFBDD;
+  --ink:#12141A;--ink2:#3D4050;--ink3:#7A7E8F;--bg:#F7F7F5;--white:#FFFFFF;
+  --green:#16A34A;--green-wa:#25D366;--border:#E4E4E0;--border2:#CECEC8;
+  --radius:16px;--radius-sm:10px;--radius-xs:7px;--font:'Plus Jakarta Sans',system-ui,sans-serif;
+  --shadow:0 2px 14px rgba(0,0,0,.09),0 1px 3px rgba(0,0,0,.05);
+  --shadow-lg:0 16px 56px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.07);
+  --tr:.3s cubic-bezier(.22,1,.36,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font-family:var(--font)}
+button{cursor:pointer;border:none;background:none}
+.container{max-width:1120px;margin:0 auto;padding:0 24px}
+header{position:sticky;top:0;z-index:20;background:rgba(247,247,245,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-inner{height:64px;display:flex;align-items:center;gap:16px}
+.logo{font-weight:800;font-size:1.28rem;letter-spacing:-.025em;white-space:nowrap}
+.logo sup{font-size:.55em;vertical-align:super}
+.nav-links{display:flex;align-items:center;gap:4px;margin-left:auto}
+.nav-links a{font-size:.86rem;font-weight:600;color:var(--ink2);padding:8px 12px;border-radius:9px;transition:.2s}
+.nav-links a:hover{background:rgba(15,15,15,.05);color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:50px;font-weight:700;font-size:.9rem;padding:10px 20px;transition:all var(--tr)}
+.btn-yellow{background:var(--yellow);color:var(--ink)}
+.btn-yellow:hover{background:var(--yellow-d);transform:translateY(-1px);box-shadow:var(--shadow)}
+.hero{position:relative;overflow:hidden;background:var(--ink);color:#fff}
+.hero::before{content:'';position:absolute;inset:auto -120px -180px auto;width:420px;height:420px;border-radius:50%;background:rgba(255,214,0,.18);filter:blur(20px)}
+.hero::after{content:'';position:absolute;inset:-160px auto auto -160px;width:360px;height:360px;border-radius:50%;background:rgba(255,214,0,.11);filter:blur(24px)}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:.92fr 1.08fr;gap:52px;align-items:center;padding:78px 0 92px}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--yellow);color:var(--ink);padding:5px 13px 5px 8px;border-radius:50px;font-size:.76rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:22px}
+.pill-dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+h1{font-size:clamp(2.35rem,5vw,4.35rem);line-height:1.04;letter-spacing:-.04em;margin-bottom:20px}
+.hero-sub{font-size:1.04rem;color:rgba(255,255,255,.72);max-width:540px;margin-bottom:28px}
+.hero-points{display:grid;gap:12px;margin-top:26px}
+.hero-point{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.72);font-size:.92rem}
+.check{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(22,163,74,.22);color:#4ade80;flex-shrink:0}
+.review-card{background:var(--white);color:var(--ink);border:1px solid var(--border);border-radius:24px;padding:34px;box-shadow:var(--shadow-lg)}
+.form-title{font-size:1.55rem;font-weight:800;letter-spacing:-.025em;margin-bottom:6px}
+.form-sub{font-size:.9rem;color:var(--ink3);margin-bottom:24px}
+.rating-group{margin-bottom:18px}
+.rating-label{font-size:.8rem;font-weight:700;color:var(--ink2);margin-bottom:8px}
+.stars{display:flex;gap:8px;flex-wrap:wrap}
+.star-btn{width:48px;height:48px;border-radius:14px;border:1.5px solid var(--border2);background:var(--bg);font-size:1.3rem;color:#C7A600;transition:.2s}
+.star-btn:hover,.star-btn.active{background:var(--yellow);border-color:var(--yellow);transform:translateY(-2px);box-shadow:var(--shadow)}
+.rating-hint{font-size:.78rem;color:var(--ink3);margin-top:8px;min-height:1.2em}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.fg label{font-size:.78rem;font-weight:700;color:var(--ink2)}
+input[type=text],input[type=tel],input[type=email],select,textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-xs);padding:12px 13px;font-size:.9rem;background:var(--bg);color:var(--ink);transition:border-color .2s,background .2s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--ink);background:#fff}
+textarea{resize:vertical;min-height:118px}
+.consent-row{display:flex;align-items:flex-start;gap:10px;margin:2px 0 16px}
+.consent-row input{width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--ink)}
+.consent-row label{font-size:.78rem;color:var(--ink3);line-height:1.5}
+.btn-submit{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--ink);color:#fff;border-radius:50px;padding:14px;font-weight:800;font-size:.96rem;transition:all var(--tr)}
+.btn-submit:hover{background:#23263a;transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.form-note{font-size:.74rem;color:var(--ink3);text-align:center;margin-top:12px}
+.trust-strip{background:var(--yellow);padding:28px 0}
+.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;text-align:center}
+.trust-num{font-weight:800;font-size:1.7rem;letter-spacing:-.03em;line-height:1}
+.trust-lbl{font-size:.83rem;color:rgba(18,20,26,.65);margin-top:5px}
+.feedback-section{padding:72px 0}
+.feedback-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.info-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.info-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--yellow-pale);margin-bottom:14px}
+.info-title{font-weight:800;margin-bottom:6px}
+.info-text{font-size:.88rem;color:var(--ink3)}
+footer{background:#0D0F14;color:rgba(255,255,255,.5);padding:34px 0}
+.footer-inner{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:.82rem}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap}
+.footer-links a:hover{color:#fff}
+.notif-overlay{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:60}
+.notif-overlay.show{display:flex}
+.notif-panel{background:var(--ink);color:#fff;border-radius:var(--radius-sm);padding:14px 20px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-lg);min-width:320px;max-width:480px}
+.spinner{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;padding:56px 0 68px}
+  .feedback-grid,.trust-grid{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .nav-links a:not(.btn){display:none}
+  .review-card{padding:24px}
+  .frow{grid-template-columns:1fr}
+  .star-btn{width:44px;height:44px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav-inner">
+    <a href="../index.html" class="logo" aria-label="InstaHelp Home">InstaHelp<sup>®</sup></a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="../index.html#services">Services</a>
+      <a href="../index.html#faq">FAQ</a>
+      <a href="../index.html#contact-section">Contact</a>
+      <a href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20want%20to%20share%20app%20feedback." class="btn btn-yellow" target="_blank" rel="noopener">WhatsApp</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="review-heading">
+    <div class="container">
+      <div class="hero-grid">
+        <div>
+          <div class="pill"><span class="pill-dot"></span>App Review</div>
+          <h1 id="review-heading">Help us make InstaHelp better.</h1>
+          <p class="hero-sub">Rate your app experience, tell us what worked, and share what we should improve next. Every review goes straight to the InstaHelp team.</p>
+          <div class="hero-points">
+            <div class="hero-point"><span class="check">✓</span>Share bugs, feature requests, or service feedback.</div>
+            <div class="hero-point"><span class="check">✓</span>Leave your contact details if you want a follow-up.</div>
+            <div class="hero-point"><span class="check">✓</span>Your feedback helps prioritize the next app updates.</div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="form-title">Review the app</div>
+          <div class="form-sub">Takes less than a minute.</div>
+          <form id="appReviewForm" onsubmit="submitAppReview(event)" novalidate autocomplete="on">
+            <div style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true"><input type="text" name="honeypot" tabindex="-1" autocomplete="off"></div>
+            <div class="rating-group">
+              <div class="rating-label">Overall rating</div>
+              <div class="stars" role="radiogroup" aria-label="Overall app rating">
+                <button type="button" class="star-btn" data-rating="1" role="radio" aria-checked="false" aria-label="1 star">★</button>
+                <button type="button" class="star-btn" data-rating="2" role="radio" aria-checked="false" aria-label="2 stars">★</button>
+                <button type="button" class="star-btn" data-rating="3" role="radio" aria-checked="false" aria-label="3 stars">★</button>
+                <button type="button" class="star-btn" data-rating="4" role="radio" aria-checked="false" aria-label="4 stars">★</button>
+                <button type="button" class="star-btn" data-rating="5" role="radio" aria-checked="false" aria-label="5 stars">★</button>
+              </div>
+              <div class="rating-hint" id="ratingHint">Select a rating to begin.</div>
+              <input type="hidden" name="rating" id="reviewRating" required>
+            </div>
+
+            <div class="frow">
+              <div class="fg"><label for="fullname">Your name</label><input type="text" name="fullname" id="fullname" placeholder="Rahul Sharma" maxlength="60" required autocomplete="name"></div>
+              <div class="fg"><label for="phone">Phone / WhatsApp</label><input type="tel" name="phone" id="phone" placeholder="+91 98765 43210" maxlength="15" autocomplete="tel"></div>
+            </div>
+            <div class="frow">
+              <div class="fg"><label for="email">Email</label><input type="email" name="email" id="email" placeholder="rahul@example.com" maxlength="100" autocomplete="email"></div>
+              <div class="fg"><label for="platform">Platform</label><select id="platform" name="platform"><option value="">Select platform</option><option>Android</option><option>iPhone / iOS</option><option>Web app</option><option>Not sure</option></select></div>
+            </div>
+            <div class="frow">
+              <div class="fg"><label for="appVersion">App version</label><input type="text" name="app_version" id="appVersion" placeholder="Optional" maxlength="30"></div>
+              <div class="fg"><label for="recommend">Would you recommend us?</label><select id="recommend" name="recommend"><option value="">Select one</option><option>Yes</option><option>Maybe</option><option>No</option></select></div>
+            </div>
+            <div class="fg"><label for="message">Your feedback</label><textarea name="message" id="message" placeholder="What did you like? What should we improve? Did anything break?" maxlength="1200" required></textarea></div>
+            <input type="hidden" name="service" id="reviewService" value="App Review">
+            <input type="hidden" name="source" value="app_review_page">
+            <input type="hidden" name="prior_payment" value="app_feedback">
+            <input type="hidden" name="referrer_url" id="referrer_url">
+            <input type="hidden" name="landing_page" id="landing_page">
+            <input type="hidden" name="utm_source" id="utm_source">
+            <input type="hidden" name="utm_medium" id="utm_medium">
+            <input type="hidden" name="utm_campaign" id="utm_campaign">
+            <input type="hidden" name="form_token" id="form_token">
+            <input type="hidden" name="form_id" value="app_review_v1">
+            <div class="consent-row"><input type="checkbox" name="evidence_consent" id="evidence_consent" required><label for="evidence_consent">I consent to InstaHelp using this feedback to improve the app and contacting me if follow-up is needed.</label></div>
+            <button type="submit" class="btn-submit" id="reviewSubmitBtn"><i data-lucide="send" style="width:16px;height:16px"></i> Submit Review</button>
+            <div class="form-note">Your review is stored privately for product improvement.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust-strip" aria-label="InstaHelp highlights">
+    <div class="container trust-grid">
+      <div><div class="trust-num">11+</div><div class="trust-lbl">Years helping customers</div></div>
+      <div><div class="trust-num">30+</div><div class="trust-lbl">Cities across India</div></div>
+      <div><div class="trust-num">24/7</div><div class="trust-lbl">Support availability</div></div>
+    </div>
+  </section>
+
+  <section class="feedback-section">
+    <div class="container">
+      <div class="feedback-grid">
+        <div class="info-card"><div class="info-icon"><i data-lucide="bug" style="width:20px;height:20px"></i></div><div class="info-title">Report Issues</div><div class="info-text">Tell us about crashes, slow screens, payment trouble, or anything that blocked your task.</div></div>
+        <div class="info-card"><div class="info-icon"><i data-lucide="sparkles" style="width:20px;height:20px"></i></div><div class="info-title">Request Features</div><div class="info-text">Share what would make the app easier, faster, or more useful for your daily needs.</div></div>
+        <div class="info-card"><div class="info-icon"><i data-lucide="heart-handshake" style="width:20px;height:20px"></i></div><div class="info-title">Review Service</div><div class="info-text">Let us know how the InstaHelp team and connected providers handled your request.</div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <div>© 2015-2026 InstaHelp. All rights reserved.</div>
+    <div class="footer-links"><a href="../index.html">Home</a><a href="../privacy.html">Privacy</a><a href="../term.html">Terms</a><a href="tel:+917022702220">+91 70227 02220</a></div>
+  </div>
+</footer>
+
+<iframe id="ihGsheetFrame" name="ihGsheetFrame" title="Form submission" aria-hidden="true" tabindex="-1" style="position:absolute;width:0;height:0;left:0;bottom:0;border:0;clip:rect(0,0,0,0)"></iframe>
+<div id="notification" class="notif-overlay" aria-hidden="true" role="status">
+  <div class="notif-panel"><i data-lucide="check-circle" style="width:22px;height:22px;color:#4ade80;flex-shrink:0"></i><div><strong id="notification-title">Review received!</strong><p id="notification-desc" style="font-size:.83rem;color:rgba(255,255,255,.65);margin-top:2px">Thank you for helping us improve InstaHelp.</p></div></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.createIcons();});
+
+var IH_GAS_WEB_APP_URL='https://script.google.com/macros/s/AKfycbzfBuJzx20OmkPF5bkI8POEeMgF_wfLbyHllLDKASf4M3Wrel3HOSkDdkSYJmphjhLNVg/exec';
+var ratingCopy={
+  1:'Sorry we missed the mark. Tell us what went wrong.',
+  2:'Thanks, this helps us find what needs fixing.',
+  3:'Good to know. What would make it better?',
+  4:'Great. Tell us what you liked and what is still missing.',
+  5:'Thank you. Tell us what made the experience work well.'
+};
+
+document.querySelectorAll('.star-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var rating=parseInt(this.dataset.rating,10);
+    document.getElementById('reviewRating').value=rating;
+    document.getElementById('ratingHint').textContent=ratingCopy[rating]||'';
+    document.querySelectorAll('.star-btn').forEach(function(star){
+      var active=parseInt(star.dataset.rating,10)<=rating;
+      star.classList.toggle('active',active);
+      star.setAttribute('aria-checked',String(parseInt(star.dataset.rating,10)===rating));
+    });
+  });
+});
+
+function fillTrackingFields(){
+  try{
+    document.getElementById('referrer_url').value=document.referrer||'';
+    document.getElementById('landing_page').value=location.href;
+    var p=new URLSearchParams(location.search);
+    document.getElementById('utm_source').value=p.get('utm_source')||'';
+    document.getElementById('utm_medium').value=p.get('utm_medium')||'';
+    document.getElementById('utm_campaign').value=p.get('utm_campaign')||'';
+    document.getElementById('form_token').value=Date.now().toString(36);
+  }catch(ex){}
+}
+
+function submitAppReview(e){
+  e.preventDefault();
+  var rating=document.getElementById('reviewRating').value;
+  var name=document.getElementById('fullname').value.trim();
+  var feedback=document.getElementById('message').value.trim();
+  var consent=document.getElementById('evidence_consent').checked;
+  if(!rating){alert('Please select a star rating.');return;}
+  if(!name){alert('Please enter your name.');document.getElementById('fullname').focus();return;}
+  if(!feedback){alert('Please write your feedback.');document.getElementById('message').focus();return;}
+  if(!consent){alert('Please tick the consent checkbox.');return;}
+  fillTrackingFields();
+  var platform=document.getElementById('platform').value||'Platform not specified';
+  var appVersion=document.getElementById('appVersion').value.trim()||'Version not specified';
+  var recommend=document.getElementById('recommend').value||'Recommendation not specified';
+  document.getElementById('reviewService').value='App Review | '+rating+' stars | '+platform+' | '+appVersion+' | Recommend: '+recommend;
+  var btn=document.getElementById('reviewSubmitBtn');
+  btn.innerHTML='<i data-lucide="loader" class="spinner" style="width:15px;height:15px"></i> Sending...';
+  btn.disabled=true;
+  var form=document.getElementById('appReviewForm');
+  form.action=IH_GAS_WEB_APP_URL;
+  form.target='ihGsheetFrame';
+  form.method='POST';
+  form.submit();
+  setTimeout(function(){
+    var n=document.getElementById('notification');
+    n.classList.add('show');
+    n.removeAttribute('aria-hidden');
+    btn.innerHTML='<i data-lucide="check" style="width:15px;height:15px"></i> Review sent';
+    btn.style.background='var(--green)';
+    if(window.lucide)lucide.createIcons();
+    setTimeout(function(){n.classList.remove('show');n.setAttribute('aria-hidden','true');},6000);
+  },1400);
+}
+
+window.addEventListener('load',function(){if(window.lucide)lucide.createIcons();});
+</script>
+</body>
+</html>

@@ -1526,45 +1526,62 @@ function getHubbleAppSecret() {
 
 function getHubblePrivateKeyPem() {
   var key = PropertiesService.getScriptProperties().getProperty('HUBBLE_PRIVATE_KEY');
-  if (!key) throw new Error('Hubble private key missing. Run installHubbleKeys() in Apps Script editor.');
-  return String(key).replace(/\\n/g, '\n').trim();
+  if (!key) key = getHubblePrivateKeyPkcs8Default();
+  return normalizeHubblePrivateKeyForGas(key);
 }
 
-/** Run once: Apps Script → Run → installHubbleKeys */
+/** GAS computeRsaSha256Signature requires PKCS#8 (BEGIN PRIVATE KEY), not PKCS#1 RSA key. */
+function normalizeHubblePrivateKeyForGas(pem) {
+  pem = String(pem || '').replace(/\\n/g, '\n').trim();
+  if (pem.indexOf('BEGIN RSA PRIVATE KEY') !== -1) {
+    return getHubblePrivateKeyPkcs8Default();
+  }
+  if (pem.indexOf('BEGIN PRIVATE KEY') === -1) {
+    throw new Error('Hubble private key must be PKCS#8 PEM. Run installHubbleKeys() in Apps Script.');
+  }
+  return pem;
+}
+
+function getHubblePrivateKeyPkcs8Default() {
+  return (
+    '-----BEGIN PRIVATE KEY-----\n' +
+    'MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDDC2WxbMKFFZfD\n' +
+    '7w4WbWrYASYYo7/ablQ7jvk2hu/i1ssn7RKaUyfZZbDc1svYpATQDgmj8S3ugLWW\n' +
+    'utigu6r/YXeK0COj2XaA97kEJPCj5hzXY0qThvJEXDZJv3eAFmHj7dc/LQlMvabR\n' +
+    'fZjFTBuymEPjnSdbWfnQrKyh//P8Fda4LDNat75neY6ezko7gRS44jHZS3thHfjm\n' +
+    'MCWAHUdlElSRpd83ocxb62FqArGkswujeBKzV/FMvapBx5tnkBf07J5Ywq3ei28f\n' +
+    'GmC2dfcmWxT0+ZEN7SzT5DKbiL6yUoWzOHgmwpArtxf1EVfp07uihZXi3D58oYvJ\n' +
+    'cnzZIxPNAgMBAAECggEAI+XPG66mxpPI0PkIoLwWtBbSCirpPqybuDKCT7TaJefe\n' +
+    'kESj7d9sMCj1OlAWSJM3h4tt3sye5Yyu30UYZczklgg8VkIkrR1zIB134fliiOfr\n' +
+    'WwEdUrW9lTNbkos41UxJTAgUW75QPd2R/HCfU4DEgERiClx8R+XxgqSlSVOwdi7E\n' +
+    'bVc9aQUPBBXpW3a/WpK7Gk4fCvD2Ea4Q8yrwzbN4Ln8OXyIgQs4K90zWkkn6uwwu\n' +
+    'L1VjJ46EVF8OksbrG3mEp3W+ecv/9uHR5o03Vmz3eineibWQkFegbZgqTyfT6joQ\n' +
+    'fmTtgeTAoWgsX9bC93HTbC/O1y9JVR041boGIPoygQKBgQDrrcwlyYQVEqMJyEkG\n' +
+    'v07UbxIhcD3UfhiDsfYV0KeQFqp+IEyWhvoAzM3GxgV6t6+n61uIbc33wN50Kn4q\n' +
+    'T/UInW8b5eFv4djP9i6j3g+lbGVuKEF2E7OPmlk/Mgys6VnsrsWK4+pME+9Eisbj\n' +
+    'ccP+4kSfHiyWJo5LadMPengGvQKBgQDT3Kqd97PETbrFKLJIbGdxzWqAXSsBCAhU\n' +
+    'tKHjW1LIy5la9ZqqbTM9VPeIETHJAgFeS9ZdQeU9MEiWiO3ioWtC794p3vDTTFVk\n' +
+    'BdXsDetZ7+yNjW2P4SJ2yLSCQwZBXgvwPKlYrY1K90qRfoOdTIk+5PHR/OI+a+x/\n' +
+    'g9rFjdzaUQKBgQCAZVbq3zZOJLEeCzd9rYvMwBYokXWd5nSEitd+WwZuwWpw/De9\n' +
+    'ahuZg/o3aHpjuN7BpL9hPDER4MlQkDXb52OfJeX6VOrUgT4VThFqxPfRL5Syxsuj\n' +
+    'AGi6u2QTwbiWGysafrywRirG97VKqjBgiQI2Qh8QcOfphWfQPf72V8o8IQKBgQCU\n' +
+    'DF76Fo97vSmn/wFe1MoQ34/t9a1Igjl4H+YE/9tAz+3xfzG+qKKm2EpFvmZA5fLY\n' +
+    '1zwMXTD5alU/RJ6fwVc4JnDkZ5N4xJ3jUKSl2TA+4Ac4/7yxT40K3sQtRvMHGNZU\n' +
+    '4b8hZd4Xpelo9LS6ZjJ+TfSiXgonvrk8foKRjMnpkQKBgQCexh+HTlHH9DPYeHzY\n' +
+    'xflexIBKBLmNbzx8XTpomn46BhLyNtT4pljwobOrVY9M/RKTWo9mhhR6oeiTlm/B\n' +
+    'koL+Ocec6wkxMJyKpFX16WkbDK0omltK5jU2yLJ+C1a/22YjECeZVBeJxNQkUL7D\n' +
+    'aja7IOW0yD5b5oy/3j16IFlSMA==\n' +
+    '-----END PRIVATE KEY-----'
+  );
+}
+
+/** Run once (or again after key format fix): Apps Script → Run → installHubbleKeys */
 function installHubbleKeys() {
   var props = PropertiesService.getScriptProperties();
   props.setProperty('HUBBLE_CLIENT_ID', HUBBLE_CLIENT_ID_DEFAULT);
   props.setProperty('HUBBLE_APP_SECRET', HUBBLE_APP_SECRET_DEFAULT);
-  props.setProperty('HUBBLE_PRIVATE_KEY',
-    '-----BEGIN RSA PRIVATE KEY-----\n' +
-    'MIIEpQIBAAKCAQEAwwtlsWzChRWXw+8OFm1q2AEmGKO/2m5UO475Nobv4tbLJ+0S\n' +
-    'mlMn2WWw3NbL2KQE0A4Jo/Et7oC1lrrYoLuq/2F3itAjo9l2gPe5BCTwo+Yc12NK\n' +
-    'k4byRFw2Sb93gBZh4+3XPy0JTL2m0X2YxUwbsphD450nW1n50Kysof/z/BXWuCwz\n' +
-    'Wre+Z3mOns5KO4EUuOIx2Ut7YR345jAlgB1HZRJUkaXfN6HMW+thagKxpLMLo3gS\n' +
-    's1fxTL2qQcebZ5AX9OyeWMKt3otvHxpgtnX3JlsU9PmRDe0s0+Qym4i+slKFszh4\n' +
-    'JsKQK7cX9RFX6dO7ooWV4tw+fKGLyXJ82SMTzQIDAQABAoIBACPlzxuupsaTyND5\n' +
-    'CKC8FrQW0goq6T6sm7gygk+02iXn3pBEo+3fbDAo9TpQFkiTN4eLbd7MnuWMrt9F\n' +
-    'GGXM5JYIPFZCJK0dcyAdd+H5Yojn61sBHVK1vZUzW5KLONVMSUwIFFu+UD3dkfxw\n' +
-    'n1OAxIBEYgpcfEfl8YKkpUlTsHYuxG1XPWkFDwQV6Vt2v1qSuxpOHwrw9hGuEPMq\n' +
-    '8M2zeC5/Dl8iIELOCvdM1pJJ+rsMLi9VYyeOhFRfDpLG6xt5hKd1vnnL//bh0eaN\n' +
-    'N1Zs93op3om1kJBXoG2YKk8n0+o6EH5k7YHkwKFoLF/Wwvdx02wvztcvSVUdONW6\n' +
-    'BiD6MoECgYEA663MJcmEFRKjCchJBr9O1G8SIXA91H4Yg7H2FdCnkBaqfiBMlob6\n' +
-    'AMzNxsYFerevp+tbiG3N98DedCp+Kk/1CJ1vG+Xhb+HYz/Yuo94PpWxlbihBdhOz\n' +
-    'j5pZPzIMrOlZ7K7FiuPqTBPvRIrG43HD/uJEnx4sliaOS2nTD3p4Br0CgYEA09yq\n' +
-    'nfezxE26xSiySGxncc1qgF0rAQgIVLSh41tSyMuZWvWaqm0zPVT3iBExyQIBXkvW\n' +
-    'XUHlPTBIlojt4qFrQu/eKd7w00xVZAXV7A3rWe/sjY1tj+Eidsi0gkMGQV4L8Dyp\n' +
-    'WK2NSvdKkX6DnUyJPuTx0fziPmvsf4PaxY3c2lECgYEAgGVW6t82TiSxHgs3fa2L\n' +
-    'zMAWKJF1neZ0hIrXflsGbsFqcPw3vWobmYP6N2h6Y7jewaS/YTwxEeDJUJA12+dj\n' +
-    'nyXl+lTq1IE+FU4RasT30S+UssbLowBourtkE8G4lhsrGn68sEYqxve1SqowYIkC\n' +
-    'NkIfEHDn6YVn0D3+9lfKPCECgYEAlAxe+haPe70pp/8BXtTKEN+P7fWtSII5eB/m\n' +
-    'BP/bQM/t8X8xvqiipthKRb5mQOXy2Nc8DF0w+WpVP0Sen8FXOCZw5GeTeMSd41Ck\n' +
-    'pdkwPuAHOP+8sU+NCt7ELUbzBxjWVOG/IWXeF6XpaPS0umYyfk30ol4KJ765PH6C\n' +
-    'kYzJ6ZECgYEAnsYfh05Rx/Qz2Hh82MX5XsSASgS5jW88fF06aJp+OgYS8jbU+KZY\n' +
-    '8KGzq1WPTP0Sk1qPZoYUeqHok5ZvwZKC/jnHnOsJMTCciqRV9elpGwytKJpbSuY1\n' +
-    'NsiyfgtWv9tmIxAnmVQXicTUJFC+w2o2uyDltMg+W+aMv949eiBZUjA=\n' +
-    '-----END RSA PRIVATE KEY-----'
-  );
-  return { success: true, message: 'Hubble credentials saved to Script Properties' };
+  props.setProperty('HUBBLE_PRIVATE_KEY', getHubblePrivateKeyPkcs8Default());
+  return { success: true, message: 'Hubble credentials saved (PKCS#8 private key)' };
 }
 
 function normalizeHubblePhone(phone) {
