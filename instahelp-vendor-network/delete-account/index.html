@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Delete Account & Data | InstaHelp</title>
+<meta name="description" content="Request deletion of your InstaHelp account and associated personal data.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#FFD600">
+<link rel="canonical" href="https://www.instahelp.co/delete-account">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest" defer></script>
+<style>
+:root{--yellow:#FFD600;--yellow-d:#E6BE00;--yellow-pale:#FFFBDD;--ink:#12141A;--ink2:#3D4050;--ink3:#7A7E8F;--bg:#F7F7F5;--white:#fff;--green:#16A34A;--red:#DC2626;--border:#E4E4E0;--border2:#CECEC8;--radius:16px;--font:'Plus Jakarta Sans',system-ui,sans-serif;--shadow:0 2px 14px rgba(0,0,0,.09),0 1px 3px rgba(0,0,0,.05);--shadow-lg:0 16px 56px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.07);--tr:.3s cubic-bezier(.22,1,.36,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font-family:var(--font)}button{cursor:pointer;border:none;background:none}
+.container{max-width:1120px;margin:0 auto;padding:0 24px}
+header{position:sticky;top:0;z-index:20;background:rgba(247,247,245,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-inner{height:64px;display:flex;align-items:center;gap:16px}.logo{font-weight:800;font-size:1.28rem;letter-spacing:-.025em;white-space:nowrap}.logo sup{font-size:.55em;vertical-align:super}
+.nav-links{display:flex;align-items:center;gap:4px;margin-left:auto}.nav-links a{font-size:.86rem;font-weight:600;color:var(--ink2);padding:8px 12px;border-radius:9px;transition:.2s}.nav-links a:hover{background:rgba(15,15,15,.05);color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:50px;font-weight:700;font-size:.9rem;padding:10px 20px;transition:all var(--tr)}.btn-yellow{background:var(--yellow);color:var(--ink)}.btn-yellow:hover{background:var(--yellow-d);transform:translateY(-1px);box-shadow:var(--shadow)}
+.hero{position:relative;overflow:hidden;background:var(--ink);color:#fff}.hero::before{content:'';position:absolute;inset:auto -130px -190px auto;width:430px;height:430px;border-radius:50%;background:rgba(255,214,0,.16);filter:blur(20px)}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:.92fr 1.08fr;gap:52px;align-items:center;padding:78px 0 92px}
+.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(220,38,38,.18);color:#fecaca;border:1px solid rgba(248,113,113,.25);padding:5px 13px 5px 8px;border-radius:50px;font-size:.76rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:22px}.pill-dot{width:8px;height:8px;border-radius:50%;background:#f87171}
+h1{font-size:clamp(2.25rem,4.8vw,4rem);line-height:1.04;letter-spacing:-.04em;margin-bottom:20px}.hero-sub{font-size:1.04rem;color:rgba(255,255,255,.72);max-width:560px;margin-bottom:28px}.hero-points{display:grid;gap:12px;margin-top:26px}.hero-point{display:flex;align-items:flex-start;gap:10px;color:rgba(255,255,255,.72);font-size:.92rem}.check{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(22,163,74,.22);color:#4ade80;flex-shrink:0;margin-top:1px}
+.form-card{background:var(--white);color:var(--ink);border:1px solid var(--border);border-radius:24px;padding:34px;box-shadow:var(--shadow-lg)}.form-title{font-size:1.55rem;font-weight:800;letter-spacing:-.025em;margin-bottom:6px}.form-sub{font-size:.9rem;color:var(--ink3);margin-bottom:24px}
+.notice{background:#FEF2F2;border:1px solid #FECACA;color:#7F1D1D;border-radius:12px;padding:13px 15px;font-size:.83rem;margin-bottom:18px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}.fg label{font-size:.78rem;font-weight:700;color:var(--ink2)}
+input[type=text],input[type=tel],input[type=email],select,textarea{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:12px 13px;font-size:.9rem;background:var(--bg);color:var(--ink);transition:border-color .2s,background .2s;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--ink);background:#fff}textarea{resize:vertical;min-height:118px}
+.consent-row{display:flex;align-items:flex-start;gap:10px;margin:2px 0 16px}.consent-row input{width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--red)}.consent-row label{font-size:.78rem;color:var(--ink3);line-height:1.5}
+.btn-submit{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--red);color:#fff;border-radius:50px;padding:14px;font-weight:800;font-size:.96rem;transition:all var(--tr)}.btn-submit:hover{background:#B91C1C;transform:translateY(-2px);box-shadow:var(--shadow-lg)}.form-note{font-size:.74rem;color:var(--ink3);text-align:center;margin-top:12px}
+.info-section{padding:72px 0}.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.info-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}.info-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--yellow-pale);margin-bottom:14px}.info-title{font-weight:800;margin-bottom:6px}.info-text{font-size:.88rem;color:var(--ink3)}
+footer{background:#0D0F14;color:rgba(255,255,255,.5);padding:34px 0}.footer-inner{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:.82rem}.footer-links{display:flex;gap:16px;flex-wrap:wrap}.footer-links a:hover{color:#fff}
+.notif-overlay{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:60}.notif-overlay.show{display:flex}.notif-panel{background:var(--ink);color:#fff;border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-lg);min-width:320px;max-width:480px}.spinner{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr;padding:56px 0 68px}.info-grid{grid-template-columns:1fr}}@media(max-width:680px){.nav-links a:not(.btn){display:none}.form-card{padding:24px}.frow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav-inner">
+    <a href="/" class="logo" aria-label="InstaHelp Home">InstaHelp<sup>®</sup></a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/term.html">Terms</a>
+      <a href="mailto:mail@instahelp.in?subject=Account%20deletion%20request" class="btn btn-yellow">Email Support</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <section class="hero" aria-labelledby="delete-heading">
+    <div class="container">
+      <div class="hero-grid">
+        <div>
+          <div class="pill"><span class="pill-dot"></span>Data Request</div>
+          <h1 id="delete-heading">Request account and data deletion.</h1>
+          <p class="hero-sub">Use this form to ask InstaHelp to delete your account and associated personal data from our app and support systems, subject to legal, fraud-prevention, tax, and dispute-resolution retention requirements.</p>
+          <div class="hero-points">
+            <div class="hero-point"><span class="check">✓</span>We use your details only to verify and process this deletion request.</div>
+            <div class="hero-point"><span class="check">✓</span>Our team may contact you if we need to confirm account ownership.</div>
+            <div class="hero-point"><span class="check">✓</span>You can also email <strong>mail@instahelp.in</strong> with the same request.</div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-title">Delete account request</div>
+          <div class="form-sub">Share the phone or email used in the app.</div>
+          <div class="notice">Deletion can affect access to order history, support records, and app preferences. Some records may be retained where required by law.</div>
+          <form id="deleteAccountForm" onsubmit="submitDeleteRequest(event)" novalidate autocomplete="on">
+            <div style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true"><input type="text" name="honeypot" tabindex="-1" autocomplete="off"></div>
+            <div class="frow">
+              <div class="fg"><label for="fullname">Full name</label><input type="text" name="fullname" id="fullname" placeholder="Rahul Sharma" maxlength="60" required autocomplete="name"></div>
+              <div class="fg"><label for="phone">Registered phone</label><input type="tel" name="phone" id="phone" placeholder="+91 98765 43210" maxlength="15" autocomplete="tel"></div>
+            </div>
+            <div class="frow">
+              <div class="fg"><label for="email">Registered email</label><input type="email" name="email" id="email" placeholder="rahul@example.com" maxlength="100" autocomplete="email"></div>
+              <div class="fg"><label for="platform">Platform used</label><select id="platform" name="platform"><option value="">Select platform</option><option>Android app</option><option>iPhone / iOS app</option><option>Website</option><option>WhatsApp / phone support</option><option>Not sure</option></select></div>
+            </div>
+            <div class="fg"><label for="reason">Reason for deletion (optional)</label><select id="reason" name="reason"><option value="">Select a reason</option><option>No longer use InstaHelp</option><option>Privacy concern</option><option>Created duplicate account</option><option>App issue</option><option>Other</option></select></div>
+            <div class="fg"><label for="message">Additional details</label><textarea name="message" id="message" placeholder="Add any extra account details that help us identify your account. Do not include passwords or OTPs." maxlength="1200"></textarea></div>
+            <input type="hidden" name="service" id="deleteService" value="Account Deletion Request">
+            <input type="hidden" name="source" value="delete_account_page">
+            <input type="hidden" name="prior_payment" value="data_deletion">
+            <input type="hidden" name="referrer_url" id="referrer_url">
+            <input type="hidden" name="landing_page" id="landing_page">
+            <input type="hidden" name="utm_source" id="utm_source">
+            <input type="hidden" name="utm_medium" id="utm_medium">
+            <input type="hidden" name="utm_campaign" id="utm_campaign">
+            <input type="hidden" name="form_token" id="form_token">
+            <input type="hidden" name="form_id" value="delete_account_v1">
+            <div class="consent-row"><input type="checkbox" name="evidence_consent" id="evidence_consent" required><label for="evidence_consent">I confirm that I want InstaHelp to process my request to delete my account and associated personal data, subject to records that must be retained for legal or operational reasons.</label></div>
+            <button type="submit" class="btn-submit" id="deleteSubmitBtn"><i data-lucide="trash-2" style="width:16px;height:16px"></i> Submit Deletion Request</button>
+            <div class="form-note">We will acknowledge the request and may verify ownership before deletion.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="info-section">
+    <div class="container info-grid">
+      <div class="info-card"><div class="info-icon"><i data-lucide="shield-check" style="width:20px;height:20px"></i></div><div class="info-title">Verification</div><div class="info-text">We may ask you to confirm the registered phone or email before acting on the request.</div></div>
+      <div class="info-card"><div class="info-icon"><i data-lucide="database-zap" style="width:20px;height:20px"></i></div><div class="info-title">Deletion Scope</div><div class="info-text">The request covers account profile data and associated app records where deletion is permitted.</div></div>
+      <div class="info-card"><div class="info-icon"><i data-lucide="file-lock-2" style="width:20px;height:20px"></i></div><div class="info-title">Required Retention</div><div class="info-text">Invoices, fraud-prevention records, or dispute logs may be retained where legally required.</div></div>
+    </div>
+  </section>
+</main>
+<footer>
+  <div class="container footer-inner">
+    <div>© 2015-2026 InstaHelp. All rights reserved.</div>
+    <div class="footer-links"><a href="/">Home</a><a href="/privacy.html">Privacy</a><a href="/term.html">Terms</a><a href="mailto:mail@instahelp.in">mail@instahelp.in</a></div>
+  </div>
+</footer>
+<iframe id="ihGsheetFrame" name="ihGsheetFrame" title="Form submission" aria-hidden="true" tabindex="-1" style="position:absolute;width:0;height:0;left:0;bottom:0;border:0;clip:rect(0,0,0,0)"></iframe>
+<div id="notification" class="notif-overlay" aria-hidden="true" role="status">
+  <div class="notif-panel"><i data-lucide="check-circle" style="width:22px;height:22px;color:#4ade80;flex-shrink:0"></i><div><strong>Deletion request received</strong><p style="font-size:.83rem;color:rgba(255,255,255,.65);margin-top:2px">Our team will review and follow up if verification is needed.</p></div></div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.createIcons();});
+var IH_GAS_WEB_APP_URL='https://script.google.com/macros/s/AKfycbzfBuJzx20OmkPF5bkI8POEeMgF_wfLbyHllLDKASf4M3Wrel3HOSkDdkSYJmphjhLNVg/exec';
+function fillTrackingFields(){try{document.getElementById('referrer_url').value=document.referrer||'';document.getElementById('landing_page').value=location.href;var p=new URLSearchParams(location.search);document.getElementById('utm_source').value=p.get('utm_source')||'';document.getElementById('utm_medium').value=p.get('utm_medium')||'';document.getElementById('utm_campaign').value=p.get('utm_campaign')||'';document.getElementById('form_token').value=Date.now().toString(36);}catch(ex){}}
+function submitDeleteRequest(e){e.preventDefault();var name=document.getElementById('fullname').value.trim();var phone=document.getElementById('phone').value.trim();var email=document.getElementById('email').value.trim();var consent=document.getElementById('evidence_consent').checked;if(!name){alert('Please enter your full name.');document.getElementById('fullname').focus();return;}if(!phone&&!email){alert('Please enter either your registered phone or email.');document.getElementById('phone').focus();return;}if(!consent){alert('Please confirm the deletion request.');return;}fillTrackingFields();var platform=document.getElementById('platform').value||'Platform not specified';var reason=document.getElementById('reason').value||'Reason not specified';var details=document.getElementById('message').value.trim();document.getElementById('message').value='Account deletion request. Platform: '+platform+'. Reason: '+reason+'. Details: '+(details||'No additional details provided.');document.getElementById('deleteService').value='Account Deletion Request | '+platform+' | '+reason;var btn=document.getElementById('deleteSubmitBtn');btn.innerHTML='<i data-lucide="loader" class="spinner" style="width:15px;height:15px"></i> Sending...';btn.disabled=true;var form=document.getElementById('deleteAccountForm');form.action=IH_GAS_WEB_APP_URL;form.target='ihGsheetFrame';form.method='POST';form.submit();setTimeout(function(){var n=document.getElementById('notification');n.classList.add('show');n.removeAttribute('aria-hidden');btn.innerHTML='<i data-lucide="check" style="width:15px;height:15px"></i> Request sent';btn.style.background='var(--green)';if(window.lucide)lucide.createIcons();setTimeout(function(){n.classList.remove('show');n.setAttribute('aria-hidden','true');},7000);},1400);}
+window.addEventListener('load',function(){if(window.lucide)lucide.createIcons();});
+</script>
+</body>
+</html>
