@@ -1,9 +1,20 @@
 /**
  * InstaHelp API client — connects Vercel frontend to Google Apps Script backend.
- * Uses GET (not POST): GAS web app deployments return 405 on cross-origin POST.
+ * Small reads use GET. Large payloads (registration media, updates) use POST with
+ * text/plain to avoid CORS preflight and huge query strings.
  */
 var InstaHelpAPI = (function() {
   'use strict';
+
+  var POST_ACTIONS = {
+    submitVendorApplication: true,
+    updateVendor: true,
+    updateStore: true,
+    addProduct: true,
+    updateProduct: true,
+    bulkAddProducts: true,
+    submitShowcaseForm: true
+  };
 
   function getUrl() {
     return (window.INSTAHELP_CONFIG && window.INSTAHELP_CONFIG.apiUrl) || '';
@@ -34,8 +45,7 @@ var InstaHelpAPI = (function() {
     return String(arg);
   }
 
-  function call(action, args) {
-    args = args || [];
+  function callGet(action, args) {
     var params = new URLSearchParams();
     params.set('action', action);
 
@@ -49,11 +59,22 @@ var InstaHelpAPI = (function() {
     }
 
     var url = getUrl() + (getUrl().indexOf('?') === -1 ? '?' : '&') + params.toString();
+    return fetch(url, { method: 'GET', redirect: 'follow' }).then(parseResponse);
+  }
 
-    return fetch(url, {
-      method: 'GET',
-      redirect: 'follow'
+  function callPost(action, args) {
+    return fetch(getUrl(), {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, args: args })
     }).then(parseResponse);
+  }
+
+  function call(action, args) {
+    args = args || [];
+    if (POST_ACTIONS[action]) return callPost(action, args);
+    return callGet(action, args);
   }
 
   return { call: call };

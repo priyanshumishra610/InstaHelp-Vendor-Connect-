@@ -87,33 +87,46 @@ function getFrontendUrl() {
   return FRONTEND_URL.replace(/\/$/, '');
 }
 
-function sendEmailViaResend(to, subject, html, options) {
+function buildResendFetchRequest(to, subject, html, options) {
   options = options || {};
+  var payload = {
+    from: RESEND_FROM_EMAIL,
+    to: Array.isArray(to) ? to : [String(to).trim()],
+    subject: subject,
+    html: html
+  };
+  if (options.replyTo) payload.reply_to = options.replyTo;
+  if (options.bcc) payload.bcc = Array.isArray(options.bcc) ? options.bcc : [options.bcc];
+  return {
+    url: 'https://api.resend.com/emails',
+    method: 'post',
+    headers: {
+      'Authorization': 'Bearer ' + RESEND_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+}
+
+function parseResendResponse(response) {
+  var code = response.getResponseCode();
+  var body = {};
+  try { body = JSON.parse(response.getContentText()); } catch (e) {}
+  if (code >= 200 && code < 300) return { success: true, id: body.id };
+  return { success: false, error: body.message || response.getContentText(), status: code };
+}
+
+function sendEmailViaResend(to, subject, html, options) {
   if (!to || !String(to).trim()) return { success: false, error: 'No recipient email' };
   try {
-    var payload = {
-      from: RESEND_FROM_EMAIL,
-      to: Array.isArray(to) ? to : [String(to).trim()],
-      subject: subject,
-      html: html
-    };
-    if (options.replyTo) payload.reply_to = options.replyTo;
-    if (options.bcc) payload.bcc = Array.isArray(options.bcc) ? options.bcc : [options.bcc];
-
-    var response = UrlFetchApp.fetch('https://api.resend.com/emails', {
-      method: 'post',
-      headers: {
-        'Authorization': 'Bearer ' + RESEND_API_KEY,
-        'Content-Type': 'application/json'
-      },
-      payload: JSON.stringify(payload),
-      muteHttpExceptions: true
-    });
-    var code = response.getResponseCode();
-    var body = {};
-    try { body = JSON.parse(response.getContentText()); } catch (e) {}
-    if (code >= 200 && code < 300) return { success: true, id: body.id };
-    return { success: false, error: body.message || response.getContentText(), status: code };
+    var req = buildResendFetchRequest(to, subject, html, options);
+    return parseResendResponse(UrlFetchApp.fetch(req.url, {
+      method: req.method,
+      headers: req.headers,
+      payload: req.payload,
+      muteHttpExceptions: req.muteHttpExceptions
+    }));
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -146,14 +159,68 @@ function sendVendorApplicationEmail(vendor) {
     '<p><strong>Reference:</strong> ' + vid + '</p>' +
     '<p>Our team will review your details within 24–48 hours. Once approved, you will receive another email with your <strong>live store link</strong> and <strong>dashboard access</strong> to customize your page.</p>' +
     '<p>Your public store page will not be visible until admin approval.</p>');
-  var result = sendEmailViaResend(email, 'InstaHelp — Vendor application received', html, {
-    replyTo: ADMIN_NOTIFY_EMAIL
-  });
-  sendEmailViaResend(ADMIN_NOTIFY_EMAIL, 'New vendor application — ' + vid,
-    '<p><strong>' + (vendor.BusinessName || 'New vendor') + '</strong> applied.</p>' +
+  var adminHtml = '<p><strong>' + (vendor.BusinessName || 'New vendor') + '</strong> applied.</p>' +
     '<p>Reference: ' + vid + '<br>Email: ' + email + '</p>' +
-    '<p>Review in Admin → Approve to send live store link.</p>');
-  return result;
+    '<p>Review in Admin → Approve to send live store link.</p>';
+  try {
+    var responses = UrlFetchApp.fetchAll([
+      buildResendFetchRequest(email, 'InstaHelp — Vendor application received', html, { replyTo: ADMIN_NOTIFY_EMAIL }),
+      buildResendFetchRequest(ADMIN_NOTIFY_EMAIL, 'New vendor application — ' + vid, adminHtml)
+    ]);
+    return parseResendResponse(responses[0]);
+  } catch (e) {
+    return sendEmailViaResend(email, 'InstaHelp — Vendor application received', html, {
+      replyTo: ADMIN_NOTIFY_EMAIL
+    });
+  }
+}
+
+/** Queue confirmation emails so submit can return before Resend round-trips finish. */
+function queueVendorApplicationEmails(vendor) {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var key = 'APP_EMAIL_' + Utilities.getUuid().replace(/-/g, '').substring(0, 10);
+    props.setProperty(key, JSON.stringify({
+      Email: vendor.Email || vendor.email,
+      OwnerName: vendor.OwnerName,
+      BusinessName: vendor.BusinessName,
+      VendorID: vendor.VendorID || vendor.vendorId
+    }));
+    var queue = [];
+    try { queue = JSON.parse(props.getProperty('APP_EMAIL_QUEUE') || '[]'); } catch (e) { queue = []; }
+    queue.push(key);
+    props.setProperty('APP_EMAIL_QUEUE', JSON.stringify(queue));
+    var hasTrigger = ScriptApp.getProjectTriggers().some(function(t) {
+      return t.getHandlerFunction() === 'processQueuedVendorApplicationEmails';
+    });
+    if (!hasTrigger) {
+      ScriptApp.newTrigger('processQueuedVendorApplicationEmails').timeBased().after(1000).create();
+    }
+    return { success: true, queued: true };
+  } catch (e) {
+    return sendVendorApplicationEmail(vendor);
+  }
+}
+
+function processQueuedVendorApplicationEmails() {
+  var props = PropertiesService.getScriptProperties();
+  var queue = [];
+  try { queue = JSON.parse(props.getProperty('APP_EMAIL_QUEUE') || '[]'); } catch (e) { queue = []; }
+  props.deleteProperty('APP_EMAIL_QUEUE');
+  queue.forEach(function(key) {
+    try {
+      var raw = props.getProperty(key);
+      props.deleteProperty(key);
+      if (raw) sendVendorApplicationEmail(JSON.parse(raw));
+    } catch (err) {
+      Logger.log('Queued application email failed: ' + err.message);
+    }
+  });
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'processQueuedVendorApplicationEmails') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
 }
 
 function sendVendorApprovedEmail(vendor) {
@@ -359,6 +426,13 @@ function ensureSheetHeaders(key) {
     ? sheet.getRange(1, 1, 1, maxCol).getValues()[0]
     : [];
   var needsFullReset = sheet.getLastRow() === 0 || !row1[0] || String(row1[0]).trim() !== expected[0];
+  if (!needsFullReset) {
+    var alreadyOk = true;
+    for (var h = 0; h < expected.length; h++) {
+      if (String(row1[h] || '').trim() !== expected[h]) { alreadyOk = false; break; }
+    }
+    if (alreadyOk) return;
+  }
   if (needsFullReset) {
     sheet.getRange(1, 1, 1, expected.length).setValues([expected]);
   } else {
@@ -390,6 +464,16 @@ function getColMap(sheetName) {
 function setField(sheetName, rowIndex, field, value) {
   var col = getColMap(sheetName)[field];
   if (col) getSheet(sheetName).getRange(rowIndex, col).setValue(value);
+}
+
+/** Batch-update several fields on one row with a single column map lookup. */
+function setFields(sheetName, rowIndex, updates) {
+  var map = getColMap(sheetName);
+  var sheet = getSheet(sheetName);
+  Object.keys(updates).forEach(function(field) {
+    var col = map[field];
+    if (col) sheet.getRange(rowIndex, col).setValue(updates[field]);
+  });
 }
 
 function generateId(prefix) {
@@ -459,14 +543,30 @@ function getRowByField(sheetName, field, value) {
 }
 
 // ─── Media ─────────────────────────────────────────────────────
+var _driveFolderCache = null;
+
+function getVendorMediaFolder() {
+  if (_driveFolderCache) return _driveFolderCache;
+  var cachedId = CacheService.getScriptCache().get('DRIVE_MEDIA_FOLDER_ID');
+  if (cachedId) {
+    try {
+      _driveFolderCache = DriveApp.getFolderById(cachedId);
+      return _driveFolderCache;
+    } catch (e) {}
+  }
+  var folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
+  var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(DRIVE_FOLDER_NAME);
+  CacheService.getScriptCache().put('DRIVE_MEDIA_FOLDER_ID', folder.getId(), 21600);
+  _driveFolderCache = folder;
+  return folder;
+}
+
 function uploadToDrive(base64Data, fileName, mimeType) {
   try {
     if (!base64Data || base64Data.indexOf('base64,') === -1) return '';
     var bytes = Utilities.base64Decode(base64Data.split('base64,')[1]);
     var blob = Utilities.newBlob(bytes, mimeType || 'image/jpeg', fileName);
-    var folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
-    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(DRIVE_FOLDER_NAME);
-    var file = folder.createFile(blob);
+    var file = getVendorMediaFolder().createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     return 'https://drive.google.com/uc?id=' + file.getId();
   } catch (e) { return ''; }
@@ -598,18 +698,24 @@ function verifyPayment(data) {
   }
 }
 
+function planExpiresAt(planId, billingType) {
+  var plan = PLANS[planId] || PLANS.free;
+  var expires = new Date();
+  if (billingType === 'subscription' || plan.price > 0) expires.setMonth(expires.getMonth() + 1);
+  else expires.setFullYear(expires.getFullYear() + 10);
+  return expires.toISOString();
+}
+
 function activatePlan(vendorId, planId, billingType) {
   var plan = PLANS[planId] || PLANS.free;
   var row = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
   if (!row) return;
-  var expires = new Date();
-  if (billingType === 'subscription' || plan.price > 0) expires.setMonth(expires.getMonth() + 1);
-  else expires.setFullYear(expires.getFullYear() + 10);
-
-  setField(SHEETS.VENDORS, row._rowIndex, 'Plan', planId);
-  setField(SHEETS.VENDORS, row._rowIndex, 'PlanExpiresAt', expires.toISOString());
-  setField(SHEETS.VENDORS, row._rowIndex, 'ShowBranding', plan.branding);
-  setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', new Date().toISOString());
+  setFields(SHEETS.VENDORS, row._rowIndex, {
+    Plan: planId,
+    PlanExpiresAt: planExpiresAt(planId, billingType),
+    ShowBranding: plan.branding,
+    UpdatedAt: new Date().toISOString()
+  });
 }
 
 function upgradePlan(vendorId, newPlanId) {
@@ -652,8 +758,10 @@ function getVendorPayments(vendorId) {
 // ─── Vendor Application ────────────────────────────────────────
 function submitVendorApplication(data) {
   try {
-    initializeSheets();
     var vendorId = data.vendorId || generateId('VND');
+    var vendorsSheet = getSheet(SHEETS.VENDORS);
+    if (!vendorsSheet) throw new Error('Vendors sheet missing. Run initializeSheets once from the Apps Script editor.');
+
     var existing = getRowByField(SHEETS.VENDORS, 'VendorID', vendorId);
     var appId = generateId('APP');
     var slug = existing ? existing.ShopSlug : generateShopSlug(data.businessName);
@@ -661,6 +769,7 @@ function submitVendorApplication(data) {
     var planId = data.plan || 'free';
     var templateId = data.template || 'classic';
     var plan = PLANS[planId] || PLANS.free;
+    var shouldActivate = planId === 'free' || data.paymentVerified;
 
     if (plan.templates.indexOf(templateId) === -1) templateId = plan.templates[0];
 
@@ -668,54 +777,74 @@ function submitVendorApplication(data) {
     var cover = processMediaField(data.coverBanner, vendorId + '_cover.jpg');
     var gallery = processMediaArray(data.gallery || [], vendorId + '_gallery');
     var themeColors = data.themeColors ? JSON.stringify(data.themeColors) : '{"primary":"#FFD600","accent":"#0F0F0F"}';
+    var expiresAt = shouldActivate ? planExpiresAt(planId, 'one_time') : '';
 
-    ensureSheetHeaders('VENDORS');
     if (!existing) {
-      getSheet(SHEETS.VENDORS).appendRow([
+      vendorsSheet.appendRow([
         vendorId, data.businessName, data.ownerName, data.phone, data.whatsapp || data.phone,
         data.email, data.category || '', data.yearsInBusiness || '', data.city || '', data.state || '',
         data.description || '', data.serviceAreas || '', data.workingHours || '',
         data.website || '', data.instagram || '', data.facebook || '',
         logo, cover, gallery, 'pending', slug, false, plan.featured, false, false, 4.8,
-        planId, templateId, themeColors, '', '', plan.branding, false, now, now, '', ''
+        planId, templateId, themeColors, expiresAt, '', plan.branding, false, now, now, '', ''
       ]);
     } else {
-      var row = existing;
-      setField(SHEETS.VENDORS, row._rowIndex, 'BusinessName', data.businessName);
-      setField(SHEETS.VENDORS, row._rowIndex, 'Plan', planId);
-      setField(SHEETS.VENDORS, row._rowIndex, 'Template', templateId);
-      setField(SHEETS.VENDORS, row._rowIndex, 'ThemeColors', themeColors);
-      if (logo) setField(SHEETS.VENDORS, row._rowIndex, 'Logo', logo);
-      if (cover) setField(SHEETS.VENDORS, row._rowIndex, 'CoverBanner', cover);
-      setField(SHEETS.VENDORS, row._rowIndex, 'UpdatedAt', now);
+      var updates = {
+        BusinessName: data.businessName,
+        Plan: planId,
+        Template: templateId,
+        ThemeColors: themeColors,
+        UpdatedAt: now
+      };
+      if (logo) updates.Logo = logo;
+      if (cover) updates.CoverBanner = cover;
+      if (gallery) updates.Gallery = gallery;
+      if (shouldActivate) {
+        updates.PlanExpiresAt = expiresAt;
+        updates.ShowBranding = plan.branding;
+      }
+      setFields(SHEETS.VENDORS, existing._rowIndex, updates);
     }
 
-    ensureSheetHeaders('APPLICATIONS');
-    try {
-      getSheet(SHEETS.APPLICATIONS).appendRow([
-        appId, vendorId, data.businessName, data.ownerName, data.phone, data.whatsapp || data.phone,
-        data.email, data.category || '', data.yearsInBusiness || '', data.city || '', data.state || '',
-        data.description || '', data.serviceAreas || '', data.workingHours || '',
-        data.website || '', data.instagram || '', data.facebook || '',
-        logo, cover, gallery, JSON.stringify(data.products || []),
-        planId, templateId, data.paymentId || '',
-        processMediaField(data.gstCertificate, vendorId + '_gst.pdf'),
-        processMediaField(data.shopLicense, vendorId + '_license.pdf'),
-        processMediaField(data.aadhaar, vendorId + '_aadhaar.pdf'),
-        processMediaField(data.pan, vendorId + '_pan.pdf'),
-        'pending', now, '', '', ''
-      ]);
-    } catch (appErr) {
-      Logger.log('Applications row error (vendor still saved): ' + appErr.message);
+    var applicationsSheet = getSheet(SHEETS.APPLICATIONS);
+    if (applicationsSheet) {
+      try {
+        applicationsSheet.appendRow([
+          appId, vendorId, data.businessName, data.ownerName, data.phone, data.whatsapp || data.phone,
+          data.email, data.category || '', data.yearsInBusiness || '', data.city || '', data.state || '',
+          data.description || '', data.serviceAreas || '', data.workingHours || '',
+          data.website || '', data.instagram || '', data.facebook || '',
+          logo, cover, gallery, JSON.stringify(data.products || []),
+          planId, templateId, data.paymentId || '',
+          processMediaField(data.gstCertificate, vendorId + '_gst.pdf'),
+          processMediaField(data.shopLicense, vendorId + '_license.pdf'),
+          processMediaField(data.aadhaar, vendorId + '_aadhaar.pdf'),
+          processMediaField(data.pan, vendorId + '_pan.pdf'),
+          'pending', now, '', '', ''
+        ]);
+      } catch (appErr) {
+        Logger.log('Applications row error (vendor still saved): ' + appErr.message);
+      }
     }
 
-    if (planId === 'free' || data.paymentVerified) activatePlan(vendorId, planId, 'one_time');
+    var products = data.products || [];
+    if (products.length) {
+      var productsSheet = getSheet(SHEETS.PRODUCTS);
+      if (productsSheet) {
+        var maxProducts = plan.maxProducts;
+        var toAdd = maxProducts > 0 ? products.slice(0, maxProducts) : products;
+        toAdd.forEach(function(p) {
+          var productId = generateId('PRD');
+          productsSheet.appendRow([
+            productId, vendorId, p.title, p.description || '', p.price || 0,
+            p.discountPrice || '', processMediaArray(p.images || [], productId),
+            p.category || '', 0, 0, now, now
+          ]);
+        });
+      }
+    }
 
-    (data.products || []).forEach(function(p) {
-      addProduct({ vendorId: vendorId, title: p.title, description: p.description, price: p.price, discountPrice: p.discountPrice, category: p.category, images: p.images || [] });
-    });
-
-    var emailResult = sendVendorApplicationEmail({
+    var emailResult = queueVendorApplicationEmails({
       VendorID: vendorId, Email: data.email, OwnerName: data.ownerName, BusinessName: data.businessName
     });
 

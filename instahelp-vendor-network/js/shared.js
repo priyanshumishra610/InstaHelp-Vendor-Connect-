@@ -39,10 +39,46 @@ var InstaHelp = (function() {
   }
 
   function fileToBase64(file) {
+    if (file.type && file.type.indexOf('image/') === 0 && file.type !== 'image/svg+xml') {
+      return compressImageFile(file, 1280, 0.72);
+    }
     return new Promise(function(resolve, reject) {
       var reader = new FileReader();
       reader.onload = function() { resolve(reader.result); };
       reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /** Shrink images before upload so registration / Drive saves stay fast. */
+  function compressImageFile(file, maxEdge, quality) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = function() {
+        var img = new Image();
+        img.onerror = function() { resolve(reader.result); };
+        img.onload = function() {
+          var w = img.width;
+          var h = img.height;
+          var scale = Math.min(1, maxEdge / Math.max(w, h));
+          if (scale >= 1 && file.size < 350000) {
+            resolve(reader.result);
+            return;
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(w * scale));
+          canvas.height = Math.max(1, Math.round(h * scale));
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          try {
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          } catch (e) {
+            resolve(reader.result);
+          }
+        };
+        img.src = reader.result;
+      };
       reader.readAsDataURL(file);
     });
   }
