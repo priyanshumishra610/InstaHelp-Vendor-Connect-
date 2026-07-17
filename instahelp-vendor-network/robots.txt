@@ -1,6 +1,13 @@
 # InstaHelp — https://www.instahelp.co
+# Allow search + AI retrieval crawlers so InstaHelp can appear in
+# Google, Bing, ChatGPT, Claude, Gemini, Perplexity, and similar answers.
+
 User-agent: *
 Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /ai.txt
+Allow: /for-ai/
 Disallow: /admin/
 Disallow: /vendor/dashboard
 Disallow: /vendor-dashboard.html
@@ -9,28 +16,84 @@ Disallow: /shared-css.html
 Disallow: /shared-js.html
 Disallow: /shop-templates.html
 
-# AI crawlers — allow discovery of public content
-User-agent: GPTBot
+# ——— AI retrieval (live answers / citations) ———
+# ChatGPT Search
+User-agent: OAI-SearchBot
 Allow: /
-Disallow: /admin/
-Disallow: /vendor/dashboard
 
 User-agent: ChatGPT-User
 Allow: /
 
-User-agent: Google-Extended
+# Claude (Anthropic) search / fetch
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
 Allow: /
 
 User-agent: anthropic-ai
 Allow: /
 
-User-agent: ClaudeBot
-Allow: /
-
+# Perplexity
 User-agent: PerplexityBot
 Allow: /
 
+User-agent: Perplexity-User
+Allow: /
+
+# Gemini / Google AI grounding uses Googlebot; Google-Extended is training
+User-agent: Googlebot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+# Bing / Copilot
+User-agent: bingbot
+Allow: /
+
+User-agent: BingPreview
+Allow: /
+
+# Others that surface citations
+User-agent: Applebot
+Allow: /
+
 User-agent: Applebot-Extended
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+# ——— AI training (optional; allowed for long-term brand recall) ———
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
 Allow: /
 
 Sitemap: https://www.instahelp.co/sitemap.xml
