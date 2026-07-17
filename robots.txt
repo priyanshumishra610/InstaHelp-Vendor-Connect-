@@ -1,0 +1,36 @@
+# InstaHelp — https://www.instahelp.co
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /vendor/dashboard
+Disallow: /vendor-dashboard.html
+Disallow: /admin-dashboard.html
+Disallow: /shared-css.html
+Disallow: /shared-js.html
+Disallow: /shop-templates.html
+
+# AI crawlers — allow discovery of public content
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /vendor/dashboard
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://www.instahelp.co/sitemap.xml

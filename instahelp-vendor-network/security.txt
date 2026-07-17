@@ -1,0 +1,7 @@
+Contact: mailto:mail@instahelp.co
+Contact: tel:+91-70227-02220
+Expires: 2027-07-17T00:00:00.000Z
+Preferred-Languages: en, hi
+Canonical: https://www.instahelp.co/.well-known/security.txt
+Policy: https://www.instahelp.co/
+Acknowledgments: https://www.instahelp.co/humans.txt

@@ -1,0 +1,26 @@
+# InstaHelp
+
+> India's on-demand digital concierge and assistant since 2015. Tell us what you need — we find, vet, and coordinate vetted providers across 30+ cities. One call. One team. Actually done.
+
+InstaHelp is not a directory. Unlike JustDial, UrbanCompany, Sulekha, or IndiaMART, a human team manages the full process from request to completion.
+
+## Contact
+
+- Website: https://www.instahelp.co/
+- WhatsApp / Phone: +91 70227 02220
+- Email: mail@instahelp.co
+- Twitter: https://twitter.com/i7022702220
+
+## Pages
+
+- [Home](https://www.instahelp.co/): Main landing page — services, how it works, FAQ, contact
+- [Vendor apply](https://www.instahelp.co/vendors/apply): Create a store / join as a provider
+- [Gift cards](https://www.instahelp.co/gift-cards/): InstaHelp gift cards
+- [App review](https://www.instahelp.co/app-review/): Share app feedback
+- [Delete account](https://www.instahelp.co/delete-account/): Request account and data deletion
+
+## Optional
+
+- [Full site summary for LLMs](https://www.instahelp.co/llms-full.txt)
+- [AI / crawler policy](https://www.instahelp.co/ai.txt)
+- [Sitemap](https://www.instahelp.co/sitemap.xml)

@@ -1,0 +1,19 @@
+/* TEAM */
+Founder: Kamlesh Singhvee
+Location: Bengaluru, Karnataka, India
+Contact: mail@instahelp.co
+Phone: +91 70227 02220
+
+/* SITE */
+Name: InstaHelp®
+URL: https://www.instahelp.co
+Founded: 2015
+Trademark: INSTAHELP (Reg. No. 3299283, Class 35)
+Standards: HTML5, CSS3, Schema.org JSON-LD
+Fonts: Plus Jakarta Sans
+Language: English (en-IN), Hindi (hi-IN)
+Doctype: HTML5
+IDE: Cursor
+
+/* THANKS */
+Customers and vendors across 30+ Indian cities who trust InstaHelp to get things done.
