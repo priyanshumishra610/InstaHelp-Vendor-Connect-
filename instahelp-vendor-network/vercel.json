@@ -2,6 +2,7 @@
   "buildCommand": "npm run build",
   "rewrites": [
     { "source": "/google9911849a542e3d6b", "destination": "/google9911849a542e3d6b.html" },
+    { "source": "/for-ai", "destination": "/for-ai/index.html" },
     { "source": "/app-review", "destination": "/app-review/index.html" },
     { "source": "/delete-account", "destination": "/delete-account/index.html" },
     { "source": "/shop/:slug", "destination": "/shop/index.html" }
@@ -12,5 +13,28 @@
     { "source": "/admin-dashboard.html", "destination": "/admin/vendors", "permanent": true },
     { "source": "/showcase", "destination": "/", "permanent": false },
     { "source": "/showcase.html", "destination": "/", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/(llms\\.txt|llms-full\\.txt|ai\\.txt|robots\\.txt|humans\\.txt|security\\.txt)",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" },
+        { "key": "X-Robots-Tag", "value": "all" }
+      ]
+    },
+    {
+      "source": "/.well-known/security.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" }
+      ]
+    },
+    {
+      "source": "/for-ai/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "index, follow" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    }
   ]
 }

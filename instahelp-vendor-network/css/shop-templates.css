@@ -81,6 +81,4 @@
 .gallery-masonry { columns: 3; column-gap: 0.75rem; }
 .gallery-masonry img { width: 100%; border-radius: 10px; margin-bottom: 0.75rem; break-inside: avoid; }
 @media(max-width:768px){ .gallery-masonry{columns:2} }
-.reviews-row { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1rem; }
-.review-card { padding: 1.25rem; border-radius: 12px; background: rgba(0,0,0,0.03); }
 .verified { display: inline-flex; align-items: center; gap: 0.25rem; background: #DBEAFE; color: #2563EB; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }

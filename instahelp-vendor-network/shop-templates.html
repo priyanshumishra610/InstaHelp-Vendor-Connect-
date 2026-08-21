@@ -82,8 +82,6 @@
 .gallery-masonry { columns: 3; column-gap: 0.75rem; }
 .gallery-masonry img { width: 100%; border-radius: 10px; margin-bottom: 0.75rem; break-inside: avoid; }
 @media(max-width:768px){ .gallery-masonry{columns:2} }
-.reviews-row { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1rem; }
-.review-card { padding: 1.25rem; border-radius: 12px; background: rgba(0,0,0,0.03); }
 .verified { display: inline-flex; align-items: center; gap: 0.25rem; background: #DBEAFE; color: #2563EB; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
 </style>
 
@@ -127,13 +125,6 @@ var StoreTemplates = (function() {
     return '<div class="store-sticky">' + contactBtns(v, id, 'store-btn') + '</div>';
   }
 
-  function reviewsSection() {
-    return '<div class="store-section"><div class="store-container"><h2 style="margin-bottom:1.5rem">Reviews</h2><div class="reviews-row">' +
-      '<div class="review-card"><div style="color:#FFD600">★★★★★</div><p style="font-size:0.875rem;margin:0.5rem 0">Excellent service!</p><small style="opacity:0.6">Verified Customer</small></div>' +
-      '<div class="review-card"><div style="color:#FFD600">★★★★★</div><p style="font-size:0.875rem;margin:0.5rem 0">Professional and reliable.</p><small style="opacity:0.6">Verified Customer</small></div>' +
-      '<div class="review-card"><div style="color:#FFD600">★★★★☆</div><p style="font-size:0.875rem;margin:0.5rem 0">Good experience overall.</p><small style="opacity:0.6">Verified Customer</small></div></div></div></div>';
-  }
-
   function productCardClassic(p) {
     var im = imgs(p)[0] || '';
     var disc = p.DiscountPrice && Number(p.DiscountPrice) < Number(p.Price);
@@ -166,7 +157,7 @@ var StoreTemplates = (function() {
       '<div><small style="color:#888">Experience</small><br><strong>' + (v.YearsInBusiness || '—') + ' years</strong></div>' +
       '<div><small style="color:#888">Hours</small><br><strong>' + esc(v.WorkingHours || '—') + '</strong></div>' +
       '<div><small style="color:#888">Areas</small><br><strong>' + esc(v.ServiceAreas || '—') + '</strong></div></div></div></div>' +
-      galHtml + reviewsSection() + enquiryForm(id) + trustSection() + branding(store.showBranding) + stickyBar(v, id) + '</div>';
+      galHtml + enquiryForm(id) + trustSection() + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
   function renderLuxury(store) {
@@ -186,7 +177,7 @@ var StoreTemplates = (function() {
       '<div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">' + contactBtns(v, id) + '</div></div></div>' +
       '<div class="store-section"><div class="store-container"><h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem;text-align:center">Our Offerings</h2>' +
       '<div class="product-grid">' + (prodHtml || '<p style="text-align:center;opacity:0.5">Coming soon</p>') + '</div></div></div>' +
-      reviewsSection() + enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
+      enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
   function renderService(store) {
@@ -214,7 +205,7 @@ var StoreTemplates = (function() {
       '<div class="team-card"><strong>Vetted</strong><p style="font-size:0.8125rem;color:#666;margin-top:0.25rem">Verified professionals</p></div>' +
       '<div class="team-card"><strong>' + (v.YearsInBusiness || '5') + '+ Years</strong><p style="font-size:0.8125rem;color:#666;margin-top:0.25rem">Industry experience</p></div>' +
       '<div class="team-card"><strong>24/7</strong><p style="font-size:0.8125rem;color:#666;margin-top:0.25rem">WhatsApp support</p></div></div></div></div>' +
-      reviewsSection() + enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
+      enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
   function renderTravel(store) {
@@ -239,7 +230,7 @@ var StoreTemplates = (function() {
       '<span>★ ' + (v.Rating || '4.9') + '</span></div><div style="display:flex;gap:0.5rem">' + contactBtns(v, id) + '</div></div>' +
       '<h2 style="margin-bottom:1.5rem">Packages & Destinations</h2><div class="dest-grid">' + (destHtml || '<p>No packages yet</p>') + '</div></div></div>' +
       '<div class="store-section" style="background:#f7f7f7"><div class="store-container"><h2>About</h2><p style="line-height:1.8;color:#444;max-width:700px">' + esc(v.Description) + '</p></div></div>' +
-      galHtml + reviewsSection() + enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
+      galHtml + enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
   var renderers = { classic: renderClassic, luxury: renderLuxury, service: renderService, travel: renderTravel };

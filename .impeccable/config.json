@@ -1,0 +1,47 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "plus jakarta sans",
+        "createdAt": "2026-08-21T21:30:47.572Z",
+        "reason": "Incumbent InstaHelp marketing site; user asked only to remove testimonials, not to replace brand type, marquee, glow, or step/FAQ motion"
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "index.html",
+          "instahelp-vendor-network/index.html",
+          "instahelp-vendor-network/showcase.html"
+        ],
+        "createdAt": "2026-08-21T21:30:47.622Z",
+        "reason": "Incumbent InstaHelp marketing site; user asked only to remove testimonials, not to replace brand type, marquee, glow, or step/FAQ motion"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "index.html",
+          "instahelp-vendor-network/index.html",
+          "instahelp-vendor-network/showcase.html"
+        ],
+        "createdAt": "2026-08-21T21:30:47.673Z",
+        "reason": "Incumbent InstaHelp marketing site; user asked only to remove testimonials, not to replace brand type, marquee, glow, or step/FAQ motion"
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "index.html",
+          "instahelp-vendor-network/index.html",
+          "instahelp-vendor-network/showcase.html"
+        ],
+        "createdAt": "2026-08-21T21:30:47.726Z",
+        "reason": "Incumbent InstaHelp marketing site; user asked only to remove testimonials, not to replace brand type, marquee, glow, or step/FAQ motion"
+      }
+    ]
+  }
+}
