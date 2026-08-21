@@ -241,31 +241,54 @@ nav.main-nav a.nav-extra:hover{background:rgba(255,214,0,.22)}
 .stat-num{font-size:clamp(2.2rem,4vw,3rem);font-weight:800;color:var(--ink);letter-spacing:-.03em;line-height:1}
 .stat-lbl{font-size:.88rem;color:rgba(18,20,26,.6);margin-top:6px;font-weight:500}
 /* SERVICES */
-.services-section{background:var(--bg)}
-.svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:44px}
-.svc-card{background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform var(--tr),box-shadow var(--tr);position:relative}
-.svc-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:transparent}
-.svc-card:hover .svc-img img{transform:scale(1.07)}
-.svc-card.tall{grid-row:span 2}
-.svc-card.wide{grid-column:span 2}
-.svc-img{overflow:hidden;height:160px;position:relative}
-.svc-card.tall .svc-img{height:268px}
-.svc-img img{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.22,1,.36,1)}
-.svc-ov{position:absolute;inset:0;opacity:.25}
-.svc-body{padding:16px 18px 20px}
-.svc-em{display:flex;align-items:center;line-height:1;margin-bottom:8px}
-.svc-em svg{width:20px;height:20px;stroke-width:2}
-.svc-em-lg svg{width:28px;height:28px;color:var(--yellow)}
-.svc-name{font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:5px}
-.svc-desc{font-size:.8rem;color:var(--ink3);line-height:1.5;margin-bottom:10px}
-.svc-tags{display:flex;flex-wrap:wrap;gap:4px}
-.svc-tag{font-size:.71rem;font-weight:500;color:var(--ink2);background:var(--bg);border:1px solid var(--border);border-radius:50px;padding:2px 9px}
-.svc-arr{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;opacity:0;transform:translateX(5px);transition:all .22s;box-shadow:var(--shadow-sm)}
-.svc-card:hover .svc-arr{opacity:1;transform:none}
-.svc-dark{background:var(--ink);border-color:var(--ink)}
-.svc-dark .svc-name{color:#fff}
-.svc-dark .svc-desc{color:rgba(255,255,255,.55)}
-.svc-dark .svc-tag{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.7)}
+.services-section{background:var(--bg);padding:112px 0 120px}
+.svc-head{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(240px,.8fr);gap:28px 72px;align-items:end;margin-bottom:56px}
+.svc-head .section-title{margin-bottom:0}
+.svc-head .section-sub{margin-bottom:0;max-width:38ch}
+.svc-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.svc-card{--svc-tint:var(--ink);grid-column:span 3;display:flex;text-decoration:none;color:inherit;padding:6px;border-radius:22px;background:#fff;border:1px solid var(--border);box-shadow:0 1px 2px rgba(18,20,26,.05);transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s cubic-bezier(.22,1,.36,1),border-color .3s;min-height:100%}
+.svc-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(18,20,26,.1),0 4px 12px rgba(18,20,26,.05);border-color:rgba(18,20,26,.1)}
+.svc-card:active{transform:translateY(-2px) scale(.99)}
+.svc-card:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.svc-card.tall{grid-column:span 6;grid-row:span 2}
+.svc-card.wide{grid-column:span 6}
+.svc-shell{position:relative;border-radius:16px;overflow:hidden;background:var(--card);display:flex;flex-direction:column;flex:1;width:100%}
+.svc-card.wide .svc-shell{display:grid;grid-template-columns:1.08fr .92fr}
+.svc-media{position:relative;overflow:hidden;aspect-ratio:16/10;flex-shrink:0}
+.svc-card.tall .svc-media{aspect-ratio:auto;flex:1;min-height:280px}
+.svc-card.wide .svc-media{aspect-ratio:auto;height:100%;min-height:240px}
+.svc-media img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.22,1,.36,1)}
+.svc-card:hover .svc-media img{transform:scale(1.05)}
+.svc-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,20,26,0) 42%,rgba(18,20,26,.28) 100%);pointer-events:none}
+.svc-body{padding:22px 22px 24px;display:flex;flex-direction:column;flex:1}
+.svc-card.wide .svc-body{justify-content:center;padding:28px 26px}
+.svc-card.tall .svc-body{padding:24px 26px 28px}
+.svc-name{display:flex;align-items:flex-start;gap:9px;font-weight:800;font-size:1.08rem;letter-spacing:-.025em;color:var(--ink);margin-bottom:8px;line-height:1.25}
+.svc-name svg{width:18px;height:18px;stroke-width:1.85;flex-shrink:0;margin-top:2px;color:var(--svc-tint)}
+.svc-desc{font-size:.9rem;color:var(--ink2);line-height:1.62;margin-bottom:16px}
+.svc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.svc-tag{font-size:.78rem;font-weight:600;color:var(--ink2);background:var(--bg);border:1px solid var(--border);border-radius:50px;padding:5px 11px}
+.svc-arr{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.94);color:var(--ink);display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 2px 10px rgba(18,20,26,.12);transition:transform .35s cubic-bezier(.22,1,.36,1),background .3s}
+.svc-arr svg{width:15px;height:15px}
+.svc-card:hover .svc-arr{background:var(--yellow);transform:translate(2px,-2px)}
+.svc-dark{background:var(--ink);border-color:#1c1f28}
+.svc-dark .svc-shell{background:transparent}
+.svc-dark .svc-body{padding:32px 28px;justify-content:center}
+.svc-dark .svc-name{color:#fff;font-size:1.25rem}
+.svc-dark .svc-name svg{color:var(--yellow)}
+.svc-dark .svc-desc{color:rgba(255,255,255,.74)}
+.svc-dark .svc-tag{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:rgba(255,255,255,.82)}
+.svc-cta{display:inline-flex;align-items:center;gap:10px;margin-top:22px;background:var(--yellow);color:var(--ink);font-weight:700;font-size:.88rem;padding:8px 8px 8px 18px;border-radius:50px;width:fit-content;transition:transform .25s cubic-bezier(.22,1,.36,1)}
+.svc-cta-ic{width:28px;height:28px;border-radius:50%;background:rgba(18,20,26,.1);display:inline-flex;align-items:center;justify-content:center}
+.svc-cta-ic svg{width:13px;height:13px}
+.svc-card.svc-dark:hover .svc-cta{transform:translateX(4px)}
+.svc-dark .svc-arr{background:rgba(255,255,255,.12);color:#fff;box-shadow:none}
+.svc-dark:hover .svc-arr{background:var(--yellow);color:var(--ink)}
+@media(prefers-reduced-motion:reduce){
+  .svc-card,.svc-media img,.svc-arr,.svc-cta{transition:none}
+  .svc-card:hover,.svc-card:active{transform:none}
+  .svc-card:hover .svc-media img,.svc-card:hover .svc-arr,.svc-card.svc-dark:hover .svc-cta{transform:none}
+}
 /* CITIES */
 .cities-section{background:var(--white)}
 .city-grid{display:flex;flex-wrap:wrap;gap:9px;margin-top:36px;justify-content:center}
@@ -362,7 +385,12 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
 @media(max-width:1024px){
   .hero-grid{grid-template-columns:1fr}.hero-right{display:none}
   .how-inner{grid-template-columns:1fr}
-  .svc-grid{grid-template-columns:repeat(3,1fr)}
+  .svc-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+  .svc-card{grid-column:span 3}
+  .svc-card.tall{grid-column:span 6;grid-row:span 1}
+  .svc-card.tall .svc-media{min-height:220px}
+  .svc-card.wide{grid-column:span 6}
+  .svc-head{grid-template-columns:1fr;gap:12px;margin-bottom:40px}
   .footer-grid{grid-template-columns:1fr 1fr}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
 }
@@ -371,9 +399,13 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
   nav.main-nav{display:none}.nav-ham{display:flex}
   .nav-btns .nav-call{display:none}
   .nav-btns{margin-left:auto}
-  .svc-grid{grid-template-columns:repeat(2,1fr)}
-  .svc-card.tall{grid-row:span 1}
+  .services-section{padding:72px 0 80px}
+  .svc-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .svc-card,.svc-card.tall{grid-column:span 1;grid-row:span 1}
   .svc-card.wide{grid-column:span 2}
+  .svc-card.wide .svc-shell{grid-template-columns:1fr}
+  .svc-card.tall .svc-media{min-height:0;aspect-ratio:16/10;flex:none}
+  .svc-body{padding:18px 18px 20px}
   .contact-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .frow{grid-template-columns:1fr}
@@ -381,7 +413,7 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
 }
 @media(max-width:480px){
   .svc-grid{grid-template-columns:1fr}
-  .svc-card.wide{grid-column:span 1}
+  .svc-card,.svc-card.wide{grid-column:span 1}
   .hero h1{font-size:2.2rem}
 }
 </style>
@@ -544,18 +576,122 @@ footer{background:#0D0F14;color:rgba(255,255,255,.55);padding:60px 0 28px}
 <!-- SERVICES -->
 <section class="section services-section" id="services" aria-labelledby="services-heading">
   <div class="container">
-    <div class="sek reveal"><div class="sek-bar"></div>Every category</div>
-    <h2 class="section-title reveal" id="services-heading">Services, Products &amp; Experiences.<br>Sourced &amp; Coordinated.</h2>
-    <p class="section-sub reveal" style="max-width:560px">From fixing a leaking tap to finding a CA for your startup, InstaHelp coordinates across every category.</p>
+    <div class="svc-head">
+      <div class="reveal">
+        <div class="sek"><div class="sek-bar"></div>Every category</div>
+        <h2 class="section-title" id="services-heading">Services, Products &amp; Experiences.<br>Sourced &amp; Coordinated.</h2>
+      </div>
+      <p class="section-sub reveal">From a leaking tap to a CA for your startup, one team coordinates the right provider across every category.</p>
+    </div>
     <div class="svc-grid">
-      <article class="svc-card tall reveal"><div class="svc-img"><img src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=400&q=80&fit=crop" alt="Home services" loading="lazy"><div class="svc-ov" style="background:#1D4ED8"></div></div><div class="svc-body"><div class="svc-em"><i data-lucide="wrench" aria-hidden="true"></i></div><div class="svc-name">Home &amp; Personal Services</div><div class="svc-desc">Repairs, cleaning, maintenance, childcare, cooking, trusted professionals arranged for you.</div><div class="svc-tags"><span class="svc-tag">Plumbers</span><span class="svc-tag">Electricians</span><span class="svc-tag">Carpenters</span><span class="svc-tag">Deep Cleaning</span><span class="svc-tag">Pest Control</span><span class="svc-tag">AC Services</span><span class="svc-tag">Handyman</span><span class="svc-tag">House Helpers</span></div></div><div class="svc-arr"><i data-lucide="arrow-right" style="width:13px;height:13px"></i></div></article>
-      <article class="svc-card reveal d1"><div class="svc-img"><img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&q=80&fit=crop" alt="CA and business services" loading="lazy"><div class="svc-ov" style="background:#7C3AED"></div></div><div class="svc-body"><div class="svc-em"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i></div><div class="svc-name">Business &amp; Professional</div><div class="svc-desc">CAs, GST, company registration, lawyers, recruitment, HR.</div><div class="svc-tags"><span class="svc-tag">CA &amp; GST</span><span class="svc-tag">Tax Filing</span><span class="svc-tag">Legal</span><span class="svc-tag">Company Reg.</span></div></div><div class="svc-arr"><i data-lucide="arrow-right" style="width:13px;height:13px"></i></div></article>
-      <article class="svc-card reveal d2"><div class="svc-img"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80&fit=crop" alt="Tech services" loading="lazy"><div class="svc-ov" style="background:#059669"></div></div><div class="svc-body"><div class="svc-em"><i data-lucide="code-2" aria-hidden="true"></i></div><div class="svc-name">Tech &amp; Creative</div><div class="svc-desc">Web dev, apps, SEO, social media, graphic design, IT support.</div><div class="svc-tags"><span class="svc-tag">Web Dev</span><span class="svc-tag">App Dev</span><span class="svc-tag">SEO</span><span class="svc-tag">Design</span></div></div><div class="svc-arr"><i data-lucide="arrow-right" style="width:13px;height:13px"></i></div></article>
-      <article class="svc-card wide reveal"><div style="display:grid;grid-template-columns:1fr 1fr;height:100%"><div class="svc-img" style="height:100%;min-height:160px"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=80&fit=crop" alt="Events and travel" loading="lazy"></div><div class="svc-body" style="display:flex;flex-direction:column;justify-content:center"><div class="svc-em"><i data-lucide="party-popper" aria-hidden="true"></i></div><div class="svc-name">Events &amp; Travel</div><div class="svc-desc">Weddings, photographers, packers, visa, tours, airport pickups.</div><div class="svc-tags"><span class="svc-tag">Wedding</span><span class="svc-tag">Packers</span><span class="svc-tag">Visa Help</span><span class="svc-tag">Airport Pickup</span></div></div></div><div class="svc-arr"><i data-lucide="arrow-right" style="width:13px;height:13px"></i></div></article>
-      <article class="svc-card reveal d1"><div class="svc-img"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80&fit=crop" alt="Education" loading="lazy"><div class="svc-ov" style="background:#E8412A"></div></div><div class="svc-body"><div class="svc-em"><i data-lucide="book-open" aria-hidden="true"></i></div><div class="svc-name">Education &amp; Tutoring</div><div class="svc-desc">Home tutors, NEET/JEE coaching, music, languages.</div><div class="svc-tags"><span class="svc-tag">Home Tutors</span><span class="svc-tag">NEET/JEE</span><span class="svc-tag">Music</span></div></div><div class="svc-arr"><i data-lucide="arrow-right" style="width:13px;height:13px"></i></div></article>
-      <article class="svc-card reveal d2"><div class="svc-img"><img src="https://images.unsplash.com/photo-1565793623516-f70bd90df8d9?w=400&q=80&fit=crop" alt="Manufacturing" loading="lazy"><div class="svc-ov" style="background:#D97706"></div></div><div class="svc-body"><div class="svc-em"><i data-lucide="factory" aria-hidden="true"></i></div><div class="svc-name">Manufacturers &amp; Suppliers</div><div class="svc-desc">Packaging, printing, garments, CNC, raw materials, bulk sourcing.</div><div class="svc-tags"><span class="svc-tag">Packaging</span><span class="svc-tag">Garments</span><span class="svc-tag">CNC</span></div></div><div class="svc-arr"><i data-lucide="arrow-right" style="width:13px;height:13px"></i></div></article>
-      <article class="svc-card reveal"><div class="svc-img"><img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80&fit=crop" alt="Wellness" loading="lazy"><div class="svc-ov" style="background:#0D9488"></div></div><div class="svc-body"><div class="svc-em"><i data-lucide="activity" aria-hidden="true"></i></div><div class="svc-name">Personal Care &amp; Wellness</div><div class="svc-desc">Elder care, fitness trainers, yoga, salon at home, pet care.</div><div class="svc-tags"><span class="svc-tag">Elder Care</span><span class="svc-tag">Fitness</span><span class="svc-tag">Yoga</span><span class="svc-tag">Salon</span></div></div><div class="svc-arr"><i data-lucide="arrow-right" style="width:13px;height:13px"></i></div></article>
-      <article class="svc-card svc-dark reveal d1"><div class="svc-body" style="padding:28px;height:100%;display:flex;flex-direction:column;justify-content:center"><div class="svc-em svc-em-lg"><i data-lucide="wand-sparkles" aria-hidden="true"></i></div><div class="svc-name">Anything Else</div><div class="svc-desc">Real Estate, Deals, Personal Shopping, Caterers, Mechanics, Interior Design, Custom Requests, if it exists in India, we coordinate it.</div><div style="margin-top:18px"><a href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20something%20unusual..." class="btn btn-yellow" style="display:inline-flex;font-size:.85rem" target="_blank" rel="noopener">Just ask →</a></div></div></article>
+      <a class="svc-card tall reveal" style="--svc-tint:#1D4ED8" href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20with%20home%20services..." target="_blank" rel="noopener" aria-label="Request Home and Personal Services on WhatsApp">
+        <div class="svc-shell">
+          <div class="svc-media">
+            <img src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&amp;fit=crop&amp;w=1100&amp;q=72" alt="Technician repairing a household fixture" width="1100" height="825" loading="lazy" decoding="async">
+            <div class="svc-ov"></div>
+            <span class="svc-arr" aria-hidden="true"><i data-lucide="arrow-up-right"></i></span>
+          </div>
+          <div class="svc-body">
+            <h3 class="svc-name"><i data-lucide="wrench" aria-hidden="true"></i> Home &amp; Personal Services</h3>
+            <p class="svc-desc">Repairs, cleaning, maintenance, childcare, cooking. Trusted professionals arranged for you.</p>
+            <div class="svc-tags"><span class="svc-tag">Plumbers</span><span class="svc-tag">Electricians</span><span class="svc-tag">Carpenters</span><span class="svc-tag">Deep Cleaning</span><span class="svc-tag">Pest Control</span><span class="svc-tag">AC Services</span><span class="svc-tag">Handyman</span><span class="svc-tag">House Helpers</span></div>
+          </div>
+        </div>
+      </a>
+      <a class="svc-card reveal d1" style="--svc-tint:#1E40AF" href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20with%20business%20and%20CA%20services..." target="_blank" rel="noopener" aria-label="Request Business and Professional services on WhatsApp">
+        <div class="svc-shell">
+          <div class="svc-media">
+            <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&amp;fit=crop&amp;w=800&amp;q=72" alt="Business documents and accounts work" width="800" height="500" loading="lazy" decoding="async">
+            <div class="svc-ov"></div>
+            <span class="svc-arr" aria-hidden="true"><i data-lucide="arrow-up-right"></i></span>
+          </div>
+          <div class="svc-body">
+            <h3 class="svc-name"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i> Business &amp; Professional</h3>
+            <p class="svc-desc">CAs, GST, company registration, lawyers, recruitment, HR.</p>
+            <div class="svc-tags"><span class="svc-tag">CA &amp; GST</span><span class="svc-tag">Tax Filing</span><span class="svc-tag">Legal</span><span class="svc-tag">Company Reg.</span></div>
+          </div>
+        </div>
+      </a>
+      <a class="svc-card reveal d2" style="--svc-tint:#0F766E" href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20with%20tech%20and%20creative%20work..." target="_blank" rel="noopener" aria-label="Request Tech and Creative services on WhatsApp">
+        <div class="svc-shell">
+          <div class="svc-media">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&amp;fit=crop&amp;w=800&amp;q=72" alt="Designer working on a laptop" width="800" height="500" loading="lazy" decoding="async">
+            <div class="svc-ov"></div>
+            <span class="svc-arr" aria-hidden="true"><i data-lucide="arrow-up-right"></i></span>
+          </div>
+          <div class="svc-body">
+            <h3 class="svc-name"><i data-lucide="code-2" aria-hidden="true"></i> Tech &amp; Creative</h3>
+            <p class="svc-desc">Web, apps, SEO, social, graphic design, IT support.</p>
+            <div class="svc-tags"><span class="svc-tag">Web Dev</span><span class="svc-tag">App Dev</span><span class="svc-tag">SEO</span><span class="svc-tag">Design</span></div>
+          </div>
+        </div>
+      </a>
+      <a class="svc-card wide reveal" style="--svc-tint:#B45309" href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20with%20events%20and%20travel..." target="_blank" rel="noopener" aria-label="Request Events and Travel services on WhatsApp">
+        <div class="svc-shell">
+          <div class="svc-media">
+            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&amp;fit=crop&amp;w=1000&amp;q=72" alt="Wedding and event gathering" width="1000" height="700" loading="lazy" decoding="async">
+            <div class="svc-ov"></div>
+            <span class="svc-arr" aria-hidden="true"><i data-lucide="arrow-up-right"></i></span>
+          </div>
+          <div class="svc-body">
+            <h3 class="svc-name"><i data-lucide="party-popper" aria-hidden="true"></i> Events &amp; Travel</h3>
+            <p class="svc-desc">Weddings, photographers, packers, visa help, tours, airport pickups.</p>
+            <div class="svc-tags"><span class="svc-tag">Wedding</span><span class="svc-tag">Packers</span><span class="svc-tag">Visa Help</span><span class="svc-tag">Airport Pickup</span></div>
+          </div>
+        </div>
+      </a>
+      <a class="svc-card reveal d1" style="--svc-tint:#C2410C" href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20with%20education%20and%20tutoring..." target="_blank" rel="noopener" aria-label="Request Education and Tutoring on WhatsApp">
+        <div class="svc-shell">
+          <div class="svc-media">
+            <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&amp;fit=crop&amp;w=800&amp;q=72" alt="Student studying with books" width="800" height="500" loading="lazy" decoding="async">
+            <div class="svc-ov"></div>
+            <span class="svc-arr" aria-hidden="true"><i data-lucide="arrow-up-right"></i></span>
+          </div>
+          <div class="svc-body">
+            <h3 class="svc-name"><i data-lucide="book-open" aria-hidden="true"></i> Education &amp; Tutoring</h3>
+            <p class="svc-desc">Home tutors, NEET and JEE coaching, music, languages.</p>
+            <div class="svc-tags"><span class="svc-tag">Home Tutors</span><span class="svc-tag">NEET/JEE</span><span class="svc-tag">Music</span></div>
+          </div>
+        </div>
+      </a>
+      <a class="svc-card reveal d2" style="--svc-tint:#B45309" href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20finding%20manufacturers%20and%20suppliers..." target="_blank" rel="noopener" aria-label="Request Manufacturers and Suppliers on WhatsApp">
+        <div class="svc-shell">
+          <div class="svc-media">
+            <img src="https://images.unsplash.com/photo-1565793623516-f70bd90df8d9?auto=format&amp;fit=crop&amp;w=800&amp;q=72" alt="Factory and manufacturing floor" width="800" height="500" loading="lazy" decoding="async">
+            <div class="svc-ov"></div>
+            <span class="svc-arr" aria-hidden="true"><i data-lucide="arrow-up-right"></i></span>
+          </div>
+          <div class="svc-body">
+            <h3 class="svc-name"><i data-lucide="factory" aria-hidden="true"></i> Manufacturers &amp; Suppliers</h3>
+            <p class="svc-desc">Packaging, printing, garments, CNC, raw materials, bulk sourcing.</p>
+            <div class="svc-tags"><span class="svc-tag">Packaging</span><span class="svc-tag">Garments</span><span class="svc-tag">CNC</span></div>
+          </div>
+        </div>
+      </a>
+      <a class="svc-card reveal" style="--svc-tint:#0F766E" href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20help%20with%20personal%20care%20and%20wellness..." target="_blank" rel="noopener" aria-label="Request Personal Care and Wellness on WhatsApp">
+        <div class="svc-shell">
+          <div class="svc-media">
+            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&amp;fit=crop&amp;w=800&amp;q=72" alt="Fitness and wellness session" width="800" height="500" loading="lazy" decoding="async">
+            <div class="svc-ov"></div>
+            <span class="svc-arr" aria-hidden="true"><i data-lucide="arrow-up-right"></i></span>
+          </div>
+          <div class="svc-body">
+            <h3 class="svc-name"><i data-lucide="activity" aria-hidden="true"></i> Personal Care &amp; Wellness</h3>
+            <p class="svc-desc">Elder care, fitness trainers, yoga, salon at home, pet care.</p>
+            <div class="svc-tags"><span class="svc-tag">Elder Care</span><span class="svc-tag">Fitness</span><span class="svc-tag">Yoga</span><span class="svc-tag">Salon</span></div>
+          </div>
+        </div>
+      </a>
+      <a class="svc-card svc-dark reveal d1" href="https://wa.me/917022702220?text=Hi%20InstaHelp%2C%20I%20need%20something%20unusual..." target="_blank" rel="noopener" aria-label="Request something else on WhatsApp">
+        <div class="svc-shell">
+          <span class="svc-arr" aria-hidden="true"><i data-lucide="arrow-up-right"></i></span>
+          <div class="svc-body">
+            <h3 class="svc-name"><i data-lucide="sparkles" aria-hidden="true"></i> Anything Else</h3>
+            <p class="svc-desc">Real estate, deals, personal shopping, caterers, mechanics, interiors. If it exists in India, we coordinate it.</p>
+            <span class="svc-cta">Just ask <span class="svc-cta-ic"><i data-lucide="arrow-up-right"></i></span></span>
+          </div>
+        </div>
+      </a>
     </div>
   </div>
 </section>
