@@ -1,135 +1,553 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
   <script>(function(){var F='instahelp-vendor-network',b='/';if(location.protocol==='file:'){var h=location.href.split('#')[0].split('?')[0];b=h.slice(0,h.lastIndexOf('/')+1);}else{var p=location.pathname,i=p.indexOf('/'+F+'/');if(i!==-1)b=p.substring(0,i+F.length+2);}var el=document.createElement('base');el.setAttribute('data-ih-base','');el.href=b;var hd=document.head||document.documentElement;hd.insertBefore(el,hd.firstChild);window.INSTAHELP_BASE=b;})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Your Store | InstaHelp Store Builder</title>
+  <title>Register as a vendor | InstaHelp</title>
+  <meta name="description" content="Join the InstaHelp vendor network. Register your business, add a short store profile, and submit for review.">
+  <meta name="theme-color" content="#FFD600">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="/10.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest" defer></script>
   <link rel="stylesheet" href="/css/shared.css">
   <link rel="stylesheet" href="/css/mobile.css">
   <style>
-    .onboard-hero {
-      background: linear-gradient(135deg, #0F0F0F 0%, #1a1a2e 55%, #16213e 100%);
-      color: white; padding: 2.5rem 0 3rem; position: relative; overflow: hidden;
+    :root {
+      --apply-bg: #F4F3EE;
+      --apply-ink: #12141A;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .onboard-hero::before {
-      content: ''; position: absolute; top: -40%; right: -10%; width: 420px; height: 420px;
-      background: radial-gradient(circle, rgba(255,214,0,0.14) 0%, transparent 70%); border-radius: 50%;
+    html, body { min-height: 100dvh; }
+    body.apply-body {
+      background: var(--apply-bg);
+      color: var(--apply-ink);
     }
-    .onboard-hero .container { position: relative; z-index: 1; }
-    .onboard-body { margin-top: -1.5rem; padding-bottom: 4rem; }
-    .onboard-card { background: var(--surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); padding: 2rem; }
-    .step-panel { display: none; } .step-panel.active { display: block; animation: fadeIn 0.4s ease; }
-    .success-screen { text-align: center; padding: 3rem; }
-    .success-icon { width: 80px; height: 80px; background: var(--success-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
-    @media(max-width:640px){ .onboard-card{padding:1.25rem} }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .skip-link {
+      position: absolute; left: 1rem; top: -40px; z-index: 40;
+      background: var(--brand); color: var(--ink); padding: 0.5rem 0.875rem;
+      border-radius: 999px; font-weight: 700; font-size: 0.875rem;
+    }
+    .skip-link:focus { top: 0.75rem; }
+    .apply-shell {
+      display: grid;
+      grid-template-columns: minmax(280px, 34%) 1fr;
+      min-height: 100dvh;
+    }
+    .apply-rail {
+      padding: 2rem 2.25rem 2.5rem;
+      background:
+        radial-gradient(1200px 480px at -10% -20%, rgba(255,214,0,.42), transparent 58%),
+        linear-gradient(180deg, #FFFBEA 0%, #F7F4E8 100%);
+      border-right: 1px solid rgba(18,20,26,.08);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .apply-brand {
+      display: flex; align-items: center; gap: 0.625rem;
+      font-weight: 800; letter-spacing: -0.03em; font-size: 1.05rem;
+    }
+    .apply-brand .sidebar-logo-mark { width: 34px; height: 34px; border-radius: 10px; }
+    .apply-rail h1 {
+      font-size: 2rem;
+      max-width: 14ch;
+      text-wrap: balance;
+    }
+    .apply-rail-lead {
+      margin-top: 0.75rem;
+      color: var(--ink-secondary);
+      max-width: 36ch;
+      font-size: 0.95rem;
+    }
+    .apply-nav { display: flex; flex-direction: column; gap: 0.35rem; }
+    .apply-nav button {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 0.75rem;
+      align-items: start;
+      text-align: left;
+      padding: 0.7rem 0.65rem;
+      border-radius: 12px;
+      color: var(--ink-secondary);
+      width: 100%;
+    }
+    .apply-nav button:hover { background: rgba(18,20,26,.04); color: var(--ink); }
+    .apply-nav button:focus-visible {
+      outline: 2px solid var(--ink); outline-offset: 2px;
+    }
+    .apply-nav button.is-active { color: var(--ink); background: rgba(255,214,0,.28); }
+    .apply-nav button.is-done { color: var(--ink); }
+    .apply-nav button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .nav-index {
+      width: 28px; height: 28px; border-radius: 999px;
+      display: grid; place-items: center;
+      font-size: 0.75rem; font-weight: 700;
+      border: 1.5px solid rgba(18,20,26,.16);
+      background: #fff;
+    }
+    .apply-nav button.is-active .nav-index {
+      background: var(--brand); border-color: var(--brand);
+    }
+    .apply-nav button.is-done .nav-index {
+      background: var(--ink); color: #fff; border-color: var(--ink);
+    }
+    .nav-copy strong { display: block; font-size: 0.875rem; font-weight: 700; }
+    .nav-copy span { display: block; font-size: 0.75rem; color: var(--ink-muted); font-weight: 500; margin-top: 0.1rem; }
+    .apply-aside {
+      margin-top: auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(18,20,26,.08);
+    }
+    .aside-list { list-style: none; display: grid; gap: 0.7rem; }
+    .aside-list li {
+      display: grid; grid-template-columns: 18px 1fr; gap: 0.65rem;
+      font-size: 0.8125rem; color: var(--ink-secondary); line-height: 1.45;
+    }
+    .aside-list i { width: 16px; height: 16px; margin-top: 2px; color: var(--ink); }
+    .apply-help {
+      margin-top: 1.25rem;
+      font-size: 0.8125rem;
+      color: var(--ink-secondary);
+    }
+    .apply-help a { font-weight: 700; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .apply-main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 1.5rem 1.5rem 2rem;
+    }
+    .apply-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .apply-top a {
+      font-size: 0.875rem; font-weight: 600; color: var(--ink-secondary);
+      display: inline-flex; align-items: center; gap: 0.35rem;
+    }
+    .apply-top a:hover { color: var(--ink); }
+    .draft-status {
+      font-size: 0.75rem; font-weight: 600; color: var(--ink-muted);
+      display: inline-flex; align-items: center; gap: 0.35rem;
+    }
+    .draft-status.is-saved { color: #15803d; }
+    .apply-stage {
+      flex: 1;
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .mobile-progress { display: none; margin-bottom: 1rem; }
+    .bar-track {
+      height: 4px; border-radius: 999px; background: rgba(18,20,26,.1); overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; width: 25%;
+      background: var(--ink);
+      transition: width 220ms var(--ease);
+    }
+    .apply-card {
+      background: #fff;
+      border: 1px solid rgba(18,20,26,.08);
+      border-radius: 20px;
+      box-shadow: 0 16px 40px rgba(18,20,26,.06);
+      padding: 1.75rem 1.75rem 1.25rem;
+      flex: 1;
+    }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; animation: panelIn 280ms var(--ease); }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    .panel-title { font-size: 1.35rem; letter-spacing: -0.03em; }
+    .panel-sub { margin: 0.4rem 0 1.5rem; color: var(--ink-secondary); font-size: 0.9rem; max-width: 48ch; }
+    .form-label { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+    .req { color: #b42318; font-weight: 700; }
+    .form-input, .form-select, .form-textarea {
+      border-color: #E2E0D8;
+      background: #FBFBFA;
+    }
+    .form-input:hover, .form-select:hover, .form-textarea:hover { border-color: #C9C6BB; }
+    .form-group.is-invalid .form-input,
+    .form-group.is-invalid .form-select,
+    .form-group.is-invalid .form-textarea {
+      border-color: #DC2626;
+      box-shadow: 0 0 0 3px #FEE2E2;
+    }
+    .field-error { display: none; margin-top: 0.4rem; font-size: 0.75rem; color: #B42318; font-weight: 600; }
+    .form-group.is-invalid .field-error { display: block; }
+    .inline-check {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-top: 0.55rem; font-size: 0.8125rem; color: var(--ink-secondary); font-weight: 500;
+    }
+    .inline-check input { width: 16px; height: 16px; accent-color: var(--ink); }
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+    .cat-chip {
+      border: 1.5px solid #E2E0D8;
+      background: #fff;
+      border-radius: 12px;
+      padding: 0.7rem 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      text-align: center;
+      transition: border-color 160ms var(--ease), background 160ms var(--ease), transform 120ms var(--ease);
+    }
+    .cat-chip:hover { border-color: var(--ink); color: var(--ink); }
+    .cat-chip.is-on {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: var(--ink);
+    }
+    .cat-chip:active { transform: scale(0.98); }
+    .char-count { font-size: 0.75rem; color: var(--ink-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .upload-grid { display: grid; gap: 1rem; }
+    .upload-zone {
+      padding: 1.25rem;
+      border-style: dashed;
+      border-width: 1.5px;
+      background: #FBFBFA;
+    }
+    .upload-zone i { width: 22px; height: 22px; color: var(--ink); margin-bottom: 0.4rem; }
+    .upload-zone p { font-weight: 600; font-size: 0.875rem; }
+    .upload-zone span { display: block; margin-top: 0.2rem; font-size: 0.75rem; color: var(--ink-muted); }
+    .review-list { display: grid; gap: 0.65rem; }
+    .review-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem 1rem;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid #EFEDE6;
+    }
+    .review-item dt { font-size: 0.72rem; font-weight: 700; color: var(--ink-muted); }
+    .review-item dd { font-size: 0.9375rem; font-weight: 600; margin-top: 0.15rem; }
+    .review-item button {
+      align-self: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .note-box {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      background: #FFF8CC;
+      font-size: 0.8125rem;
+      color: var(--ink-secondary);
+    }
+    .step-actions {
+      display: flex; justify-content: space-between; gap: 0.75rem;
+      margin-top: 1.5rem; padding-top: 1.15rem;
+      border-top: 1px solid #EFEDE6;
+    }
+    .step-actions .btn { min-width: 132px; }
+    #next-btn { margin-left: auto; }
+    .success-screen {
+      text-align: left;
+      padding: 2rem 1.75rem 1.5rem;
+    }
+    .success-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: var(--success-light);
+      display: grid; place-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .success-actions {
+      display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.5rem;
+    }
+    .submit-overlay {
+      position: fixed; inset: 0; z-index: 80;
+      background: rgba(18,20,26,.42);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 1.25rem;
+    }
+    .submit-overlay.is-on { display: flex; }
+    .submit-card {
+      background: #fff; border-radius: 16px; padding: 1.5rem 1.6rem;
+      max-width: 360px; width: 100%;
+      box-shadow: 0 20px 50px rgba(18,20,26,.2);
+    }
+    .submit-card p { margin-top: 0.4rem; color: var(--ink-secondary); font-size: 0.875rem; }
+    .pulse-bar {
+      height: 4px; border-radius: 999px; overflow: hidden; background: #EEE;
+      margin-top: 1rem;
+    }
+    .pulse-bar span {
+      display: block; height: 100%; width: 40%;
+      background: var(--brand);
+      animation: load 1.1s var(--ease) infinite;
+    }
+    @keyframes load {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(280%); }
+    }
+    @media (max-width: 900px) {
+      .apply-shell { grid-template-columns: 1fr; }
+      .apply-rail { display: none; }
+      .mobile-progress { display: block; }
+      .apply-main { padding: 1rem 1rem 1.5rem; }
+      .apply-card, .success-screen { padding: 1.15rem; border-radius: 16px; }
+      .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .step-actions { position: sticky; bottom: 0; background: #fff; padding-bottom: 0.25rem; z-index: 2; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .step-panel.active, .bar-fill, .pulse-bar span { animation: none; transition: none; }
+    }
   </style>
 </head>
-<body>
-  <div class="onboard-hero">
-    <div class="container">
-      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+<body class="apply-body">
+  <a class="skip-link" href="#apply-form">Skip to form</a>
+  <div class="apply-shell">
+    <aside class="apply-rail">
+      <a class="apply-brand" href="/">
         <div class="sidebar-logo-mark">IH</div>
-        <span style="font-weight:700">InstaHelp Store Builder</span>
+        InstaHelp
+      </a>
+      <div>
+        <h1>Register your store</h1>
+        <p class="apply-rail-lead">Four short steps. We review every application before your page goes live.</p>
       </div>
-      <h1 style="color:white">Launch Your Online Store</h1>
-      <p style="color:rgba(255,255,255,0.65);max-width:480px">Register your business in minutes. Customize templates, plans, and payments from your dashboard after approval.</p>
-    </div>
+      <nav class="apply-nav" id="steps-nav" aria-label="Registration steps">
+        <button type="button" class="is-active" data-step="1">
+          <span class="nav-index">1</span>
+          <span class="nav-copy"><strong>Business</strong><span>Name, contact, city</span></span>
+        </button>
+        <button type="button" data-step="2" disabled>
+          <span class="nav-index">2</span>
+          <span class="nav-copy"><strong>Store</strong><span>How customers find you</span></span>
+        </button>
+        <button type="button" data-step="3" disabled>
+          <span class="nav-index">3</span>
+          <span class="nav-copy"><strong>Media</strong><span>Optional photos</span></span>
+        </button>
+        <button type="button" data-step="4" disabled>
+          <span class="nav-index">4</span>
+          <span class="nav-copy"><strong>Review</strong><span>Check and send</span></span>
+        </button>
+      </nav>
+      <div class="apply-aside">
+        <ul class="aside-list">
+          <li><i data-lucide="badge-check"></i><span>You start on the Free plan with the Classic template. Upgrade later from your dashboard.</span></li>
+          <li><i data-lucide="eye-off"></i><span>Your public store stays hidden until an admin approves the listing.</span></li>
+          <li><i data-lucide="clock-3"></i><span>Most reviews complete within one business day.</span></li>
+        </ul>
+        <p class="apply-help">Stuck? WhatsApp <a href="https://wa.me/917022702220">+91 70227 02220</a></p>
+      </div>
+    </aside>
+
+    <main class="apply-main">
+      <div class="apply-top">
+        <a href="/"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Home</a>
+        <span class="draft-status" id="draft-status">Draft saves automatically</span>
+      </div>
+
+      <div class="apply-stage">
+        <div class="mobile-progress">
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.45rem;font-size:0.8rem;font-weight:700">
+            <span id="mobile-step-label">Business</span>
+            <span id="mobile-step-count">1 / 4</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
+        </div>
+
+        <div class="apply-card" id="form-wrap">
+          <form id="apply-form" novalidate>
+            <div class="step-panel active" id="step-1">
+              <h2 class="panel-title">Business details</h2>
+              <p class="panel-sub">We use this to reach you and to match you with the right requests.</p>
+
+              <div class="form-group" data-field="businessName">
+                <label class="form-label" for="businessName">Business name <span class="req">*</span></label>
+                <input class="form-input" id="businessName" name="organization" autocomplete="organization" required placeholder="e.g. Rao Electricals">
+                <p class="field-error">Enter your business name.</p>
+              </div>
+              <div class="form-row">
+                <div class="form-group" data-field="ownerName">
+                  <label class="form-label" for="ownerName">Owner name <span class="req">*</span></label>
+                  <input class="form-input" id="ownerName" autocomplete="name" required placeholder="Your full name">
+                  <p class="field-error">Enter the owner name.</p>
+                </div>
+                <div class="form-group" data-field="phone">
+                  <label class="form-label" for="phone">Mobile <span class="req">*</span></label>
+                  <input class="form-input" id="phone" type="tel" inputmode="numeric" autocomplete="tel" required placeholder="10-digit mobile">
+                  <p class="field-error">Enter a 10-digit mobile number.</p>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" data-field="whatsapp">
+                  <label class="form-label" for="whatsapp">WhatsApp</label>
+                  <input class="form-input" id="whatsapp" type="tel" inputmode="numeric" autocomplete="tel" placeholder="If different from mobile">
+                  <label class="inline-check"><input type="checkbox" id="waSame"> Same as mobile</label>
+                </div>
+                <div class="form-group" data-field="email">
+                  <label class="form-label" for="email">Email <span class="req">*</span></label>
+                  <input class="form-input" id="email" type="email" autocomplete="email" required placeholder="you@business.com">
+                  <p class="field-error">Enter a valid email.</p>
+                </div>
+              </div>
+              <div class="form-group" data-field="category">
+                <label class="form-label" for="category">Category <span class="req">*</span></label>
+                <select class="form-select sr-only" id="category" required>
+                  <option value="">Select</option>
+                  <option>Travel</option><option>Hotels</option><option>Real Estate</option><option>Doctors</option>
+                  <option>Beauty</option><option>Education</option><option>Electronics</option><option>Restaurants</option><option>Services</option><option>Other</option>
+                </select>
+                <div class="cat-grid" id="cat-grid" role="listbox" aria-label="Business category"></div>
+                <p class="field-error">Choose a category.</p>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="yearsInBusiness">Years in business</label>
+                  <input class="form-input" id="yearsInBusiness" type="number" min="0" max="80" inputmode="numeric" placeholder="e.g. 6">
+                </div>
+                <div class="form-group" data-field="city">
+                  <label class="form-label" for="city">City <span class="req">*</span></label>
+                  <input class="form-input" id="city" list="city-list" autocomplete="address-level2" required placeholder="Bengaluru">
+                  <datalist id="city-list">
+                    <option value="Bengaluru"><option value="Mumbai"><option value="Delhi"><option value="Hyderabad">
+                    <option value="Chennai"><option value="Pune"><option value="Kolkata"><option value="Ahmedabad">
+                    <option value="Jaipur"><option value="Lucknow"><option value="Chandigarh"><option value="Kochi">
+                    <option value="Indore"><option value="Coimbatore"><option value="Mysuru"><option value="Gurugram">
+                    <option value="Noida"><option value="Surat"><option value="Nagpur"><option value="Goa">
+                  </datalist>
+                  <p class="field-error">Enter your city.</p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="state">State</label>
+                <select class="form-select" id="state" autocomplete="address-level1">
+                  <option value="">Select state</option>
+                  <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option><option>Bihar</option>
+                  <option>Chhattisgarh</option><option>Delhi</option><option>Goa</option><option>Gujarat</option>
+                  <option>Haryana</option><option>Himachal Pradesh</option><option>Jammu and Kashmir</option><option>Jharkhand</option>
+                  <option>Karnataka</option><option>Kerala</option><option>Ladakh</option><option>Madhya Pradesh</option>
+                  <option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option><option>Mizoram</option>
+                  <option>Nagaland</option><option>Odisha</option><option>Puducherry</option><option>Punjab</option>
+                  <option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option>
+                  <option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="step-panel" id="step-2">
+              <h2 class="panel-title">Store profile</h2>
+              <p class="panel-sub">This copy appears on your public page after approval.</p>
+              <div class="form-group" data-field="description">
+                <label class="form-label" for="description">Description <span class="req">*</span><span class="char-count" id="desc-count">0</span></label>
+                <textarea class="form-textarea" id="description" required maxlength="600" placeholder="What you do, who you serve, and what customers should expect."></textarea>
+                <p class="form-hint">A few clear sentences work better than a slogan.</p>
+                <p class="field-error">Add a short description of your work.</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="serviceAreas">Service areas</label>
+                <input class="form-input" id="serviceAreas" placeholder="Whitefield, Indiranagar, Electronic City">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="workingHours">Working hours</label>
+                <input class="form-input" id="workingHours" placeholder="Mon-Sat 9AM-8PM">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="website">Website</label>
+                  <input class="form-input" id="website" type="url" inputmode="url" placeholder="https://">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="instagram">Instagram</label>
+                  <input class="form-input" id="instagram" placeholder="@yourhandle">
+                </div>
+              </div>
+            </div>
+
+            <div class="step-panel" id="step-3">
+              <h2 class="panel-title">Photos</h2>
+              <p class="panel-sub">Optional. Skip this step if you prefer to add images later from the dashboard.</p>
+              <div class="upload-grid">
+                <div class="form-group">
+                  <label class="form-label">Logo</label>
+                  <div class="upload-zone" id="logo-zone">
+                    <i data-lucide="image"></i>
+                    <p>Drop or tap to add a logo</p>
+                    <span>Square PNG or JPG</span>
+                  </div>
+                  <input type="file" id="logo-input" accept="image/*" hidden>
+                  <div class="upload-preview" id="logo-preview"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cover banner</label>
+                  <div class="upload-zone" id="cover-zone">
+                    <i data-lucide="image-plus"></i>
+                    <p>Drop or tap to add a cover</p>
+                    <span>1200 x 400 recommended</span>
+                  </div>
+                  <input type="file" id="cover-input" accept="image/*" hidden>
+                  <div class="upload-preview" id="cover-preview"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Gallery</label>
+                  <div class="upload-zone" id="gallery-zone">
+                    <i data-lucide="images"></i>
+                    <p>Drop or tap to add work photos</p>
+                    <span>You can select multiple images</span>
+                  </div>
+                  <input type="file" id="gallery-input" accept="image/*" multiple hidden>
+                  <div class="upload-preview" id="gallery-preview"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-panel" id="step-4">
+              <h2 class="panel-title">Review and submit</h2>
+              <p class="panel-sub">Confirm the details. You can still edit any section before sending.</p>
+              <div id="review-content" class="review-list"></div>
+              <div class="note-box">Starts on the Free plan with the Classic template. Your store stays private until approval.</div>
+            </div>
+
+            <div class="step-actions">
+              <button class="btn btn-ghost" type="button" id="prev-btn" hidden>Back</button>
+              <button class="btn btn-primary" type="submit" id="next-btn">Continue</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="apply-card success-screen" id="success-screen" hidden>
+          <div class="success-icon"><i data-lucide="check" style="color:var(--success);width:28px;height:28px"></i></div>
+          <h2>Application received</h2>
+          <p class="text-secondary" style="max-width:46ch;margin:0.75rem 0 0">Your listing is pending admin review. It will not appear publicly until it is approved.</p>
+          <p class="text-secondary" style="max-width:46ch;margin:0.65rem 0 0;font-size:0.9rem">Open the dashboard now to pick a template, upgrade your plan, or add more photos.</p>
+          <div class="badge badge-warning" id="success-ref" style="margin:1rem 0 0">Ref: -</div>
+          <p class="text-sm text-muted" id="success-dash-hint" style="margin:0.85rem 0 0">Save the dashboard link. You will need it to return.</p>
+          <div class="success-actions">
+            <a href="#" class="btn btn-primary" id="success-dash-btn">Open dashboard</a>
+            <button type="button" class="btn btn-secondary" id="success-copy-link">Copy dashboard link</button>
+            <a href="/" class="btn btn-ghost">Back to home</a>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 
-  <div class="onboard-body">
-    <div class="container container-narrow">
-      <div class="onboard-card" id="form-wrap">
-        <div class="steps" id="steps-nav">
-          <div class="step active" data-step="1"><div class="step-circle">1</div><div class="step-label">Business</div></div>
-          <div class="step" data-step="2"><div class="step-circle">2</div><div class="step-label">Store</div></div>
-          <div class="step" data-step="3"><div class="step-circle">3</div><div class="step-label">Media</div></div>
-          <div class="step" data-step="4"><div class="step-circle">4</div><div class="step-label">Submit</div></div>
-        </div>
-
-        <div class="step-panel active" id="step-1">
-          <h2>Business Information</h2>
-          <p class="text-muted text-sm" style="margin-bottom:1.5rem">Tell us about your business</p>
-          <div class="form-group"><label class="form-label">Business Name *</label><input class="form-input" id="businessName" required></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Owner Name *</label><input class="form-input" id="ownerName" required></div>
-            <div class="form-group"><label class="form-label">Mobile *</label><input class="form-input" id="phone" type="tel" required></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">WhatsApp</label><input class="form-input" id="whatsapp" type="tel"></div>
-            <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="email" type="email" required></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Category *</label>
-              <select class="form-select" id="category" required>
-                <option value="">Select</option>
-                <option>Travel</option><option>Hotels</option><option>Real Estate</option><option>Doctors</option>
-                <option>Beauty</option><option>Education</option><option>Electronics</option><option>Restaurants</option><option>Services</option><option>Other</option>
-              </select>
-            </div>
-            <div class="form-group"><label class="form-label">Years in Business</label><input class="form-input" id="yearsInBusiness" type="number"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">City *</label><input class="form-input" id="city" required></div>
-            <div class="form-group"><label class="form-label">State</label><input class="form-input" id="state"></div>
-          </div>
-        </div>
-
-        <div class="step-panel" id="step-2">
-          <h2>Store Information</h2>
-          <div class="form-group"><label class="form-label">Description *</label><textarea class="form-textarea" id="description" required></textarea></div>
-          <div class="form-group"><label class="form-label">Service Areas</label><input class="form-input" id="serviceAreas"></div>
-          <div class="form-group"><label class="form-label">Working Hours</label><input class="form-input" id="workingHours" placeholder="Mon-Sat 9AM-8PM"></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Website</label><input class="form-input" id="website"></div>
-            <div class="form-group"><label class="form-label">Instagram</label><input class="form-input" id="instagram"></div>
-          </div>
-        </div>
-
-        <div class="step-panel" id="step-3">
-          <h2>Media Uploads</h2>
-          <p class="text-muted text-sm" style="margin-bottom:1rem">Optional — you can add or change these later in your dashboard.</p>
-          <div class="form-group"><label class="form-label">Logo</label>
-            <div class="upload-zone" id="logo-zone"><p class="text-sm text-muted">Upload logo</p></div>
-            <input type="file" id="logo-input" accept="image/*" hidden><div class="upload-preview" id="logo-preview"></div>
-          </div>
-          <div class="form-group"><label class="form-label">Cover Banner</label>
-            <div class="upload-zone" id="cover-zone"><p class="text-sm text-muted">1200×400 recommended</p></div>
-            <input type="file" id="cover-input" accept="image/*" hidden><div class="upload-preview" id="cover-preview"></div>
-          </div>
-          <div class="form-group"><label class="form-label">Gallery</label>
-            <div class="upload-zone" id="gallery-zone"><p class="text-sm text-muted">Multiple images</p></div>
-            <input type="file" id="gallery-input" accept="image/*" multiple hidden><div class="upload-preview" id="gallery-preview"></div>
-          </div>
-        </div>
-
-        <div class="step-panel" id="step-4">
-          <h2>Review & Submit</h2>
-          <p class="text-muted text-sm" style="margin-bottom:1rem">You start on the <strong>Free</strong> plan with the Classic template. Upgrade anytime from your dashboard.</p>
-          <div id="review-content" style="margin-bottom:1.5rem"></div>
-        </div>
-
-        <div class="step-actions" style="display:flex;justify-content:space-between;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-light)">
-          <button class="btn btn-ghost" id="prev-btn" style="visibility:hidden">← Back</button>
-          <button class="btn btn-primary" id="next-btn">Continue →</button>
-        </div>
-      </div>
-
-      <div class="onboard-card success-screen" id="success-screen" style="display:none">
-        <div class="success-icon"><i data-lucide="check" style="color:var(--success);width:40px;height:40px"></i></div>
-        <h2>Application Submitted!</h2>
-        <p class="text-secondary" style="max-width:440px;margin:1rem auto">Your application is <strong>pending admin review</strong>. Your public store page will <em>not</em> be visible until approved.</p>
-        <p class="text-secondary" style="max-width:440px;margin:0 auto 1rem;font-size:0.9rem">Open your dashboard now to pick templates, upgrade your plan, and customize your store.</p>
-        <div class="badge badge-warning" id="success-ref" style="margin:1rem 0">Ref: —</div>
-        <p class="text-sm text-muted" id="success-dash-hint" style="max-width:440px;margin:0 auto 1rem">Bookmark your dashboard link below.</p>
-        <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem">
-          <a href="#" class="btn btn-primary" id="success-dash-btn">Open My Dashboard</a>
-          <button type="button" class="btn btn-secondary" id="success-copy-link">Copy dashboard link</button>
-          <a href="/" class="btn btn-ghost">Back to Home</a>
-        </div>
-      </div>
+  <div class="submit-overlay" id="submit-overlay" role="status" aria-live="polite">
+    <div class="submit-card">
+      <strong>Sending your application</strong>
+      <p>This can take a moment if you uploaded photos. Keep this tab open.</p>
+      <div class="pulse-bar"><span></span></div>
     </div>
   </div>
 
@@ -137,62 +555,89 @@
   <script src="/js/api.js"></script>
   <script src="/js/shared.js"></script>
   <script>
-    var currentStep = 1, totalSteps = 4;
+    var currentStep = 1, totalSteps = 4, maxReached = 1;
     var formData = { plan: 'free', template: 'classic', paymentVerified: true, vendorId: null };
-
-    function showSuccess(vendorId, res) {
-      document.getElementById('form-wrap').style.display = 'none';
-      document.getElementById('success-screen').style.display = 'block';
-      document.getElementById('success-ref').textContent = 'Reference: ' + vendorId + ' · Status: Pending approval';
-      try { localStorage.setItem('ih_vendor_id', vendorId); } catch (e) {}
-      var dashUrl = (res && res.dashboardUrl) || INSTAHELP_CONFIG.getDashboardUrl(vendorId);
-      var dashBtn = document.getElementById('success-dash-btn');
-      if (dashBtn) dashBtn.href = dashUrl;
-      var copyBtn = document.getElementById('success-copy-link');
-      if (copyBtn) {
-        copyBtn.onclick = function() {
-          navigator.clipboard.writeText(dashUrl).then(function() {
-            InstaHelp.toast('Dashboard link copied', 'success');
-          }).catch(function() {
-            prompt('Copy your dashboard link:', dashUrl);
-          });
-        };
-      }
-      if (res && res.emailSent === false) {
-        InstaHelp.toast('Application saved. Email not sent — use your dashboard link below.', 'error');
-      }
-      InstaHelp.initLucide();
-    }
+    var DRAFT_KEY = 'ih_vendor_apply_draft';
+    var STEP_NAMES = ['Business', 'Store', 'Media', 'Review'];
+    var CATS = ['Travel','Hotels','Real Estate','Doctors','Beauty','Education','Electronics','Restaurants','Services','Other'];
+    var TEXT_IDS = ['businessName','ownerName','phone','whatsapp','email','category','yearsInBusiness','city','state','description','serviceAreas','workingHours','website','instagram'];
 
     var logoUp = InstaHelp.setupUploadZone('logo-zone','logo-input','logo-preview',false);
     var coverUp = InstaHelp.setupUploadZone('cover-zone','cover-input','cover-preview',false);
     var galleryUp = InstaHelp.setupUploadZone('gallery-zone','gallery-input','gallery-preview',true);
 
-    function init() {
-      updateSteps();
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function digits(v) { return String(v || '').replace(/\D/g, ''); }
+    function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+    function setInvalid(id, on) {
+      var g = document.querySelector('[data-field="' + id + '"]');
+      if (g) g.classList.toggle('is-invalid', !!on);
+    }
+    function clearInvalid() {
+      document.querySelectorAll('.form-group.is-invalid').forEach(function(el){ el.classList.remove('is-invalid'); });
+    }
+    function firstInvalid() {
+      var g = document.querySelector('.step-panel.active .form-group.is-invalid');
+      if (!g) return;
+      var input = g.querySelector('input, select, textarea');
+      if (input) input.focus();
+      g.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    function updateSteps() {
-      document.querySelectorAll('.step').forEach(function(s) {
-        var n = +s.dataset.step;
-        s.classList.remove('active','done');
-        if (n < currentStep) s.classList.add('done');
-        if (n === currentStep) s.classList.add('active');
-        s.querySelector('.step-circle').textContent = n < currentStep ? '✓' : n;
+    function renderCats() {
+      var grid = document.getElementById('cat-grid');
+      var sel = document.getElementById('category');
+      grid.innerHTML = CATS.map(function(c) {
+        return '<button type="button" class="cat-chip' + (sel.value === c ? ' is-on' : '') + '" role="option" aria-selected="' + (sel.value === c) + '" data-cat="' + c + '">' + c + '</button>';
+      }).join('');
+    }
+
+    function saveDraft() {
+      var draft = {};
+      TEXT_IDS.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) draft[id] = el.value;
       });
-      document.querySelectorAll('.step-panel').forEach(function(p) { p.classList.remove('active'); });
-      document.getElementById('step-' + currentStep).classList.add('active');
-      document.getElementById('prev-btn').style.visibility = currentStep > 1 ? 'visible' : 'hidden';
-      document.getElementById('next-btn').textContent = currentStep === totalSteps ? 'Submit Application' : 'Continue →';
-      if (currentStep === totalSteps) buildReview();
-      InstaHelp.initLucide();
+      draft.step = currentStep;
+      draft.waSame = document.getElementById('waSame').checked;
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        var st = document.getElementById('draft-status');
+        st.textContent = 'Draft saved';
+        st.classList.add('is-saved');
+      } catch (e) {}
+    }
+
+    function restoreDraft() {
+      try {
+        var raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        var draft = JSON.parse(raw);
+        TEXT_IDS.forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el && draft[id]) el.value = draft[id];
+        });
+        if (draft.waSame) {
+          document.getElementById('waSame').checked = true;
+          syncWhatsApp();
+        }
+        if (draft.step) {
+          currentStep = Math.min(Number(draft.step) || 1, totalSteps);
+          maxReached = Math.max(maxReached, currentStep);
+        }
+        renderCats();
+        updateDescCount();
+      } catch (e) {}
     }
 
     function collectData() {
       formData.businessName = document.getElementById('businessName').value.trim();
       formData.ownerName = document.getElementById('ownerName').value.trim();
-      formData.phone = document.getElementById('phone').value.trim();
-      formData.whatsapp = document.getElementById('whatsapp').value.trim();
+      formData.phone = digits(document.getElementById('phone').value);
+      formData.whatsapp = digits(document.getElementById('whatsapp').value);
       formData.email = document.getElementById('email').value.trim();
       formData.category = document.getElementById('category').value;
       formData.yearsInBusiness = document.getElementById('yearsInBusiness').value;
@@ -209,63 +654,185 @@
     }
 
     function validateStep() {
+      clearInvalid();
+      var ok = true;
       if (currentStep === 1) {
         collectData();
-        if (!formData.businessName || !formData.ownerName || !formData.phone || !formData.email || !formData.category || !formData.city) {
-          InstaHelp.toast('Fill required fields', 'error'); return false;
-        }
+        if (!formData.businessName) { setInvalid('businessName', true); ok = false; }
+        if (!formData.ownerName) { setInvalid('ownerName', true); ok = false; }
+        if (formData.phone.length !== 10) { setInvalid('phone', true); ok = false; }
+        if (!validEmail(formData.email)) { setInvalid('email', true); ok = false; }
+        if (!formData.category) { setInvalid('category', true); ok = false; }
+        if (!formData.city) { setInvalid('city', true); ok = false; }
       }
       if (currentStep === 2) {
         collectData();
-        if (!formData.description) { InstaHelp.toast('Add description', 'error'); return false; }
+        if (!formData.description) { setInvalid('description', true); ok = false; }
       }
       if (currentStep === 3) collectData();
-      return true;
+      if (!ok) {
+        firstInvalid();
+        InstaHelp.toast('Check the highlighted fields', 'error');
+      }
+      return ok;
+    }
+
+    function updateSteps() {
+      document.querySelectorAll('#steps-nav button').forEach(function(btn) {
+        var n = +btn.dataset.step;
+        btn.classList.toggle('is-active', n === currentStep);
+        btn.classList.toggle('is-done', n < currentStep);
+        btn.disabled = n > maxReached;
+        btn.querySelector('.nav-index').textContent = n < currentStep ? '' : n;
+        if (n < currentStep) {
+          btn.querySelector('.nav-index').innerHTML = '<i data-lucide="check" style="width:14px;height:14px"></i>';
+        }
+      });
+      document.querySelectorAll('.step-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById('step-' + currentStep).classList.add('active');
+      document.getElementById('prev-btn').hidden = currentStep === 1;
+      document.getElementById('next-btn').textContent = currentStep === totalSteps ? 'Submit application' : (currentStep === 3 ? 'Skip or continue' : 'Continue');
+      document.getElementById('bar-fill').style.width = ((currentStep / totalSteps) * 100) + '%';
+      document.getElementById('mobile-step-label').textContent = STEP_NAMES[currentStep - 1];
+      document.getElementById('mobile-step-count').textContent = currentStep + ' / ' + totalSteps;
+      if (currentStep === totalSteps) buildReview();
+      var first = document.querySelector('.step-panel.active input, .step-panel.active textarea, .step-panel.active select');
+      if (first && window.matchMedia('(min-width: 901px)').matches) first.focus();
+      InstaHelp.initLucide();
+    }
+
+    function goTo(step) {
+      currentStep = step;
+      maxReached = Math.max(maxReached, currentStep);
+      updateSteps();
+      saveDraft();
     }
 
     function buildReview() {
       collectData();
-      document.getElementById('review-content').innerHTML =
-        '<div class="card card-flat"><p><strong>Business:</strong> ' + formData.businessName + '</p>' +
-        '<p><strong>Owner:</strong> ' + formData.ownerName + ' · <strong>Phone:</strong> ' + formData.phone + '</p>' +
-        '<p><strong>City:</strong> ' + formData.city + ' · <strong>Category:</strong> ' + formData.category + '</p>' +
-        '<p class="text-sm text-muted" style="margin-top:0.5rem">' + formData.description + '</p>' +
-        '<p class="text-xs text-muted" style="margin-top:0.75rem">Starts on Free plan · Classic template · upgrade in dashboard</p></div>';
+      var rows = [
+        [1, 'Business', formData.businessName],
+        [1, 'Owner', formData.ownerName],
+        [1, 'Mobile', formData.phone],
+        [1, 'WhatsApp', formData.whatsapp || formData.phone],
+        [1, 'Email', formData.email],
+        [1, 'Category', formData.category],
+        [1, 'City', formData.city + (formData.state ? ', ' + formData.state : '')],
+        [2, 'Description', formData.description],
+        [2, 'Service areas', formData.serviceAreas || 'Not added'],
+        [2, 'Hours', formData.workingHours || 'Not added'],
+        [3, 'Photos', (formData.logo ? 'Logo ' : '') + (formData.coverBanner ? 'Cover ' : '') + ((formData.gallery && formData.gallery.length) ? (formData.gallery.length + ' gallery') : (formData.logo || formData.coverBanner ? '' : 'None yet'))]
+      ];
+      document.getElementById('review-content').innerHTML = rows.map(function(r) {
+        return '<div class="review-item"><div><dt>' + esc(r[1]) + '</dt><dd>' + esc(r[2]) + '</dd></div><button type="button" data-goto="' + r[0] + '">Edit</button></div>';
+      }).join('');
+      document.querySelectorAll('#review-content [data-goto]').forEach(function(btn) {
+        btn.onclick = function() { goTo(+btn.dataset.goto); };
+      });
     }
 
-    document.getElementById('next-btn').addEventListener('click', function() {
-      if (!validateStep()) return;
-      if (currentStep < totalSteps) { currentStep++; updateSteps(); }
-      else submitApp();
-    });
+    function syncWhatsApp() {
+      var same = document.getElementById('waSame').checked;
+      var wa = document.getElementById('whatsapp');
+      if (same) {
+        wa.value = document.getElementById('phone').value;
+        wa.disabled = true;
+      } else {
+        wa.disabled = false;
+      }
+    }
 
-    document.getElementById('prev-btn').addEventListener('click', function() {
-      if (currentStep > 1) { currentStep--; updateSteps(); }
-    });
+    function updateDescCount() {
+      document.getElementById('desc-count').textContent = document.getElementById('description').value.length + ' / 600';
+    }
+
+    function showSuccess(vendorId, res) {
+      document.getElementById('form-wrap').hidden = true;
+      document.getElementById('success-screen').hidden = false;
+      document.getElementById('submit-overlay').classList.remove('is-on');
+      document.getElementById('success-ref').textContent = 'Reference: ' + vendorId + '  Status: Pending approval';
+      try { localStorage.setItem('ih_vendor_id', vendorId); localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+      var dashUrl = (res && res.dashboardUrl) || INSTAHELP_CONFIG.getDashboardUrl(vendorId);
+      var dashBtn = document.getElementById('success-dash-btn');
+      if (dashBtn) dashBtn.href = dashUrl;
+      var copyBtn = document.getElementById('success-copy-link');
+      if (copyBtn) {
+        copyBtn.onclick = function() {
+          navigator.clipboard.writeText(dashUrl).then(function() {
+            InstaHelp.toast('Dashboard link copied', 'success');
+          }).catch(function() {
+            prompt('Copy your dashboard link:', dashUrl);
+          });
+        };
+      }
+      if (res && res.emailSent === false) {
+        InstaHelp.toast('Application saved. Email not sent. Use your dashboard link below.', 'error');
+      }
+      InstaHelp.initLucide();
+    }
 
     function submitApp() {
       collectData();
       var btn = document.getElementById('next-btn');
-      btn.disabled = true; btn.textContent = 'Submitting...';
+      btn.disabled = true;
+      btn.textContent = 'Submitting';
+      document.getElementById('submit-overlay').classList.add('is-on');
 
       google.script.run
         .withSuccessHandler(function(res) {
           btn.disabled = false;
+          document.getElementById('submit-overlay').classList.remove('is-on');
           if (res.success) {
             showSuccess(res.vendorId, res);
           } else {
             InstaHelp.toast(res.error || 'Submission failed', 'error');
-            btn.textContent = 'Submit Application';
+            btn.textContent = 'Submit application';
           }
         })
         .withFailureHandler(function(err) {
           btn.disabled = false;
+          document.getElementById('submit-overlay').classList.remove('is-on');
           InstaHelp.toast(err.message || 'Network error', 'error');
-          btn.textContent = 'Submit Application';
+          btn.textContent = 'Submit application';
         })
         .submitVendorApplication(formData);
     }
 
+    document.getElementById('cat-grid').addEventListener('click', function(e) {
+      var chip = e.target.closest('.cat-chip');
+      if (!chip) return;
+      document.getElementById('category').value = chip.dataset.cat;
+      setInvalid('category', false);
+      renderCats();
+      saveDraft();
+    });
+    document.getElementById('waSame').addEventListener('change', function() { syncWhatsApp(); saveDraft(); });
+    document.getElementById('phone').addEventListener('input', function() {
+      if (document.getElementById('waSame').checked) syncWhatsApp();
+    });
+    document.getElementById('description').addEventListener('input', updateDescCount);
+    document.getElementById('apply-form').addEventListener('input', function() { saveDraft(); });
+    document.getElementById('apply-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!validateStep()) return;
+      if (currentStep < totalSteps) goTo(currentStep + 1);
+      else submitApp();
+    });
+    document.getElementById('prev-btn').addEventListener('click', function() {
+      if (currentStep > 1) goTo(currentStep - 1);
+    });
+    document.getElementById('steps-nav').addEventListener('click', function(e) {
+      var btn = e.target.closest('button[data-step]');
+      if (!btn || btn.disabled) return;
+      var n = +btn.dataset.step;
+      if (n < currentStep || n <= maxReached) goTo(n);
+    });
+
+    function init() {
+      renderCats();
+      restoreDraft();
+      updateSteps();
+    }
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
