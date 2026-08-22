@@ -366,27 +366,8 @@
   }
 
   /* ─── Vendor registration ─── */
-  .apply-main {
-    padding: 0.85rem 0.85rem 1.25rem;
-  }
-
-  .apply-card,
-  .success-screen {
-    padding: 1rem;
-  }
-
-  .cat-chip {
-    padding: 0.65rem 0.35rem;
-  }
-
-  .step-actions {
-    flex-wrap: nowrap;
-    gap: 0.5rem;
-  }
-
-  .step-actions .btn {
-    min-width: 0;
-    font-size: 0.875rem;
+  .apply-card {
+    padding: 1.1rem;
   }
 
   .success-actions .btn {
