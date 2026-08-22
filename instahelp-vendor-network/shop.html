@@ -5,41 +5,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Store | InstaHelp</title>
-  <meta name="theme-color" content="#FFD600">
+  <meta name="theme-color" content="#131921">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/shared.css">
   <link rel="stylesheet" href="css/shop-templates.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html { -webkit-font-smoothing: antialiased; }
-    body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #fff; color: #12141A; }
+    body { margin: 0; font-family: Assistant, 'Plus Jakarta Sans', sans-serif; background: #EAEDED; color: #0F1111; }
     .shop-loader {
-      min-height: 100dvh; display: grid; place-items: center;
-      background:
-        radial-gradient(720px 420px at 12% -8%, rgba(255,214,0,.38), transparent 58%),
-        #F6F5F0;
+      min-height: 100dvh; display: grid; place-items: center; background: #EAEDED;
     }
     .shop-loader-inner { text-align: center; }
     .shop-mark {
-      width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 14px;
-      background: #FFD600; display: grid; place-items: center;
-      font-weight: 800; font-size: 1.15rem; letter-spacing: -0.04em;
+      width: 36px; height: 36px; margin: 0 auto 12px;
+      background: #FFD814; display: grid; place-items: center;
+      font-weight: 800; font-size: 0.8rem;
     }
     .shop-loader h1 {
-      margin: 0 0 8px; font-size: 2rem; letter-spacing: -0.04em; font-weight: 800;
+      margin: 0 0 6px; font-size: 1.5rem; font-weight: 700;
     }
-    .shop-loader p { margin: 0; color: #5C5F66; font-size: 0.95rem; font-weight: 500; }
+    .shop-loader p { margin: 0; color: #565959; font-size: 0.875rem; }
     .shop-error { text-align: center; padding: 4rem 1.5rem; max-width: 28rem; }
-    .shop-error h2 { margin: 0 0 0.55rem; font-size: 2rem; letter-spacing: -0.04em; }
-    .shop-error p { margin: 0 0 1.25rem; color: #5C5F66; font-size: 1rem; }
-    .shop-error a { color: #12141A; font-weight: 700; font-size: 1rem; }
-    .share-bar { position: fixed; top: 1rem; right: 1rem; z-index: 80; display: flex; gap: 0.45rem; }
+    .shop-error h2 { margin: 0 0 0.55rem; font-size: 1.75rem; font-weight: 700; }
+    .shop-error p { margin: 0 0 1.25rem; color: #565959; font-size: 1rem; }
+    .shop-error a { color: #007185; font-weight: 700; font-size: 1rem; }
+    .share-bar { position: fixed; top: 64px; right: 12px; z-index: 80; display: flex; gap: 6px; }
     .share-btn {
-      width: 42px; height: 42px; border-radius: 12px; background: #fff;
-      border: 1px solid #E6E4DC; display: grid; place-items: center; cursor: pointer;
-      box-shadow: 0 8px 22px rgba(18,20,26,0.08); color: #12141A; padding: 0;
+      width: 32px; height: 32px; border-radius: 2px; background: #fff;
+      border: 1px solid #D5D9D9; display: grid; place-items: center; cursor: pointer;
+      color: #0F1111; padding: 0;
     }
     .share-btn:focus-visible { outline: 2px solid #12141A; outline-offset: 2px; }
     .share-btn svg { width: 18px; height: 18px; display: block; }
@@ -50,9 +47,9 @@
     }
     .qr-overlay.open { display: grid; }
     .qr-card {
-      width: min(100%, 360px); background: #fff; border-radius: 18px;
+      width: min(100%, 360px); background: #fff; border-radius: 4px;
       padding: 1.25rem 1.25rem 1.4rem; text-align: center;
-      box-shadow: 0 18px 50px rgba(18,20,26,0.2);
+      border: 1px solid #D5D9D9;
     }
     .qr-card header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
     .qr-card h3 { margin: 0; font-size: 1.4rem; letter-spacing: -0.03em; }

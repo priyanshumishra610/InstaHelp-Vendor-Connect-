@@ -16,18 +16,18 @@ var StoreTemplates = (function() {
   }
 
   function enquiryForm(vendorId) {
-    return '<section class="store-enquiry" id="enquiry"><div class="store-container store-enquiry-grid">' +
-      '<div><h2>Send a request</h2><p>Share what you need. The vendor replies on WhatsApp or phone.</p></div>' +
+    return '<section class="store-enquiry" id="enquiry"><div class="store-container">' +
+      '<div class="enquiry-box"><h2>Have a question?</h2>' +
+      '<p>The seller replies on WhatsApp or phone.</p>' +
       '<form id="lead-form" onsubmit="StoreActions.submitLead(event,\'' + vendorId + '\')">' +
-      '<label>Name<input name="name" autocomplete="name" required></label>' +
-      '<label>Phone<input name="phone" type="tel" inputmode="numeric" autocomplete="tel" required></label>' +
-      '<label>What do you need?<textarea name="requirement" rows="3" required></textarea></label>' +
-      '<button type="submit" class="store-btn store-btn-primary">Send request</button></form></div></section>';
+      '<div class="enquiry-row"><label>Name<input name="name" autocomplete="name" required></label>' +
+      '<label>Phone<input name="phone" type="tel" inputmode="numeric" autocomplete="tel" required></label></div>' +
+      '<label>Requirement<textarea name="requirement" rows="3" required></textarea></label>' +
+      '<button type="submit" class="store-btn store-btn-primary">Send request</button></form></div></div></section>';
   }
 
   function trustSection() {
-    return '<div class="store-trust"><div class="store-container store-trust-row">' +
-      '<span>On the InstaHelp network</span><span>WhatsApp first</span><span>Live after review</span></div></div>';
+    return '<footer class="store-trust"><div class="store-container">Seller listings on the InstaHelp network</div></footer>';
   }
 
   function branding(show) {
@@ -47,60 +47,75 @@ var StoreTemplates = (function() {
 
   function productCardClassic(p) {
     var im = imgs(p)[0] || '';
-    var disc = p.DiscountPrice && Number(p.DiscountPrice) < Number(p.Price);
-    return '<article class="product-card">' +
-      '<div class="product-img">' + (im ? '<img src="' + im + '" alt="' + esc(p.Title) + '">' : '<div class="product-fallback">' + esc((p.Title || '?').charAt(0)) + '</div>') + '</div>' +
+    var price = Number(p.Price) || 0;
+    var deal = Number(p.DiscountPrice) || 0;
+    var disc = deal && price && deal < price;
+    var pct = disc ? Math.round((1 - deal / price) * 100) : 0;
+    var cat = p.Category || '';
+    return '<article class="product-card" data-product-cat="' + esc(cat) + '">' +
+      '<button type="button" class="product-hit" onclick="StoreActions.enquire(\'' + jsTitle(p.Title) + '\')">' +
+      '<div class="product-img">' + (im ? '<img src="' + im + '" alt="' + esc(p.Title) + '">' : '<div class="product-fallback"></div>') + '</div>' +
       '<div class="product-body"><h3>' + esc(p.Title) + '</h3>' +
-      (p.Description ? '<p>' + esc(p.Description) + '</p>' : '') +
-      '<div class="product-meta"><span class="price">' + fmt(disc ? p.DiscountPrice : p.Price) + '</span>' +
-      (disc ? '<span class="price-old">' + fmt(p.Price) + '</span>' : '') + '</div>' +
-      '<button type="button" class="store-btn store-btn-primary" onclick="StoreActions.enquire(\'' + jsTitle(p.Title) + '\')">Ask about this</button></div></article>';
+      '<div class="price-row">' +
+        '<span class="price">' + fmt(disc ? deal : price) + '</span>' +
+        (disc ? '<span class="price-old">' + fmt(price) + '</span><span class="price-off">' + pct + '% off</span>' : '') +
+      '</div></div></button>' +
+      '<button type="button" class="store-btn store-btn-cart" onclick="StoreActions.enquire(\'' + jsTitle(p.Title) + '\')">Enquire</button></article>';
   }
 
   function renderClassic(store) {
-    var v = store.vendor, id = v.VendorID, prods = store.products;
+    var v = store.vendor, id = v.VendorID, prods = store.products || [];
     var cats = {}; prods.forEach(function(p) { if (p.Category) cats[p.Category] = 1; });
-    var catHtml = Object.keys(cats).map(function(c) { return '<span class="cat-pill">' + esc(c) + '</span>'; }).join('');
-    var prodHtml = prods.map(productCardClassic).join('') || '<p class="empty-note">Listings will appear here after the vendor adds them.</p>';
+    var catKeys = Object.keys(cats);
+    var catHtml = '<button type="button" class="cat-pill is-on" data-filter="" onclick="StoreActions.filterCat(\'\')">All</button>' +
+      catKeys.map(function(c) {
+        return '<button type="button" class="cat-pill" data-filter="' + esc(c) + '" onclick="StoreActions.filterCat(\'' + jsTitle(c) + '\')">' + esc(c) + '</button>';
+      }).join('');
+    var prodHtml = prods.map(productCardClassic).join('') || '<p class="empty-note">No products listed in this store yet.</p>';
     var gal = gallery(v);
-    var galHtml = gal.length ? '<section class="store-section"><div class="store-container"><h2>Work</h2><div class="gallery-masonry">' + gal.map(function(u){return '<img src="'+u+'" alt="">';}).join('') + '</div></div></section>' : '';
+    var galHtml = gal.length ? '<section class="mkt-photos"><div class="store-container"><h2>Photos</h2><div class="photo-row">' + gal.map(function(u){return '<img src="'+u+'" alt="">';}).join('') + '</div></div></section>' : '';
     var loc = [v.City, v.State].filter(Boolean).join(', ');
-    var cover = v.CoverBanner ? '<img src="' + v.CoverBanner + '" alt="">' : '<div class="hero-wash"></div>';
+    var cover = v.CoverBanner ? '<img src="' + v.CoverBanner + '" alt="">' : '<div class="banner-fallback"></div>';
     var logo = v.Logo
       ? '<img class="logo" src="' + v.Logo + '" alt="' + esc(v.BusinessName) + ' logo">'
       : '<div class="logo logo-fallback">' + esc(initials(v.BusinessName)) + '</div>';
-    var facts = [];
-    if (v.YearsInBusiness) facts.push('<div><strong>' + esc(String(v.YearsInBusiness)) + ' yrs</strong><span>In business</span></div>');
-    if (v.WorkingHours) facts.push('<div><strong>' + esc(v.WorkingHours) + '</strong><span>Hours</span></div>');
-    if (v.ServiceAreas) facts.push('<div><strong>' + esc(v.ServiceAreas) + '</strong><span>Areas</span></div>');
-    var factsHtml = facts.length ? '<section class="store-section facts"><div class="store-container facts-row">' + facts.join('') + '</div></section>' : '';
-
+    var bits = [];
+    if (v.WorkingHours) bits.push('Hours: ' + v.WorkingHours);
+    if (v.ServiceAreas) bits.push('Delivers / serves: ' + v.ServiceAreas);
+    if (v.YearsInBusiness) bits.push(v.YearsInBusiness + ' yrs in business');
+    var about = v.Description
+      ? '<section class="mkt-about"><div class="store-container"><div class="about-box"><h2>About this seller</h2><p>' + esc(v.Description) + '</p></div></div></section>'
+      : '';
     var colors = store.themeColors || {};
+    var crumb = ['Store', v.Category, loc].filter(Boolean).join('  /  ');
+
     return '<div class="store-root tpl-classic" style="--store-primary:' + (colors.primary || '#FFD600') + '">' +
-      '<header class="hero">' + cover + '<div class="hero-scrim"></div></header>' +
-      '<div class="profile">' +
-        '<div class="store-container profile-grid">' +
-          logo +
-          '<div class="profile-copy">' +
-            '<h1>' + esc(v.BusinessName) + '</h1>' +
-            '<p class="profile-meta">' +
-              (isVerified(v) ? '<span class="verified">Verified</span>' : '') +
-              (v.Category ? '<span>' + esc(v.Category) + '</span>' : '') +
-              (loc ? '<span>' + esc(loc) + '</span>' : '') +
-              (v.Rating ? '<span>' + esc(String(v.Rating)) + ' rating</span>' : '') +
-            '</p>' +
-            (v.Description ? '<p class="profile-lead">' + esc(v.Description) + '</p>' : '') +
-          '</div>' +
-          '<div class="profile-actions">' + contactBtns(v, id) + '</div>' +
+      '<header class="mkt-bar"><div class="store-container mkt-bar-inner">' +
+        '<a class="mkt-logo" href="/"><span>IH</span>InstaHelp</a>' +
+        '<p class="mkt-crumb">' + esc(crumb) + '</p>' +
+        '<div class="mkt-bar-actions">' + contactBtns(v, id) + '</div>' +
+      '</div></header>' +
+      '<div class="mkt-banner">' + cover + '</div>' +
+      '<div class="mkt-seller"><div class="store-container mkt-seller-inner">' +
+        logo +
+        '<div class="seller-copy">' +
+          '<h1>' + esc(v.BusinessName) +
+            (isVerified(v) ? '<span class="verified">Verified</span>' : '') +
+          '</h1>' +
+          '<p class="seller-meta">' +
+            (v.Rating ? '<span class="rating"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#FFA41C" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>' + esc(String(v.Rating)) + '</span>' : '') +
+            (v.Category ? '<span>' + esc(v.Category) + '</span>' : '') +
+            (loc ? '<span>' + esc(loc) + '</span>' : '') +
+          '</p>' +
         '</div>' +
-      '</div>' +
-      factsHtml +
-      '<section class="store-section"><div class="store-container">' +
-        '<h2>Offerings</h2>' +
-        (catHtml ? '<div class="cat-pills">' + catHtml + '</div>' : '') +
+      '</div></div>' +
+      (catKeys.length ? '<nav class="mkt-cats" aria-label="Categories"><div class="store-container cat-pills">' + catHtml + '</div></nav>' : '') +
+      '<section class="mkt-shelf"><div class="store-container">' +
+        '<div class="shelf-head"><h2>Products</h2><p data-extra="' + esc(bits.join('  ·  ')) + '">' + prods.length + (prods.length === 1 ? ' item' : ' items') +
+          (bits.length ? '  ·  ' + esc(bits.join('  ·  ')) : '') + '</p></div>' +
         '<div class="product-grid">' + prodHtml + '</div>' +
       '</div></section>' +
-      galHtml + enquiryForm(id) + trustSection() + branding(store.showBranding) + stickyBar(v, id) + '</div>';
+      galHtml + about + enquiryForm(id) + trustSection() + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
   function renderLuxury(store) {
@@ -200,6 +215,24 @@ var StoreActions = {
   call: function(id) {
     google.script.run.recordCallClick(id || this.vendorId);
     window.location.href = 'tel:+' + this.vendorPhone;
+  },
+  filterCat: function(cat) {
+    var cards = document.querySelectorAll('[data-product-cat]');
+    var n = 0;
+    for (var i = 0; i < cards.length; i++) {
+      var show = !cat || cards[i].getAttribute('data-product-cat') === cat;
+      cards[i].hidden = !show;
+      if (show) n++;
+    }
+    var pills = document.querySelectorAll('.cat-pill');
+    for (var j = 0; j < pills.length; j++) {
+      pills[j].classList.toggle('is-on', (pills[j].getAttribute('data-filter') || '') === (cat || ''));
+    }
+    var count = document.querySelector('.tpl-classic .shelf-head p');
+    if (count) {
+      var extra = count.getAttribute('data-extra') || '';
+      count.textContent = n + (n === 1 ? ' item' : ' items') + (extra ? '  ·  ' + extra : '');
+    }
   },
   enquire: function(title) {
     var form = document.getElementById('lead-form');
