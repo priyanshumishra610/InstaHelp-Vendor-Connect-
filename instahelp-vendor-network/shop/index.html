@@ -1,49 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
-  <script>(function(){var F='instahelp-vendor-network',b='/';if(location.protocol==='file:'){var h=location.href.split('#')[0].split('?')[0];b=h.slice(0,h.lastIndexOf('/')+1);}else{var p=location.pathname,i=p.indexOf('/'+F+'/');if(i!==-1)b=p.substring(0,i+F.length+2);}var el=document.createElement('base');el.setAttribute('data-ih-base','');el.href=b;var hd=document.head||document.documentElement;hd.insertBefore(el,hd.firstChild);window.INSTAHELP_BASE=b;})();</script>
+  <script>(function(){var F='instahelp-vendor-network',b='/';if(location.protocol==='file:'){var h=location.href.split('#')[0].split('?')[0];b=h.slice(0,h.lastIndexOf('/')+1);b=b.replace(/shop\/?$/,'').replace(/vendors\/apply\/?$/,'').replace(/vendor\/dashboard\/?$/,'').replace(/admin\/vendors\/?$/,'');var i=b.indexOf('/'+F+'/');if(i===-1){var j=b.indexOf('/'+F);if(j!==-1)b=b.slice(0,j+F.length+1);if(b.slice(-1)!=='/')b+='/';}}else{var p=location.pathname,i=p.indexOf('/'+F+'/');if(i!==-1)b=p.substring(0,i+F.length+2);}var el=document.createElement('base');el.setAttribute('data-ih-base','');el.href=b;var hd=document.head||document.documentElement;hd.insertBefore(el,hd.firstChild);window.INSTAHELP_BASE=b;})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Store | InstaHelp</title>
+  <meta name="theme-color" content="#FFD600">
+  <link rel="icon" href="10.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/shared.css">
-  <link rel="stylesheet" href="/css/shop-templates.css">
-  <link rel="stylesheet" href="/css/mobile.css">
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="stylesheet" href="css/shop-templates.css">
   <style>
-    body { margin: 0; }
-    .shop-loader { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #fafafa; }
-    .shop-error { text-align: center; padding: 4rem 1.5rem; }
-    .share-bar { position: fixed; top: 1rem; right: 1rem; z-index: 80; display: flex; gap: 0.5rem; }
-    .share-btn { width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    @media(max-width:768px){ .share-bar{top:auto;bottom:5rem;right:1rem;flex-direction:column} }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #fff; color: #12141A; }
+    .shop-loader {
+      min-height: 100dvh; display: grid; place-items: center;
+      background:
+        radial-gradient(720px 420px at 12% -8%, rgba(255,214,0,.38), transparent 58%),
+        #F6F5F0;
+    }
+    .shop-loader-inner { text-align: center; }
+    .shop-mark {
+      width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 14px;
+      background: #FFD600; display: grid; place-items: center;
+      font-weight: 800; font-size: 1.15rem; letter-spacing: -0.04em;
+    }
+    .shop-loader h1 {
+      margin: 0 0 8px; font-size: 2rem; letter-spacing: -0.04em; font-weight: 800;
+    }
+    .shop-loader p { margin: 0; color: #5C5F66; font-size: 0.95rem; font-weight: 500; }
+    .shop-error { text-align: center; padding: 4rem 1.5rem; max-width: 28rem; }
+    .shop-error h2 { margin: 0 0 0.55rem; font-size: 2rem; letter-spacing: -0.04em; }
+    .shop-error p { margin: 0 0 1.25rem; color: #5C5F66; font-size: 1rem; }
+    .shop-error a { color: #12141A; font-weight: 700; font-size: 1rem; }
+    .share-bar { position: fixed; top: 1rem; right: 1rem; z-index: 80; display: flex; gap: 0.45rem; }
+    .share-btn {
+      width: 42px; height: 42px; border-radius: 12px; background: #fff;
+      border: 1px solid #E6E4DC; display: grid; place-items: center; cursor: pointer;
+      box-shadow: 0 8px 22px rgba(18,20,26,0.08); color: #12141A; padding: 0;
+    }
+    .share-btn:focus-visible { outline: 2px solid #12141A; outline-offset: 2px; }
+    .share-btn svg { width: 18px; height: 18px; display: block; }
+    @media (max-width: 768px) { .share-bar { top: auto; bottom: 5.4rem; right: 0.85rem; flex-direction: column; } }
+    .qr-overlay {
+      position: fixed; inset: 0; z-index: 120; background: rgba(18,20,26,0.45);
+      display: none; place-items: center; padding: 1.25rem;
+    }
+    .qr-overlay.open { display: grid; }
+    .qr-card {
+      width: min(100%, 360px); background: #fff; border-radius: 18px;
+      padding: 1.25rem 1.25rem 1.4rem; text-align: center;
+      box-shadow: 0 18px 50px rgba(18,20,26,0.2);
+    }
+    .qr-card header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .qr-card h3 { margin: 0; font-size: 1.4rem; letter-spacing: -0.03em; }
+    .qr-card button {
+      width: 32px; height: 32px; border: 0; border-radius: 8px; background: #F6F5F0;
+      cursor: pointer; font-size: 1.15rem; line-height: 1;
+    }
+    #qr-code { display: grid; place-items: center; min-height: 200px; }
+    #qr-url { margin: 0.9rem 0 0; color: #5C5F66; font-size: 0.8rem; word-break: break-all; }
   </style>
 </head>
 <body>
   <div id="shop-loader" class="shop-loader">
-    <div style="text-align:center"><div class="skeleton" style="width:64px;height:64px;border-radius:50%;margin:0 auto 1rem"></div><div class="skeleton" style="width:180px;height:16px;margin:0 auto"></div></div>
-  </div>
-  <div id="shop-root" style="display:none"></div>
-  <div class="share-bar" id="share-bar" style="display:none">
-    <button class="share-btn" id="btn-share" title="Share">🔗</button>
-    <button class="share-btn" id="btn-qr" title="QR Code">▦</button>
-  </div>
-  <div class="modal-overlay" id="qr-modal">
-    <div class="modal" style="text-align:center">
-      <div class="modal-header"><h3>Scan to Visit Store</h3><button class="modal-close" data-close-modal>×</button></div>
-      <div id="qr-code"></div>
-      <p class="text-sm text-muted" id="qr-url" style="margin-top:1rem;word-break:break-all"></p>
+    <div class="shop-loader-inner">
+      <div class="shop-mark">IH</div>
+      <h1>InstaHelp</h1>
+      <p>Opening store</p>
     </div>
   </div>
-  <script src="/js/config.js"></script>
-  <script src="/js/api.js"></script>
-  <script src="/js/shared.js"></script>
-  <script src="/js/shop-templates.js"></script>
+  <div id="shop-root" hidden></div>
+  <div class="share-bar" id="share-bar" hidden>
+    <button type="button" class="share-btn" id="btn-share" title="Share" aria-label="Share store">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
+    </button>
+    <button type="button" class="share-btn" id="btn-qr" title="QR code" aria-label="Show QR code">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7M14 20h3"/></svg>
+    </button>
+  </div>
+  <div class="qr-overlay" id="qr-modal" hidden>
+    <div class="qr-card" role="dialog" aria-labelledby="qr-title">
+      <header>
+        <h3 id="qr-title">Scan to open store</h3>
+        <button type="button" id="qr-close" aria-label="Close">x</button>
+      </header>
+      <div id="qr-code"></div>
+      <p id="qr-url"></p>
+    </div>
+  </div>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/shared.js"></script>
+  <script src="js/shop-templates.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     var shopSlug = '';
     document.addEventListener('DOMContentLoaded', function() {
       shopSlug = InstaHelp.getShopSlugFromPath();
-      if (!shopSlug) { showError('Shop not found'); return; }
+      if (!shopSlug) { showError('Store not found'); return; }
 
       var traffic = InstaHelp.getQueryParam('utm_source') || document.referrer || 'direct';
       google.script.run
@@ -51,11 +109,12 @@
           if (!res.success) { showError(res.error || 'Store not found'); return; }
           var store = res.store;
           StoreActions.setVendor(store.vendor);
-          document.getElementById('shop-root').innerHTML = StoreTemplates.render(store);
-          document.getElementById('shop-root').style.display = 'block';
+          var root = document.getElementById('shop-root');
+          root.innerHTML = StoreTemplates.render(store);
+          root.hidden = false;
           document.getElementById('shop-loader').style.display = 'none';
           document.title = store.vendor.BusinessName + ' | InstaHelp';
-          document.getElementById('share-bar').style.display = 'flex';
+          document.getElementById('share-bar').hidden = false;
           google.script.run.recordView(store.vendor.VendorID, traffic);
           setupShare(store.vendor);
         })
@@ -64,7 +123,15 @@
     });
 
     function showError(msg) {
-      document.getElementById('shop-loader').innerHTML = '<div class="shop-error"><h2>Store Unavailable</h2><p class="text-muted">' + msg + '</p></div>';
+      document.getElementById('shop-loader').innerHTML =
+        '<div class="shop-error"><h2>Store unavailable</h2><p>' + String(msg || 'Try again later.') +
+        '</p><a href="/">Back to InstaHelp</a></div>';
+    }
+
+    function closeQr() {
+      var m = document.getElementById('qr-modal');
+      m.classList.remove('open');
+      m.hidden = true;
     }
 
     function setupShare(v) {
@@ -77,7 +144,13 @@
         document.getElementById('qr-code').innerHTML = '';
         new QRCode(document.getElementById('qr-code'), { text: url, width: 200, height: 200 });
         document.getElementById('qr-url').textContent = url;
-        InstaHelp.openModal('qr-modal');
+        var m = document.getElementById('qr-modal');
+        m.hidden = false;
+        m.classList.add('open');
+      };
+      document.getElementById('qr-close').onclick = closeQr;
+      document.getElementById('qr-modal').onclick = function(e) {
+        if (e.target === this) closeQr();
       };
     }
   </script>

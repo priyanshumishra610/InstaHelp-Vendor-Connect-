@@ -3,72 +3,103 @@ var StoreTemplates = (function() {
   function fmt(n) { return n ? '₹' + Number(n).toLocaleString('en-IN') : ''; }
   function imgs(p) { try { return JSON.parse(p.Images || '[]'); } catch(e) { return []; } }
   function gallery(v) { try { return JSON.parse(v.Gallery || '[]'); } catch(e) { return []; } }
+  function isVerified(v) { return v.Verified === true || v.Verified === 'TRUE'; }
+  function jsTitle(t) { return esc(t).replace(/'/g, "\\'"); }
+  function waLogo() {
+    return '<svg class="wa-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+  }
 
   function contactBtns(v, id, cls) {
     cls = cls || 'store-btn';
-    return '<button class="' + cls + ' store-btn-wa" onclick="StoreActions.whatsapp(\'' + id + '\')">WhatsApp</button>' +
-           '<button class="' + cls + ' store-btn-secondary" onclick="StoreActions.call(\'' + id + '\')">Call</button>';
+    return '<button type="button" class="' + cls + ' store-btn-wa" onclick="StoreActions.whatsapp(\'' + id + '\')">' + waLogo() + ' WhatsApp</button>' +
+           '<button type="button" class="' + cls + ' store-btn-call" onclick="StoreActions.call(\'' + id + '\')">Call</button>';
   }
 
   function enquiryForm(vendorId) {
-    return '<div class="store-enquiry" id="enquiry"><div class="store-container">' +
-      '<h2 style="margin-bottom:0.5rem">Get a Free Quote</h2><p style="opacity:0.7;margin-bottom:1.5rem">Tell us what you need</p>' +
+    return '<section class="store-enquiry" id="enquiry"><div class="store-container store-enquiry-grid">' +
+      '<div><h2>Send a request</h2><p>Share what you need. The vendor replies on WhatsApp or phone.</p></div>' +
       '<form id="lead-form" onsubmit="StoreActions.submitLead(event,\'' + vendorId + '\')">' +
-      '<input name="name" placeholder="Your name" required>' +
-      '<input name="phone" type="tel" placeholder="Phone number" required>' +
-      '<textarea name="requirement" rows="3" placeholder="Your requirement" required></textarea>' +
-      '<button type="submit" class="store-btn store-btn-primary" style="width:100%">Submit Enquiry</button></form></div></div>';
+      '<label>Name<input name="name" autocomplete="name" required></label>' +
+      '<label>Phone<input name="phone" type="tel" inputmode="numeric" autocomplete="tel" required></label>' +
+      '<label>What do you need?<textarea name="requirement" rows="3" required></textarea></label>' +
+      '<button type="submit" class="store-btn store-btn-primary">Send request</button></form></div></section>';
   }
 
   function trustSection() {
-    return '<div class="store-container"><div class="store-trust">' +
-      '<div><strong>✓ Verified</strong><br><small>Identity verified</small></div>' +
-      '<div><strong>🔒 Secure</strong><br><small>Data protected</small></div>' +
-      '<div><strong>⚡ Fast</strong><br><small>Quick response</small></div>' +
-      '<div><strong>❤️ Trusted</strong><br><small>InstaHelp network</small></div></div></div>';
+    return '<div class="store-trust"><div class="store-container store-trust-row">' +
+      '<span>On the InstaHelp network</span><span>WhatsApp first</span><span>Live after review</span></div></div>';
   }
 
   function branding(show) {
     if (!show) return '';
-    return '<div class="store-branding">Powered by <a href="#">InstaHelp Store Builder</a></div>';
+    return '<div class="store-branding">Powered by <a href="/">InstaHelp</a></div>';
   }
 
   function stickyBar(v, id) {
     return '<div class="store-sticky">' + contactBtns(v, id, 'store-btn') + '</div>';
   }
 
+  function initials(name) {
+    var p = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!p.length) return 'IH';
+    return (p[0][0] + (p[1] ? p[1][0] : '')).toUpperCase();
+  }
+
   function productCardClassic(p) {
     var im = imgs(p)[0] || '';
     var disc = p.DiscountPrice && Number(p.DiscountPrice) < Number(p.Price);
-    return '<div class="product-card"><div class="product-img">' + (im ? '<img src="' + im + '" alt="">' : '') + '</div>' +
-      '<div class="product-body"><strong>' + esc(p.Title) + '</strong><p style="font-size:0.8125rem;color:#666;margin:0.375rem 0">' + esc(p.Description) + '</p>' +
-      '<span class="price">' + fmt(disc ? p.DiscountPrice : p.Price) + '</span>' + (disc ? '<span class="price-old">' + fmt(p.Price) + '</span>' : '') +
-      '<div style="margin-top:0.75rem"><button class="store-btn store-btn-primary" style="width:100%;font-size:0.8125rem" onclick="StoreActions.enquire(\'' + esc(p.Title).replace(/'/g,"\\'") + '\')">Enquire</button></div></div></div>';
+    return '<article class="product-card">' +
+      '<div class="product-img">' + (im ? '<img src="' + im + '" alt="' + esc(p.Title) + '">' : '<div class="product-fallback">' + esc((p.Title || '?').charAt(0)) + '</div>') + '</div>' +
+      '<div class="product-body"><h3>' + esc(p.Title) + '</h3>' +
+      (p.Description ? '<p>' + esc(p.Description) + '</p>' : '') +
+      '<div class="product-meta"><span class="price">' + fmt(disc ? p.DiscountPrice : p.Price) + '</span>' +
+      (disc ? '<span class="price-old">' + fmt(p.Price) + '</span>' : '') + '</div>' +
+      '<button type="button" class="store-btn store-btn-primary" onclick="StoreActions.enquire(\'' + jsTitle(p.Title) + '\')">Ask about this</button></div></article>';
   }
 
   function renderClassic(store) {
     var v = store.vendor, id = v.VendorID, prods = store.products;
     var cats = {}; prods.forEach(function(p) { if (p.Category) cats[p.Category] = 1; });
     var catHtml = Object.keys(cats).map(function(c) { return '<span class="cat-pill">' + esc(c) + '</span>'; }).join('');
-    var prodHtml = prods.map(productCardClassic).join('') || '<p style="color:#888">Products coming soon</p>';
+    var prodHtml = prods.map(productCardClassic).join('') || '<p class="empty-note">Listings will appear here after the vendor adds them.</p>';
     var gal = gallery(v);
-    var galHtml = gal.length ? '<div class="store-section"><div class="store-container"><h2>Gallery</h2><div class="gallery-masonry">' + gal.map(function(u){return '<img src="'+u+'" alt="">';}).join('') + '</div></div></div>' : '';
+    var galHtml = gal.length ? '<section class="store-section"><div class="store-container"><h2>Work</h2><div class="gallery-masonry">' + gal.map(function(u){return '<img src="'+u+'" alt="">';}).join('') + '</div></div></section>' : '';
+    var loc = [v.City, v.State].filter(Boolean).join(', ');
+    var cover = v.CoverBanner ? '<img src="' + v.CoverBanner + '" alt="">' : '<div class="hero-wash"></div>';
+    var logo = v.Logo
+      ? '<img class="logo" src="' + v.Logo + '" alt="' + esc(v.BusinessName) + ' logo">'
+      : '<div class="logo logo-fallback">' + esc(initials(v.BusinessName)) + '</div>';
+    var facts = [];
+    if (v.YearsInBusiness) facts.push('<div><strong>' + esc(String(v.YearsInBusiness)) + ' yrs</strong><span>In business</span></div>');
+    if (v.WorkingHours) facts.push('<div><strong>' + esc(v.WorkingHours) + '</strong><span>Hours</span></div>');
+    if (v.ServiceAreas) facts.push('<div><strong>' + esc(v.ServiceAreas) + '</strong><span>Areas</span></div>');
+    var factsHtml = facts.length ? '<section class="store-section facts"><div class="store-container facts-row">' + facts.join('') + '</div></section>' : '';
 
-    return '<div class="store-root tpl-classic" style="--store-primary:' + store.themeColors.primary + '">' +
-      '<div class="hero-banner">' + (v.CoverBanner ? '<img src="' + v.CoverBanner + '">' : '') + '</div>' +
-      '<div class="profile-bar"><div class="store-container"><div class="profile-inner">' +
-      (v.Logo ? '<img class="logo" src="' + v.Logo + '">' : '<div class="logo" style="display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem">' + esc(v.BusinessName).charAt(0) + '</div>') +
-      '<div style="flex:1"><h1 style="font-size:1.5rem;font-weight:800">' + esc(v.BusinessName) + '</h1>' +
-      (v.Verified === true || v.Verified === 'TRUE' ? '<span class="verified">✓ Verified</span> ' : '') +
-      '<span style="color:#666;font-size:0.875rem">★ ' + (v.Rating || '4.8') + ' · ' + esc(v.City) + '</span></div>' +
-      '<div style="display:flex;gap:0.5rem">' + contactBtns(v, id) + '</div></div></div></div>' +
-      '<div class="store-section"><div class="store-container"><h2>Shop by Category</h2><div class="cat-pills">' + (catHtml || '<span class="cat-pill">All Products</span>') + '</div>' +
-      '<div class="product-grid">' + prodHtml + '</div></div></div>' +
-      '<div class="store-section about-section" style="background:#f8f8f8"><div class="store-container"><h2>About</h2><p style="line-height:1.8;color:#444">' + esc(v.Description) + '</p>' +
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem">' +
-      '<div><small style="color:#888">Experience</small><br><strong>' + (v.YearsInBusiness || '—') + ' years</strong></div>' +
-      '<div><small style="color:#888">Hours</small><br><strong>' + esc(v.WorkingHours || '—') + '</strong></div>' +
-      '<div><small style="color:#888">Areas</small><br><strong>' + esc(v.ServiceAreas || '—') + '</strong></div></div></div></div>' +
+    var colors = store.themeColors || {};
+    return '<div class="store-root tpl-classic" style="--store-primary:' + (colors.primary || '#FFD600') + '">' +
+      '<header class="hero">' + cover + '<div class="hero-scrim"></div></header>' +
+      '<div class="profile">' +
+        '<div class="store-container profile-grid">' +
+          logo +
+          '<div class="profile-copy">' +
+            '<h1>' + esc(v.BusinessName) + '</h1>' +
+            '<p class="profile-meta">' +
+              (isVerified(v) ? '<span class="verified">Verified</span>' : '') +
+              (v.Category ? '<span>' + esc(v.Category) + '</span>' : '') +
+              (loc ? '<span>' + esc(loc) + '</span>' : '') +
+              (v.Rating ? '<span>' + esc(String(v.Rating)) + ' rating</span>' : '') +
+            '</p>' +
+            (v.Description ? '<p class="profile-lead">' + esc(v.Description) + '</p>' : '') +
+          '</div>' +
+          '<div class="profile-actions">' + contactBtns(v, id) + '</div>' +
+        '</div>' +
+      '</div>' +
+      factsHtml +
+      '<section class="store-section"><div class="store-container">' +
+        '<h2>Offerings</h2>' +
+        (catHtml ? '<div class="cat-pills">' + catHtml + '</div>' : '') +
+        '<div class="product-grid">' + prodHtml + '</div>' +
+      '</div></section>' +
       galHtml + enquiryForm(id) + trustSection() + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
@@ -76,47 +107,43 @@ var StoreTemplates = (function() {
     var v = store.vendor, id = v.VendorID, prods = store.products;
     var prodHtml = prods.map(function(p) {
       var im = imgs(p)[0] || '';
-      return '<div class="product-card"><div class="product-img">' + (im ? '<img src="'+im+'">' : '') + '</div>' +
-        '<div class="product-body"><h3 style="font-size:1.25rem;font-weight:600">' + esc(p.Title) + '</h3>' +
-        '<p style="color:rgba(255,255,255,0.6);font-size:0.875rem;margin:0.5rem 0">' + esc(p.Description) + '</p>' +
-        '<p style="font-size:1.5rem;font-weight:700">' + fmt(p.DiscountPrice || p.Price) + '</p>' +
-        '<button class="store-btn store-btn-primary" onclick="StoreActions.enquire(\'' + esc(p.Title).replace(/'/g,"\\'") + '\')">Learn More</button></div></div>';
+      return '<div class="product-card"><div class="product-img">' + (im ? '<img src="'+im+'" alt="'+esc(p.Title)+'">' : '') + '</div>' +
+        '<div class="product-body"><h3>' + esc(p.Title) + '</h3>' +
+        '<p>' + esc(p.Description) + '</p>' +
+        '<p class="lux-price">' + fmt(p.DiscountPrice || p.Price) + '</p>' +
+        '<button type="button" class="store-btn store-btn-primary" onclick="StoreActions.enquire(\'' + jsTitle(p.Title) + '\')">Ask about this</button></div></div>';
     }).join('');
 
-    return '<div class="store-root tpl-luxury" style="--store-primary:' + store.themeColors.primary + '">' +
-      '<div class="hero-full">' + (v.CoverBanner ? '<img src="' + v.CoverBanner + '">' : '') +
+    var colors = store.themeColors || {};
+    return '<div class="store-root tpl-luxury" style="--store-primary:' + (colors.primary || '#FFD600') + '">' +
+      '<div class="hero-full">' + (v.CoverBanner ? '<img src="' + v.CoverBanner + '" alt="">' : '') +
       '<div class="hero-content"><h1>' + esc(v.BusinessName) + '</h1><p>' + esc(v.Description) + '</p>' +
-      '<div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">' + contactBtns(v, id) + '</div></div></div>' +
-      '<div class="store-section"><div class="store-container"><h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem;text-align:center">Our Offerings</h2>' +
-      '<div class="product-grid">' + (prodHtml || '<p style="text-align:center;opacity:0.5">Coming soon</p>') + '</div></div></div>' +
+      '<div class="hero-actions">' + contactBtns(v, id) + '</div></div></div>' +
+      '<div class="store-section"><div class="store-container"><h2 class="lux-h">Offerings</h2>' +
+      '<div class="product-grid">' + (prodHtml || '<p class="empty-note">Listings will appear here after the vendor adds them.</p>') + '</div></div></div>' +
       enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
   function renderService(store) {
     var v = store.vendor, id = v.VendorID, prods = store.products;
-    var svcHtml = prods.map(function(p, i) {
-      var icons = ['✂️','💆','🏥','🔧','📋','⭐'];
-      return '<div class="service-card"><div class="service-icon">' + icons[i % icons.length] + '</div>' +
-        '<h3 style="font-weight:700;margin-bottom:0.5rem">' + esc(p.Title) + '</h3>' +
-        '<p style="color:#666;font-size:0.875rem;margin-bottom:1rem">' + esc(p.Description) + '</p>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center">' +
-        '<strong style="font-size:1.125rem">' + fmt(p.DiscountPrice || p.Price) + '</strong>' +
-        '<button class="store-btn store-btn-primary" style="font-size:0.8125rem" onclick="StoreActions.enquire(\'' + esc(p.Title).replace(/'/g,"\\'") + '\')">Book Now</button></div></div>';
+    var svcHtml = prods.map(function(p) {
+      return '<div class="service-card"><div class="service-icon">' + esc((p.Title || 'S').charAt(0)) + '</div>' +
+        '<h3>' + esc(p.Title) + '</h3>' +
+        '<p>' + esc(p.Description) + '</p>' +
+        '<div class="svc-foot"><strong>' + fmt(p.DiscountPrice || p.Price) + '</strong>' +
+        '<button type="button" class="store-btn store-btn-primary" onclick="StoreActions.enquire(\'' + jsTitle(p.Title) + '\')">Book</button></div></div>';
     }).join('');
 
-    return '<div class="store-root tpl-service" style="--store-primary:' + store.themeColors.primary + ';--store-accent:' + store.themeColors.accent + '">' +
+    var colors = store.themeColors || {};
+    return '<div class="store-root tpl-service" style="--store-primary:' + (colors.primary || '#FFD600') + ';--store-accent:' + (colors.accent || '#0F0F0F') + '">' +
       '<div class="hero"><div class="store-container"><div class="hero-inner">' +
-      (v.Logo ? '<img class="hero-logo" src="'+v.Logo+'">' : '') +
-      '<div><h1 style="font-size:2rem;font-weight:800">' + esc(v.BusinessName) + '</h1>' +
-      (v.Verified === true || v.Verified === 'TRUE' ? '<span class="verified">✓ Verified Pro</span> ' : '') +
-      '<p style="opacity:0.8;margin:0.5rem 0">' + esc(v.City) + ' · ★ ' + (v.Rating || '4.8') + '</p>' +
-      '<p style="opacity:0.7;max-width:500px">' + esc(v.Description) + '</p>' +
-      '<div style="margin-top:1rem;display:flex;gap:0.5rem">' + contactBtns(v, id) + '</div></div></div></div></div>' +
-      '<div class="store-section"><div class="store-container"><h2 style="margin-bottom:1.5rem">Our Services</h2><div class="service-grid">' + (svcHtml || '<p>No services listed</p>') + '</div></div></div>' +
-      '<div class="store-section" style="background:#f0f0f0"><div class="store-container"><h2 style="margin-bottom:1.5rem">Why Choose Us</h2><div class="team-grid">' +
-      '<div class="team-card"><strong>Vetted</strong><p style="font-size:0.8125rem;color:#666;margin-top:0.25rem">Verified professionals</p></div>' +
-      '<div class="team-card"><strong>' + (v.YearsInBusiness || '5') + '+ Years</strong><p style="font-size:0.8125rem;color:#666;margin-top:0.25rem">Industry experience</p></div>' +
-      '<div class="team-card"><strong>24/7</strong><p style="font-size:0.8125rem;color:#666;margin-top:0.25rem">WhatsApp support</p></div></div></div></div>' +
+      (v.Logo ? '<img class="hero-logo" src="'+v.Logo+'" alt="">' : '') +
+      '<div><h1>' + esc(v.BusinessName) + '</h1>' +
+      (isVerified(v) ? '<span class="verified">Verified</span> ' : '') +
+      '<p class="svc-loc">' + esc(v.City) + (v.Rating ? '  ' + esc(String(v.Rating)) + ' rating' : '') + '</p>' +
+      '<p class="svc-desc">' + esc(v.Description) + '</p>' +
+      '<div class="hero-actions">' + contactBtns(v, id) + '</div></div></div></div></div>' +
+      '<div class="store-section"><div class="store-container"><h2>Services</h2><div class="service-grid">' + (svcHtml || '<p class="empty-note">No services listed yet.</p>') + '</div></div></div>' +
       enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
@@ -124,24 +151,26 @@ var StoreTemplates = (function() {
     var v = store.vendor, id = v.VendorID, prods = store.products;
     var destHtml = prods.map(function(p) {
       var im = imgs(p)[0] || v.CoverBanner || '';
-      return '<div class="dest-card" onclick="StoreActions.enquire(\'' + esc(p.Title).replace(/'/g,"\\'") + '\')">' +
-        (im ? '<img src="'+im+'">' : '<div style="background:#ddd;height:100%"></div>') +
-        '<div class="dest-info"><h3 style="font-weight:700">' + esc(p.Title) + '</h3>' +
-        '<p style="font-size:0.8125rem;opacity:0.8">' + esc(p.Description) + '</p>' +
+      return '<div class="dest-card" onclick="StoreActions.enquire(\'' + jsTitle(p.Title) + '\')">' +
+        (im ? '<img src="'+im+'" alt="'+esc(p.Title)+'">' : '<div class="dest-empty"></div>') +
+        '<div class="dest-info"><h3>' + esc(p.Title) + '</h3>' +
+        '<p>' + esc(p.Description) + '</p>' +
         '<strong>' + fmt(p.DiscountPrice || p.Price) + '</strong></div></div>';
     }).join('');
     var gal = gallery(v);
-    var galHtml = gal.length ? '<div class="store-section"><div class="store-container"><h2 style="margin-bottom:1rem">Gallery</h2><div class="gallery-row">' + gal.slice(0,8).map(function(u){return '<img src="'+u+'">';}).join('') + '</div></div></div>' : '';
+    var galHtml = gal.length ? '<div class="store-section"><div class="store-container"><h2>Gallery</h2><div class="gallery-row">' + gal.slice(0,8).map(function(u){return '<img src="'+u+'" alt="">';}).join('') + '</div></div></div>' : '';
 
-    return '<div class="store-root tpl-travel" style="--store-primary:' + store.themeColors.primary + '">' +
-      '<div class="hero">' + (v.CoverBanner ? '<img src="'+v.CoverBanner+'">' : '<div style="background:#1a365d;height:100%"></div>') +
+    var colors = store.themeColors || {};
+    return '<div class="store-root tpl-travel" style="--store-primary:' + (colors.primary || '#FFD600') + '">' +
+      '<div class="hero">' + (v.CoverBanner ? '<img src="'+v.CoverBanner+'" alt="">' : '<div class="travel-wash"></div>') +
       '<div class="hero-overlay"><div><h1>' + esc(v.BusinessName) + '</h1>' +
-      '<p style="opacity:0.8;margin-top:0.5rem">' + esc(v.City) + (v.State ? ', ' + esc(v.State) : '') + '</p></div></div></div>' +
-      '<div class="store-section"><div class="store-container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem">' +
-      '<div>' + (v.Verified === true || v.Verified === 'TRUE' ? '<span class="verified">✓ Verified Host</span> ' : '') +
-      '<span>★ ' + (v.Rating || '4.9') + '</span></div><div style="display:flex;gap:0.5rem">' + contactBtns(v, id) + '</div></div>' +
-      '<h2 style="margin-bottom:1.5rem">Packages & Destinations</h2><div class="dest-grid">' + (destHtml || '<p>No packages yet</p>') + '</div></div></div>' +
-      '<div class="store-section" style="background:#f7f7f7"><div class="store-container"><h2>About</h2><p style="line-height:1.8;color:#444;max-width:700px">' + esc(v.Description) + '</p></div></div>' +
+      '<p>' + esc(v.City) + (v.State ? ', ' + esc(v.State) : '') + '</p></div></div></div>' +
+      '<div class="store-section"><div class="store-container travel-toolbar">' +
+      '<div>' + (isVerified(v) ? '<span class="verified">Verified</span> ' : '') +
+      (v.Rating ? '<span>' + esc(String(v.Rating)) + ' rating</span>' : '') + '</div>' +
+      '<div class="hero-actions">' + contactBtns(v, id) + '</div></div>' +
+      '<div class="store-container"><h2>Packages</h2><div class="dest-grid">' + (destHtml || '<p class="empty-note">No packages yet.</p>') + '</div></div></div>' +
+      '<div class="store-section travel-about"><div class="store-container"><h2>About</h2><p>' + esc(v.Description) + '</p></div></div>' +
       galHtml + enquiryForm(id) + branding(store.showBranding) + stickyBar(v, id) + '</div>';
   }
 
@@ -166,7 +195,7 @@ var StoreActions = {
   whatsapp: function(id) {
     google.script.run.recordWhatsappClick(id || this.vendorId);
     var ph = this.vendorPhone.length === 10 ? '91' + this.vendorPhone : this.vendorPhone;
-    window.open('https://wa.me/' + ph + '?text=' + encodeURIComponent('Hi, I found your store on InstaHelp!'), '_blank');
+    window.open('https://wa.me/' + ph + '?text=' + encodeURIComponent('Hi, I found your store on InstaHelp.'), '_blank');
   },
   call: function(id) {
     google.script.run.recordCallClick(id || this.vendorId);
@@ -184,15 +213,15 @@ var StoreActions = {
     e.preventDefault();
     var form = e.target;
     var btn = form.querySelector('[type="submit"]');
-    btn.disabled = true; btn.textContent = 'Sending...';
+    btn.disabled = true; btn.textContent = 'Sending';
     var src = InstaHelp.getQueryParam('utm_source') || document.referrer || 'direct';
     google.script.run
       .withSuccessHandler(function(res) {
         btn.disabled = false;
-        if (res.success) { btn.textContent = 'Sent ✓'; form.reset(); InstaHelp.toast('Enquiry submitted!', 'success'); }
-        else { btn.textContent = 'Submit Enquiry'; InstaHelp.toast(res.error || 'Failed', 'error'); }
+        if (res.success) { btn.textContent = 'Sent'; form.reset(); InstaHelp.toast('Request sent', 'success'); }
+        else { btn.textContent = 'Send request'; InstaHelp.toast(res.error || 'Could not send', 'error'); }
       })
-      .withFailureHandler(function(err) { btn.disabled = false; btn.textContent = 'Submit Enquiry'; InstaHelp.toast(err.message, 'error'); })
+      .withFailureHandler(function(err) { btn.disabled = false; btn.textContent = 'Send request'; InstaHelp.toast(err.message, 'error'); })
       .saveLead({ vendorId: vendorId, customerName: form.name.value, phone: form.phone.value, requirement: form.requirement.value, source: 'store', trafficSource: src });
   }
 };
